@@ -154,8 +154,13 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 if (!fields[i].IsEvent)
                 {
-                    Instruction loadValue = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetBackingField() : fields[i].field);
-                    il.Append(loadValue);
+                    List<Instruction> loadValues = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetBackingField() : fields[i].field);
+
+                    for (int j = loadValues.Count - 1; j >= 0; j--)
+                    {
+                        il.Append(loadValues[j]);
+                    }
+
                     if (!fields[i].IsProperty)
                     {
                         il.Emit(OpCodes.Stsfld, fields[i].field);
@@ -177,19 +182,35 @@ namespace Hertzole.CecilAttributes.Editor
             return (true, true);
         }
 
-        private static Instruction GetStaticSet(TypeDefinition type, FieldDefinition field)
+        private static List<Instruction> GetStaticSet(TypeDefinition type, FieldDefinition field)
         {
+            List<Instruction> instructions = new List<Instruction>();
+
             MethodDefinition cctor = type.GetMethod(".cctor");
+
+            Instruction root = null;
 
             foreach (Instruction i in cctor.Body.Instructions)
             {
                 if (i.OpCode == OpCodes.Stsfld && i.Operand == field)
                 {
-                    return i.Previous;
+                    root = i;
+                    break;
                 }
             }
 
-            throw new NullReferenceException("There's nothing that sets field " + field.FullName);
+            if (root == null)
+            {
+                throw new NullReferenceException("There's nothing that sets field " + field.Name + ". Did you set a default value?");
+            }
+
+            while (root.Previous != null && root.Previous.OpCode != OpCodes.Stsfld)
+            {
+                instructions.Add(root.Previous);
+                root = root.Previous;
+            }
+
+            return instructions;
         }
     }
 }

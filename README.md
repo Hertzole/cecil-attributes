@@ -13,7 +13,7 @@ Unity should now resolve the packages.
 ### Reset Static
 Reset static will automatically reset your statics to their default value when the game starts. This is extremely useful for when you have fast enter play mode settings on without domain reload.
 
-⚠ **Only works with simple types like bool, string, int, etc currently! This will be fixed soon.** ⚠
+It works for fields, properties, and events. Classes and structs are coming soon!
 
 Usage:  
 ```cs
