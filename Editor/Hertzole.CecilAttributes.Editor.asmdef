@@ -1,0 +1,20 @@
+{
+    "name": "Hertzole.CecilAttributes.Editor",
+    "rootNamespace": "Hertzole.CecilAttributes.Editor",
+    "references": [
+        "GUID:8e6476e98ca45994095daaac0d388517"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Mono.Cecil.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
