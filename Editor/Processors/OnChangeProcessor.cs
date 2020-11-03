@@ -37,6 +37,8 @@ namespace Hertzole.CecilAttributes.Editor
             return false;
         }
 
+        public override bool NeedsMonoBehaviour { get { return false; } }
+
         //TODO: Make work with multiple attributes.
         public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type, Type realType)
         {

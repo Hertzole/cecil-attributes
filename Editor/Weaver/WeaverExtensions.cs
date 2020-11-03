@@ -2,11 +2,22 @@
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using System;
+using UnityEditor.Compilation;
 
 namespace Hertzole.CecilAttributes.Editor
 {
     public static class WeaverExtensions
     {
+        public static bool HasAttribute<T>(this TypeDefinition type) where T : Attribute
+        {
+            if (!type.HasCustomAttributes)
+            {
+                return false;
+            }
+
+            return HasAttribute<T>(type.CustomAttributes);
+        }
+
         public static bool HasAttribute<T>(this PropertyDefinition prop) where T : Attribute
         {
             if (!prop.HasCustomAttributes)
@@ -198,11 +209,25 @@ namespace Hertzole.CecilAttributes.Editor
 
         public static FieldDefinition GetBackingField(this PropertyDefinition property)
         {
-            foreach (Instruction i in property.GetMethod.Body.Instructions)
+            if (CompilationPipeline.codeOptimization == CodeOptimization.Release)
             {
-                if (i.OpCode == OpCodes.Ldsfld && i.Next != null && i.Next.OpCode == OpCodes.Ret)
+                foreach (Instruction i in property.GetMethod.Body.Instructions)
                 {
-                    return (FieldDefinition)i.Operand;
+                    if (i.OpCode == OpCodes.Ldsfld && i.Next != null && i.Next.OpCode == OpCodes.Ret)
+                    {
+                        return (FieldDefinition)i.Operand;
+                    }
+                }
+            }
+            else
+            {
+                Collection<Instruction> instructions = property.GetMethod.Body.Instructions;
+                for (int i = instructions.Count - 1; i >= 0; i--)
+                {
+                    if (instructions[i].OpCode == OpCodes.Ldsfld)
+                    {
+                        return (FieldDefinition)instructions[i].Operand;
+                    }
                 }
             }
 

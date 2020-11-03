@@ -24,25 +24,27 @@ namespace Hertzole.CecilAttributes.Editor
                         Type realType = Type.GetType(type.FullName + ", " + type.Module.Assembly.FullName);
                         if (realType != null)
                         {
-                            if (realType.IsSubclassOf(typeof(MonoBehaviour)))
+                            for (int i = 0; i < processors.Length; i++)
                             {
-                                for (int i = 0; i < processors.Length; i++)
+                                if (processors[i].NeedsMonoBehaviour && !realType.IsSubclassOf(typeof(MonoBehaviour)))
                                 {
-                                    if (!processors[i].IsValidClass(type))
-                                    {
-                                        continue;
-                                    }
+                                    continue;
+                                }
 
-                                    (bool success, bool dirtyClass) = processors[i].ProcessClass(module, type, realType);
-                                    if (dirtyClass)
-                                    {
-                                        dirty = true;
-                                    }
+                                if (!processors[i].IsValidClass(type))
+                                {
+                                    continue;
+                                }
 
-                                    if (!success)
-                                    {
-                                        return (false, false);
-                                    }
+                                (bool success, bool dirtyClass) = processors[i].ProcessClass(module, type, realType);
+                                if (dirtyClass)
+                                {
+                                    dirty = true;
+                                }
+
+                                if (!success)
+                                {
+                                    return (false, false);
                                 }
                             }
                         }

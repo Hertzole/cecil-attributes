@@ -2,6 +2,7 @@
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -41,8 +42,15 @@ namespace Hertzole.CecilAttributes.Editor
 
         private List<FieldOrProperty> fields = new List<FieldOrProperty>();
 
+        public override bool NeedsMonoBehaviour { get { return false; } }
+
         public override bool IsValidClass(TypeDefinition type)
         {
+            if (type.HasAttribute<ResetStaticAttribute>())
+            {
+                return true;
+            }
+
             if (type.HasFields)
             {
                 foreach (FieldDefinition field in type.Fields)
@@ -83,19 +91,34 @@ namespace Hertzole.CecilAttributes.Editor
         {
             fields.Clear();
 
+            bool hasAttribute = type.HasAttribute<ResetStaticAttribute>();
+
             if (type.HasFields)
             {
                 for (int i = 0; i < type.Fields.Count; i++)
                 {
-                    if (type.Fields[i].HasAttribute<ResetStaticAttribute>())
+                    if (hasAttribute && !type.Fields[i].IsStatic)
                     {
-                        if (!type.Fields[i].IsStatic)
-                        {
-                            throw new NotSupportedException(type.Fields[i].FullName + " isn't static. ResetStatic can only be on static fields.");
-                        }
-
-                        fields.Add(new FieldOrProperty(type.Fields[i]));
+                        continue;
                     }
+
+                    if (hasAttribute && type.Fields[i].HasAttribute<CompilerGeneratedAttribute>())
+                    {
+                        continue;
+                    }
+
+                    if (!hasAttribute && !type.Fields[i].HasAttribute<ResetStaticAttribute>())
+                    {
+                        continue;
+                    }
+
+                    // No need to check for attribute since we just did above.
+                    if (!hasAttribute && !type.Fields[i].IsStatic)
+                    {
+                        throw new NotSupportedException(type.Fields[i].FullName + " isn't static. ResetStatic can only be on static fields.");
+                    }
+
+                    fields.Add(new FieldOrProperty(type.Fields[i]));
                 }
             }
 
@@ -103,15 +126,28 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 for (int i = 0; i < type.Properties.Count; i++)
                 {
-                    if (type.Properties[i].HasAttribute<ResetStaticAttribute>())
+                    if (hasAttribute && !type.Properties[i].GetMethod.IsStatic)
                     {
-                        if (!type.Properties[i].GetMethod.IsStatic)
-                        {
-                            throw new NotSupportedException(type.Properties[i].FullName + " isn't static. ResetStatic can only be on static properties.");
-                        }
-
-                        fields.Add(new FieldOrProperty(type.Properties[i]));
+                        continue;
                     }
+
+                    if (hasAttribute && type.Properties[i].HasAttribute<CompilerGeneratedAttribute>())
+                    {
+                        continue;
+                    }
+
+                    if (!hasAttribute && !type.Properties[i].HasAttribute<ResetStaticAttribute>())
+                    {
+                        continue;
+                    }
+
+                    // No need to check for attribute since we just did above.
+                    if (!hasAttribute && !type.Properties[i].GetMethod.IsStatic)
+                    {
+                        throw new NotSupportedException(type.Properties[i].FullName + " isn't static. ResetStatic can only be on static properties.");
+                    }
+
+                    fields.Add(new FieldOrProperty(type.Properties[i]));
                 }
             }
 
@@ -119,15 +155,28 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 for (int i = 0; i < type.Events.Count; i++)
                 {
-                    if (type.Events[i].HasAttribute<ResetStaticAttribute>())
+                    if (hasAttribute && !type.Events[i].AddMethod.IsStatic)
                     {
-                        if (!type.Events[i].AddMethod.IsStatic)
-                        {
-                            throw new NotSupportedException(type.Events[i].FullName + " isn't static. ResetStatic can only be on static events.");
-                        }
-
-                        fields.Add(new FieldOrProperty(type.Events[i]));
+                        continue;
                     }
+
+                    if (hasAttribute && type.Events[i].HasAttribute<CompilerGeneratedAttribute>())
+                    {
+                        continue;
+                    }
+
+                    if (!hasAttribute && !type.Events[i].HasAttribute<ResetStaticAttribute>())
+                    {
+                        continue;
+                    }
+
+                    // No need to check for attribute since we just did above.
+                    if (!hasAttribute && !type.Events[i].AddMethod.IsStatic)
+                    {
+                        throw new NotSupportedException(type.Events[i].FullName + " isn't static. ResetStatic can only be on static events.");
+                    }
+
+                    fields.Add(new FieldOrProperty(type.Events[i]));
                 }
             }
 
