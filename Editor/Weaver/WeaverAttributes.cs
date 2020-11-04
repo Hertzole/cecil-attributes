@@ -11,7 +11,7 @@ namespace Hertzole.CecilAttributes.Editor
             new ResetStaticProcessor()
         };
 
-        public static (bool success, bool dirty) ProcessAssembly(AssemblyDefinition assembly)
+        public static (bool success, bool dirty) ProcessAssembly(AssemblyDefinition assembly, bool isEditor)
         {
             bool dirty = false;
 
@@ -25,6 +25,13 @@ namespace Hertzole.CecilAttributes.Editor
                         {
                             if (processors[i].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
                             {
+                                Debug.LogWarning(processors[i].Name + " needs to be in a MonoBehaviour.");
+                                continue;
+                            }
+
+                            if (!processors[i].AllowEditor && isEditor)
+                            {
+                                Debug.LogWarning(processors[i].Name + " can't be used in the editor.");
                                 continue;
                             }
 

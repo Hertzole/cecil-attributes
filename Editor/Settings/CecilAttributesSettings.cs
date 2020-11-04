@@ -11,6 +11,10 @@ namespace Hertzole.CecilAttributes.Editor
         private const string PATH = DIRECTORY + "/CecilAttributesSettings.asset";
 
         [SerializeField]
+        private bool includeResetStaticInBuild = true;
+        [SerializeField]
+        private RuntimeInitializeLoadType resetStaticMode = RuntimeInitializeLoadType.SubsystemRegistration;
+        [SerializeField]
         private bool includeLogsInBuild = true;
         [SerializeField]
         private string methodLogFormat = "%method% (%parameters%)";
@@ -20,6 +24,18 @@ namespace Hertzole.CecilAttributes.Editor
         private string propertyGetLogFormat = "%property% Get %value%";
         [SerializeField]
         private string propertySetLogFormat = "%property% Set (Old: %old_value%, New: %new_value%)";
+
+        public bool IncludeResetStaticInBuild
+        {
+            get { return includeResetStaticInBuild; }
+            set { includeResetStaticInBuild = value; Save(); }
+        }
+
+        public RuntimeInitializeLoadType ResetStaticMode
+        {
+            get { return resetStaticMode; }
+            set { resetStaticMode = value; Save(); }
+        }
 
         public bool IncludeLogsInBuild
         {

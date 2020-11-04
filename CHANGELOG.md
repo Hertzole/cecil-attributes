@@ -2,6 +2,11 @@
 ### Added
 - LogCalled attribute to make a log message appear when calling a method/property.
 - Settings panel for changing settings related to the attributes.
+- Support for not including generated code from ResetStatic in build.
+- You can now change the initialization type of the generated ResetStatic method.
+
+### Fixed
+- Fixed attributes not working in the editor.
 
 ## [0.1.1-preview] - 2020-11-03
 ### Added 

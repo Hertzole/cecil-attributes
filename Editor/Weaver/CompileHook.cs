@@ -68,12 +68,6 @@ namespace Hertzole.CecilAttributes.Editor
                 return;
             }
 
-            // Allow editors for now until further testing.
-            if (assemblyPath.Contains("-Editor") || assemblyPath.Contains(".Editor"))
-            {
-                return;
-            }
-
             // Don't weave itself.
             string assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
             if (assemblyName == WeaverConstants.RUNTIME_ASSEMBLY || assemblyName == WeaverConstants.EDITOR_ASSEMBLY)

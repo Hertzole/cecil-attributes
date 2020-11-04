@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -12,8 +13,45 @@ namespace Hertzole.CecilAttributes.Editor
                 GUILayout.Space(6f);
                 using (new GUILayout.VerticalScope())
                 {
+                    OnResetStaticSection();
+
+                    GUILayout.Space(16f);
+
                     OnLogCalledSection();
+
+                    GUILayout.Space(16f);
+
+                    EditorGUILayout.HelpBox("You need to recompile your scripts for these changes to take effect. If you don't do it now, you may see some undesired behavior. " +
+                        "Otherwise it will update at some point when you update your scripts manually or when building.", MessageType.Warning);
+
+                    if (GUILayout.Button("Apply changes and recompile"))
+                    {
+                        CompilationPipeline.RequestScriptCompilation();
+                    }
                 }
+            }
+        }
+
+        private static void OnResetStaticSection()
+        {
+            DrawHeaderLabel("Reset Static");
+
+            bool includeInBuild = CecilAttributesSettings.Instance.IncludeResetStaticInBuild;
+            RuntimeInitializeLoadType resetStaticMode = CecilAttributesSettings.Instance.ResetStaticMode;
+
+            EditorGUI.BeginChangeCheck();
+            includeInBuild = EditorGUILayout.Toggle(new GUIContent("Include In Build", "If true, the reset static method will be included in the built version."), includeInBuild);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.IncludeResetStaticInBuild = includeInBuild;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            resetStaticMode = (RuntimeInitializeLoadType)EditorGUILayout.EnumPopup(new GUIContent("Reset Static Mode", "The type of initialization for resting statics."), resetStaticMode);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.ResetStaticMode = resetStaticMode;
             }
         }
 
@@ -28,7 +66,7 @@ namespace Hertzole.CecilAttributes.Editor
             string propSetFormat = CecilAttributesSettings.Instance.PropertySetLogFormat;
 
             EditorGUI.BeginChangeCheck();
-            includeLogsInBuild = EditorGUILayout.Toggle(new GUIContent("Include Logs In Build", "If true, logs from LogCalled will be included in build."), includeLogsInBuild);
+            includeLogsInBuild = EditorGUILayout.Toggle(new GUIContent("Include In Build", "If true, logs from LogCalled will be included in build."), includeLogsInBuild);
             if (EditorGUI.EndChangeCheck())
             {
                 CecilAttributesSettings.Instance.IncludeLogsInBuild = includeLogsInBuild;
@@ -72,20 +110,6 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 CecilAttributesSettings.Instance.PropertySetLogFormat = propSetFormat;
             }
-
-            EditorGUILayout.Space();
-
-            EditorGUILayout.HelpBox("You need to recompile your scripts for these changes to take effect. If you don't do it now, you may see the old format. Otherwise it will" +
-                "update at some point when you update your scripts manually.", MessageType.Info);
-
-            //            if (GUILayout.Button("Apply messages and recompile"))
-            //            {
-            //#if UNITY_2019_3_OR_NEWER
-            //                EditorUtility.RequestScriptReload();
-            //#else
-            //                UnityEditorInternal.InternalEditorUtility.RequestScriptReload();
-            //#endif
-            //            }
         }
 
         private static void DrawHeaderLabel(string label)

@@ -3,6 +3,7 @@ using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -42,10 +43,18 @@ namespace Hertzole.CecilAttributes.Editor
 
         private List<FieldOrProperty> fields = new List<FieldOrProperty>();
 
+        public override string Name { get { return "ResetStatic"; } }
+
         public override bool NeedsMonoBehaviour { get { return false; } }
+        public override bool AllowEditor { get { return true; } }
 
         public override bool IsValidClass(TypeDefinition type)
         {
+            if (BuildPipeline.isBuildingPlayer && !CecilAttributesSettings.Instance.IncludeResetStaticInBuild)
+            {
+                return false;
+            }
+
             if (type.HasAttribute<ResetStaticAttribute>())
             {
                 return true;
@@ -193,7 +202,7 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 MethodReference initAttributeCtor = module.ImportReference(typeof(RuntimeInitializeOnLoadMethodAttribute).GetConstructor(new Type[] { typeof(RuntimeInitializeLoadType) }));
                 CustomAttribute attribute = new CustomAttribute(initAttributeCtor);
-                attribute.ConstructorArguments.Add(new CustomAttributeArgument(module.ImportReference(typeof(RuntimeInitializeLoadType)), RuntimeInitializeLoadType.SubsystemRegistration));
+                attribute.ConstructorArguments.Add(new CustomAttributeArgument(module.ImportReference(typeof(RuntimeInitializeLoadType)), CecilAttributesSettings.Instance.ResetStaticMode));
                 resetMethod.CustomAttributes.Add(attribute);
             }
 

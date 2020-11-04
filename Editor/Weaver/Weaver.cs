@@ -22,7 +22,9 @@ namespace Hertzole.CecilAttributes.Editor
                         asmResolver.AddSearchDirectory(searchPaths[i]);
                     }
 
-                    (bool success, bool dirty) = ProcessAssembly(assembly);
+                    bool isEditor = assemblyPath.Contains("-Editor") || assemblyPath.Contains(".Editor");
+
+                    (bool success, bool dirty) = ProcessAssembly(assembly, isEditor);
                     if (success && dirty)
                     {
                         WriterParameters writeParams = new WriterParameters { WriteSymbols = true };

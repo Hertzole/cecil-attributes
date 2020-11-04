@@ -11,7 +11,10 @@ namespace Hertzole.CecilAttributes.Editor
 {
     public class LogCalledProcessor : BaseProcessor
     {
+        public override string Name { get { return "LogCalled"; } }
+
         public override bool NeedsMonoBehaviour { get { return false; } }
+        public override bool AllowEditor { get { return true; } }
 
         public override bool IsValidClass(TypeDefinition type)
         {

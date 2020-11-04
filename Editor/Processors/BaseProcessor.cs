@@ -4,7 +4,11 @@ namespace Hertzole.CecilAttributes.Editor
 {
     public abstract class BaseProcessor
     {
+        public abstract string Name { get; }
+
         public abstract bool NeedsMonoBehaviour { get; }
+
+        public abstract bool AllowEditor { get; }
 
         public abstract bool IsValidClass(TypeDefinition type);
 

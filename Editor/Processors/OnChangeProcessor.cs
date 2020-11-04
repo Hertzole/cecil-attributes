@@ -1,109 +1,112 @@
-﻿using Mono.Cecil;
-using Mono.Collections.Generic;
-using System.Collections.Generic;
-using UnityEngine;
+﻿//using Mono.Cecil;
+//using Mono.Collections.Generic;
+//using System.Collections.Generic;
+//using UnityEngine;
 
-namespace Hertzole.CecilAttributes.Editor
-{
-    public class OnChangeProcessor : BaseProcessor
-    {
-        private const string FIELD_PREFIX = "cecilOnChangeField_";
+//namespace Hertzole.CecilAttributes.Editor
+//{
+//    public class OnChangeProcessor : BaseProcessor
+//    {
+//        private const string FIELD_PREFIX = "cecilOnChangeField_";
 
-        public override bool IsValidClass(TypeDefinition type)
-        {
-            if (type.HasFields)
-            {
-                foreach (FieldDefinition field in type.Fields)
-                {
-                    if (field.TryGetAttribute<OnChangeAttribute>(out _))
-                    {
-                        return true;
-                    }
-                }
-            }
+//        public override string Name { get { return "OnChange"; } }
 
-            if (type.HasProperties)
-            {
-                foreach (PropertyDefinition property in type.Properties)
-                {
-                    if (property.TryGetAttribute<OnChangeAttribute>(out _))
-                    {
-                        return true;
-                    }
-                }
-            }
+//        public override bool NeedsMonoBehaviour { get { return false; } }
+//        public override bool AllowEditor { get { return true; } }
 
-            return false;
-        }
+//        public override bool IsValidClass(TypeDefinition type)
+//        {
+//            if (type.HasFields)
+//            {
+//                foreach (FieldDefinition field in type.Fields)
+//                {
+//                    if (field.TryGetAttribute<OnChangeAttribute>(out _))
+//                    {
+//                        return true;
+//                    }
+//                }
+//            }
 
-        public override bool NeedsMonoBehaviour { get { return false; } }
+//            if (type.HasProperties)
+//            {
+//                foreach (PropertyDefinition property in type.Properties)
+//                {
+//                    if (property.TryGetAttribute<OnChangeAttribute>(out _))
+//                    {
+//                        return true;
+//                    }
+//                }
+//            }
 
-        //TODO: Make work with multiple attributes.
-        public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type)
-        {
-            bool dirty = false;
+//            return false;
+//        }
 
-            if (type.HasFields)
-            {
-                // Create a new collection because we're adding fields in the loop and we don't ned to account for those.
-                Collection<FieldDefinition> fields = new Collection<FieldDefinition>(type.Fields);
+//        //TODO: Make work with multiple attributes.
+//        public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type)
+//        {
+//            bool dirty = false;
 
-                Debug.Log(fields.Count);
+//            if (type.HasFields)
+//            {
+//                // Create a new collection because we're adding fields in the loop and we don't ned to account for those.
+//                Collection<FieldDefinition> fields = new Collection<FieldDefinition>(type.Fields);
 
-                List<int> fieldsToRemove = new List<int>();
-                List<FieldDefinition> fieldsToAdd = new List<FieldDefinition>();
-                List<PropertyDefinition> propertiesToAdd = new List<PropertyDefinition>();
+//                Debug.Log(fields.Count);
 
-                for (int i = 0; i < fields.Count; i++)
-                {
-                    if (fields[i].TryGetAttribute<OnChangeAttribute>(out CustomAttribute attribute))
-                    {
-                        string targetMethod = attribute.GetConstructorArgument(0, string.Empty);
-                        if (string.IsNullOrEmpty(targetMethod))
-                        {
-                            Debug.LogError(fields[i].Name + " does not have a target method to hook into the change event.");
-                            return (false, false);
-                        }
+//                List<int> fieldsToRemove = new List<int>();
+//                List<FieldDefinition> fieldsToAdd = new List<FieldDefinition>();
+//                List<PropertyDefinition> propertiesToAdd = new List<PropertyDefinition>();
 
-                        if (type.TryGetMethod(targetMethod, out MethodDefinition method))
-                        {
+//                for (int i = 0; i < fields.Count; i++)
+//                {
+//                    if (fields[i].TryGetAttribute<OnChangeAttribute>(out CustomAttribute attribute))
+//                    {
+//                        string targetMethod = attribute.GetConstructorArgument(0, string.Empty);
+//                        if (string.IsNullOrEmpty(targetMethod))
+//                        {
+//                            Debug.LogError(fields[i].Name + " does not have a target method to hook into the change event.");
+//                            return (false, false);
+//                        }
 
-                        }
-                        else
-                        {
-                            Debug.LogError("The method given to " + fields[i].Name + " does not exist in " + type.FullName + ".");
-                            return (false, false);
-                        }
+//                        if (type.TryGetMethod(targetMethod, out MethodDefinition method))
+//                        {
 
-                        string fieldName = FIELD_PREFIX + fields[i].Name;
-                        fieldsToAdd.Add(new FieldDefinition(fieldName, FieldAttributes.Private, fields[i].FieldType));
+//                        }
+//                        else
+//                        {
+//                            Debug.LogError("The method given to " + fields[i].Name + " does not exist in " + type.FullName + ".");
+//                            return (false, false);
+//                        }
 
-                        PropertyDefinition fieldProperty = new PropertyDefinition(fields[i].Name, PropertyAttributes.None, fields[i].FieldType);
+//                        string fieldName = FIELD_PREFIX + fields[i].Name;
+//                        fieldsToAdd.Add(new FieldDefinition(fieldName, FieldAttributes.Private, fields[i].FieldType));
 
-                        fieldsToRemove.Add(i);
-                        propertiesToAdd.Add(fieldProperty);
+//                        PropertyDefinition fieldProperty = new PropertyDefinition(fields[i].Name, PropertyAttributes.None, fields[i].FieldType);
 
-                        dirty = true;
-                    }
-                }
+//                        fieldsToRemove.Add(i);
+//                        propertiesToAdd.Add(fieldProperty);
 
-                for (int i = 0; i < fieldsToRemove.Count; i++)
-                {
-                    type.Fields.RemoveAt(fieldsToRemove[i]);
-                }
+//                        dirty = true;
+//                    }
+//                }
 
-                for (int i = 0; i < fieldsToAdd.Count; i++)
-                {
-                    type.Fields.Add(fieldsToAdd[i]);
-                }
+//                for (int i = 0; i < fieldsToRemove.Count; i++)
+//                {
+//                    type.Fields.RemoveAt(fieldsToRemove[i]);
+//                }
 
-                for (int i = 0; i < propertiesToAdd.Count; i++)
-                {
-                    type.Properties.Add(propertiesToAdd[i]);
-                }
-            }
+//                for (int i = 0; i < fieldsToAdd.Count; i++)
+//                {
+//                    type.Fields.Add(fieldsToAdd[i]);
+//                }
 
-            return (true, dirty);
-        }
-    }
-}
+//                for (int i = 0; i < propertiesToAdd.Count; i++)
+//                {
+//                    type.Properties.Add(propertiesToAdd[i]);
+//                }
+//            }
+
+//            return (true, dirty);
+//        }
+//    }
+//}
