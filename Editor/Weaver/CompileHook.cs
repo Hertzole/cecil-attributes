@@ -58,8 +58,6 @@ namespace Hertzole.CecilAttributes.Editor
 
         private static void OnCompilationFinished(string assemblyPath, CompilerMessage[] messages)
         {
-            //Debug.Log($"OnCompileFinished | Is building player: {BuildPipeline.isBuildingPlayer}, Is Debug build: {Debug.isDebugBuild} | {assemblyPath}");
-
             if (CompilerMessagesHasError(messages))
             {
                 return;

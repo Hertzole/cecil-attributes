@@ -1,6 +1,7 @@
 ## [Unreleased]
 ### Added
 - LogCalled attribute to make a log message appear when calling a method/property.
+- Settings panel for changing settings related to the attributes.
 
 ## [0.1.1-preview] - 2020-11-03
 ### Added 

@@ -4,6 +4,7 @@ using Mono.Cecil.Rocks;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -14,6 +15,11 @@ namespace Hertzole.CecilAttributes.Editor
 
         public override bool IsValidClass(TypeDefinition type)
         {
+            if (BuildPipeline.isBuildingPlayer && !CecilAttributesSettings.Instance.IncludeLogsInBuild)
+            {
+                return false;
+            }
+
             if (type.HasMethods)
             {
                 for (int i = 0; i < type.Methods.Count; i++)
@@ -67,6 +73,9 @@ namespace Hertzole.CecilAttributes.Editor
 
             if (type.HasMethods)
             {
+                string methodFormat = CecilAttributesSettings.Instance.MethodLogFormat;
+                string parametersSeparator = CecilAttributesSettings.Instance.ParametersSeparator;
+
                 foreach (MethodDefinition method in type.Methods)
                 {
                     if (!method.HasAttribute<LogCalledAttribute>())
@@ -77,14 +86,14 @@ namespace Hertzole.CecilAttributes.Editor
                     sb.Clear();
                     instructions.Clear();
 
-                    sb.Append(method.Name);
+                    sb.Append(methodFormat);
+                    sb.Replace("%method%", method.Name);
+                    sb.Replace("%METHOD%", method.Name.ToUpperInvariant());
 
                     if (method.HasParameters && method.Parameters.Count > 0)
                     {
                         parameters.Clear();
                         fancyParameters.Clear();
-
-                        sb.Append(" (");
 
                         int offset = 0;
 
@@ -103,8 +112,13 @@ namespace Hertzole.CecilAttributes.Editor
                             }
                         }
 
-                        sb.Append(string.Join(", ", fancyParameters));
-                        sb.Append(")");
+                        sb.Replace("%parameters%", string.Join(parametersSeparator, fancyParameters));
+                        sb.Replace("%PARAMETERS%", string.Join(parametersSeparator, fancyParameters).ToUpperInvariant());
+                    }
+                    else
+                    {
+                        sb.Replace("%parameters%", string.Empty);
+                        sb.Replace("%PARAMETERS%", string.Empty);
                     }
 
                     ILProcessor il = method.Body.GetILProcessor();
@@ -184,6 +198,9 @@ namespace Hertzole.CecilAttributes.Editor
 
             if (type.HasProperties)
             {
+                string propertyGetFormat = CecilAttributesSettings.Instance.PropertyGetLogFormat;
+                string propertySetFormat = CecilAttributesSettings.Instance.PropertySetLogFormat;
+
                 foreach (PropertyDefinition property in type.Properties)
                 {
                     if (!property.HasAttribute<LogCalledAttribute>())
@@ -207,8 +224,10 @@ namespace Hertzole.CecilAttributes.Editor
 
                         FieldDefinition loadField = property.GetBackingField();
 
-                        sb.Append($"{property.Name} Get: ");
-                        sb.Append("{0}");
+                        sb.Append(propertyGetFormat);
+                        sb.Replace("%property%", property.Name);
+                        sb.Replace("%PROPERTY%", property.Name.ToUpperInvariant());
+                        sb.Replace("%value%", "{0}");
 
                         instructions.Add(Instruction.Create(OpCodes.Ldstr, sb.ToString()));
                         instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
@@ -242,8 +261,11 @@ namespace Hertzole.CecilAttributes.Editor
 
                         property.SetMethod.Body.Variables.Add(new VariableDefinition(module.ImportReference(loadField.FieldType)));
 
-                        sb.Append($"{property.Name} Set (Old: ");
-                        sb.Append("{0}, New: {1})");
+                        sb.Append(propertySetFormat);
+                        sb.Replace("%property%", property.Name);
+                        sb.Replace("%PROPERTY%", property.Name.ToUpperInvariant());
+                        sb.Replace("%old_value%", "{0}");
+                        sb.Replace("%new_value%", "{1}");
 
                         instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                         instructions.Add(Instruction.Create(OpCodes.Ldfld, loadField));
