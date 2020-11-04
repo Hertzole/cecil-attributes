@@ -1,3 +1,7 @@
+## [Unreleased]
+### Added
+- LogCalled attribute to make a log message appear when calling a method/property.
+
 ## [0.1.1-preview] - 2020-11-03
 ### Added 
 - Support for using reset static with classes to reset all static members.

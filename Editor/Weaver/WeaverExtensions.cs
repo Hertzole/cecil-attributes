@@ -8,6 +8,86 @@ namespace Hertzole.CecilAttributes.Editor
 {
     public static class WeaverExtensions
     {
+        // https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L10
+        public static bool Is(this TypeReference tr, Type t)
+        {
+            if (t.IsGenericType)
+            {
+                return tr.GetElementType().FullName == t.FullName;
+            }
+            else
+            {
+                return tr.FullName == t.FullName;
+            }
+        }
+
+        public static bool Is<T>(this TypeReference tr)
+        {
+            return Is(tr, typeof(T));
+        }
+
+        // https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L23
+        public static bool IsSubclassOf(this TypeDefinition td, Type type)
+        {
+            if (!td.IsClass)
+            {
+                return false;
+            }
+
+            TypeReference parent = td.BaseType;
+
+            if (parent == null)
+            {
+                return false;
+            }
+
+            if (parent.Is(type))
+            {
+                return true;
+            }
+
+            if (parent.CanBeResolved())
+            {
+                return IsSubclassOf(parent.Resolve(), type);
+            }
+
+            return false;
+        }
+
+        public static bool IsSubclassOf<T>(this TypeDefinition td)
+        {
+            return IsSubclassOf(td, typeof(T));
+        }
+
+        // https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L87
+        public static bool CanBeResolved(this TypeReference parent)
+        {
+            while (parent != null)
+            {
+                if (parent.Scope.Name == "Windows")
+                {
+                    return false;
+                }
+
+                if (parent.Scope.Name == "mscorlib")
+                {
+                    TypeDefinition resolved = parent.Resolve();
+                    return resolved != null;
+                }
+
+                try
+                {
+                    parent = parent.Resolve().BaseType;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool HasAttribute<T>(this TypeDefinition type) where T : Attribute
         {
             if (!type.HasCustomAttributes)
@@ -71,6 +151,31 @@ namespace Hertzole.CecilAttributes.Editor
             }
 
             return false;
+        }
+
+        public static CustomAttribute GetAttribute<T>(this PropertyDefinition prop) where T : Attribute
+        {
+            if (!prop.HasCustomAttributes)
+            {
+                throw new NullReferenceException(prop.FullName + " does not have any attributes.");
+            }
+
+            return GetAttribute<T>(prop.CustomAttributes);
+        }
+
+        private static CustomAttribute GetAttribute<T>(Collection<CustomAttribute> attributes) where T : Attribute
+        {
+            string myName = typeof(T).FullName;
+
+            for (int i = 0; i < attributes.Count; i++)
+            {
+                if (attributes[i].Constructor.DeclaringType.ToString() == myName)
+                {
+                    return attributes[i];
+                }
+            }
+
+            throw new ArgumentException("There's no " + myName + " argument on this type.");
         }
 
         public static bool TryGetAttribute<T>(this PropertyDefinition prop, out CustomAttribute attribute) where T : Attribute
@@ -207,13 +312,23 @@ namespace Hertzole.CecilAttributes.Editor
             throw new ArgumentException("There's no property in type " + type.FullName + " called " + name + ".");
         }
 
+        public static FieldDefinition GetStaticBackingField(this PropertyDefinition property)
+        {
+            return GetBackingField(property, OpCodes.Ldsfld);
+        }
+
         public static FieldDefinition GetBackingField(this PropertyDefinition property)
+        {
+            return GetBackingField(property, OpCodes.Ldfld);
+        }
+
+        private static FieldDefinition GetBackingField(PropertyDefinition property, OpCode opCode)
         {
             if (CompilationPipeline.codeOptimization == CodeOptimization.Release)
             {
                 foreach (Instruction i in property.GetMethod.Body.Instructions)
                 {
-                    if (i.OpCode == OpCodes.Ldsfld && i.Next != null && i.Next.OpCode == OpCodes.Ret)
+                    if (i.OpCode == opCode && i.Next != null && i.Next.OpCode == OpCodes.Ret)
                     {
                         return (FieldDefinition)i.Operand;
                     }
@@ -224,7 +339,7 @@ namespace Hertzole.CecilAttributes.Editor
                 Collection<Instruction> instructions = property.GetMethod.Body.Instructions;
                 for (int i = instructions.Count - 1; i >= 0; i--)
                 {
-                    if (instructions[i].OpCode == OpCodes.Ldsfld)
+                    if (instructions[i].OpCode == opCode)
                     {
                         return (FieldDefinition)instructions[i].Operand;
                     }

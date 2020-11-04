@@ -1,6 +1,5 @@
 ﻿using Mono.Cecil;
 using Mono.Collections.Generic;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,7 +39,7 @@ namespace Hertzole.CecilAttributes.Editor
         public override bool NeedsMonoBehaviour { get { return false; } }
 
         //TODO: Make work with multiple attributes.
-        public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type, Type realType)
+        public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type)
         {
             bool dirty = false;
 

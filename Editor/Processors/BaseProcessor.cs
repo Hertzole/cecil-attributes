@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using System;
 
 namespace Hertzole.CecilAttributes.Editor
 {
@@ -9,6 +8,6 @@ namespace Hertzole.CecilAttributes.Editor
 
         public abstract bool IsValidClass(TypeDefinition type);
 
-        public abstract (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type, Type realType);
+        public abstract (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type);
     }
 }

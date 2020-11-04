@@ -87,7 +87,7 @@ namespace Hertzole.CecilAttributes.Editor
             return false;
         }
 
-        public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type, Type realType)
+        public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type)
         {
             fields.Clear();
 
@@ -203,7 +203,7 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 if (!fields[i].IsEvent)
                 {
-                    List<Instruction> loadValues = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetBackingField() : fields[i].field);
+                    List<Instruction> loadValues = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetStaticBackingField() : fields[i].field);
 
                     for (int j = loadValues.Count - 1; j >= 0; j--)
                     {
