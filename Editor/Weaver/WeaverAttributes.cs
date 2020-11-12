@@ -8,7 +8,8 @@ namespace Hertzole.CecilAttributes.Editor
         private static readonly BaseProcessor[] processors = new BaseProcessor[]
         {
             new LogCalledProcessor(),
-            new ResetStaticProcessor()
+            new ResetStaticProcessor(),
+            new FindPropertyProcessor()
         };
 
         public static (bool success, bool dirty) ProcessAssembly(AssemblyDefinition assembly, bool isEditor)
@@ -23,20 +24,26 @@ namespace Hertzole.CecilAttributes.Editor
                     {
                         for (int i = 0; i < processors.Length; i++)
                         {
+                            if (!processors[i].IsValidClass(type))
+                            {
+                                continue;
+                            }
+
                             if (processors[i].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
                             {
-                                Debug.LogWarning(processors[i].Name + " needs to be in a MonoBehaviour.");
+                                Debug.LogWarning(processors[i].Name + " needs to be in a MonoBehaviour. (" + type.FullName + ")");
                                 continue;
                             }
 
                             if (!processors[i].AllowEditor && isEditor)
                             {
-                                Debug.LogWarning(processors[i].Name + " can't be used in the editor.");
+                                Debug.LogWarning(processors[i].Name + " can't be used in the editor. (" + type.FullName + ")");
                                 continue;
                             }
 
-                            if (!processors[i].IsValidClass(type))
+                            if (processors[i].EditorOnly && !isEditor)
                             {
+                                Debug.LogWarning(processors[i].Name + " can only be used in editor scripts. (" + type.FullName + ")");
                                 continue;
                             }
 

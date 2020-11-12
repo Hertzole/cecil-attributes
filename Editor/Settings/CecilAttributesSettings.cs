@@ -7,7 +7,7 @@ namespace Hertzole.CecilAttributes.Editor
     [Serializable]
     public class CecilAttributesSettings : ScriptableObject
     {
-        private const string DIRECTORY = "ProjectSettings";
+        private const string DIRECTORY = "ProjectSettings/Packages/se.hertzole.cecilattributes";
         private const string PATH = DIRECTORY + "/CecilAttributesSettings.asset";
 
         [SerializeField]
@@ -91,6 +91,20 @@ namespace Hertzole.CecilAttributes.Editor
         {
             CecilAttributesSettings settings;
 
+            // Backwards compatibility.
+            string oldPath = "ProjectSettings/CecilAttributesSettings.asset";
+
+            if (File.Exists(oldPath))
+            {
+                settings = LoadSettings(oldPath);
+                RemoveFile(oldPath);
+
+                if (settings != null)
+                {
+                    return settings;
+                }
+            }
+
             if (!File.Exists(PATH))
             {
                 settings = CreateNewSettings();
@@ -118,13 +132,13 @@ namespace Hertzole.CecilAttributes.Editor
             return settings;
         }
 
-        private static CecilAttributesSettings LoadSettings()
+        private static CecilAttributesSettings LoadSettings(string path = "")
         {
             CecilAttributesSettings settings;
 
             try
             {
-                settings = (CecilAttributesSettings)UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(PATH)[0];
+                settings = (CecilAttributesSettings)UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(string.IsNullOrEmpty(path) ? PATH : path)[0];
             }
             catch (Exception)
             {

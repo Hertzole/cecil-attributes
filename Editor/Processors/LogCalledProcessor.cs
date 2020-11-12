@@ -174,7 +174,7 @@ namespace Hertzole.CecilAttributes.Editor
                             }
                         }
 
-                        instructions.Add(Instruction.Create(OpCodes.Call, GetFormatMethod(module, parameters.Count)));
+                        instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, parameters.Count)));
                     }
 
                     instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
@@ -241,7 +241,7 @@ namespace Hertzole.CecilAttributes.Editor
                             instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
                         }
 
-                        instructions.Add(Instruction.Create(OpCodes.Call, GetFormatMethod(module, 1)));
+                        instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 1)));
                         instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
 
                         ILProcessor il = property.GetMethod.Body.GetILProcessor();
@@ -284,7 +284,7 @@ namespace Hertzole.CecilAttributes.Editor
                         {
                             instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
                         }
-                        instructions.Add(Instruction.Create(OpCodes.Call, GetFormatMethod(module, 2)));
+                        instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 2)));
                         instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
 
                         ILProcessor il = property.SetMethod.Body.GetILProcessor();
@@ -303,7 +303,7 @@ namespace Hertzole.CecilAttributes.Editor
             return dirty;
         }
 
-        private static MethodReference GetFormatMethod(ModuleDefinition module, int amount)
+        public static MethodReference GetStringFormatMethod(ModuleDefinition module, int amount)
         {
             switch (amount)
             {

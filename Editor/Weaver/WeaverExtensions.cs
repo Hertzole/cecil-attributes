@@ -163,6 +163,26 @@ namespace Hertzole.CecilAttributes.Editor
             return GetAttribute<T>(prop.CustomAttributes);
         }
 
+        public static CustomAttribute GetAttribute<T>(this FieldDefinition field) where T : Attribute
+        {
+            if (!field.HasCustomAttributes)
+            {
+                throw new NullReferenceException(field.FullName + " does not have any attributes.");
+            }
+
+            return GetAttribute<T>(field.CustomAttributes);
+        }
+
+        public static CustomAttribute GetAttribute<T>(this EventDefinition evt) where T : Attribute
+        {
+            if (!evt.HasCustomAttributes)
+            {
+                throw new NullReferenceException(evt.FullName + " does not have any attributes.");
+            }
+
+            return GetAttribute<T>(evt.CustomAttributes);
+        }
+
         private static CustomAttribute GetAttribute<T>(Collection<CustomAttribute> attributes) where T : Attribute
         {
             string myName = typeof(T).FullName;
@@ -211,6 +231,17 @@ namespace Hertzole.CecilAttributes.Editor
             return TryGetAttribute<T>(type.CustomAttributes, out attribute);
         }
 
+        public static bool TryGetAttribute<T>(this EventDefinition evt, out CustomAttribute attribute) where T : Attribute
+        {
+            if (evt.HasCustomAttributes)
+            {
+                attribute = null;
+                return false;
+            }
+
+            return TryGetAttribute<T>(evt.CustomAttributes, out attribute);
+        }
+
         private static bool TryGetAttribute<T>(Collection<CustomAttribute> attributes, out CustomAttribute attribute) where T : Attribute
         {
             string myName = typeof(T).FullName;
@@ -244,6 +275,33 @@ namespace Hertzole.CecilAttributes.Editor
             }
 
             throw new ArgumentException("There's no method with the name " + methodName + " in " + type.FullName + ".", nameof(methodName));
+        }
+
+        public static MethodDefinition GetMethodInBaseType(this TypeDefinition type, string method)
+        {
+            TypeDefinition typedef = type;
+            while (typedef != null)
+            {
+                for (int i = 0; i < typedef.Methods.Count; i++)
+                {
+                    if (typedef.Methods[i].Name == method)
+                    {
+                        return typedef.Methods[i];
+                    }
+                }
+
+                try
+                {
+                    TypeReference parent = typedef.BaseType;
+                    typedef = parent?.Resolve();
+                }
+                catch (AssemblyResolutionException)
+                {
+                    break;
+                }
+            }
+
+            throw new ArgumentException($"There's no method called {method} in {type.FullName} or its base types.");
         }
 
         public static bool TryGetMethod(this TypeDefinition type, string methodName, out MethodDefinition method)
@@ -312,6 +370,11 @@ namespace Hertzole.CecilAttributes.Editor
             throw new ArgumentException("There's no property in type " + type.FullName + " called " + name + ".");
         }
 
+        public static PropertyDefinition GetProperty(this CustomAttribute attribute, string name)
+        {
+            return attribute.AttributeType.Resolve().GetProperty(name);
+        }
+
         public static FieldDefinition GetStaticBackingField(this PropertyDefinition property)
         {
             return GetBackingField(property, OpCodes.Ldsfld);
@@ -348,37 +411,6 @@ namespace Hertzole.CecilAttributes.Editor
 
             throw new NullReferenceException(property.FullName + " doesn't have a return field.");
         }
-
-        //public static T GetField<T>(this CustomAttribute attribute, string field, T defaultValue)
-        //{
-        //    if (!attribute.HasFields)
-        //    {
-        //        return defaultValue;
-        //    }
-
-        //    for (int i = 0; i < attribute.Fields.Count; i++)
-        //    {
-        //        if (attribute.Fields[i].Name == field)
-        //        {
-        //            return (T)attribute.Fields[i].Argument.Value;
-        //        }
-        //    }
-
-        //    return defaultValue;
-        //}
-
-        //public static T GetProperty<T>(this CustomAttribute attribute, string property, T defaultValue)
-        //{
-        //    for (int i = 0; i < attribute.Properties.Count; i++)
-        //    {
-        //        if (attribute.Properties[i].Name == property)
-        //        {
-        //            return (T)attribute.Properties[i].Argument.Value;
-        //        }
-        //    }
-
-        //    return defaultValue;
-        //}
 
         public static bool ImplementsInterface(this TypeDefinition type, InterfaceImplementation baseInterface)
         {

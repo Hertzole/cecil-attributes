@@ -1,3 +1,10 @@
+## [0.3.0-preview] - Unreleased
+### Added
+- FindProperty attribute to automatically find serialized properties in your editor scripts.
+
+### Changed
+- Moved settings asset into a Packages folder in ProjectSettings to be consistent with other packages.
+
 ## [0.2.0-preview] - 2020-11-04
 ### Added
 - LogCalled attribute to make a log message appear when calling a method/property.

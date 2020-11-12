@@ -10,38 +10,7 @@ namespace Hertzole.CecilAttributes.Editor
 {
     public class ResetStaticProcessor : BaseProcessor
     {
-        private struct FieldOrProperty
-        {
-            public FieldDefinition field;
-            public PropertyDefinition property;
-            public EventDefinition eventDef;
-
-            public bool IsProperty { get { return field == null && eventDef == null; } }
-            public bool IsEvent { get { return eventDef != null; } }
-
-            public FieldOrProperty(FieldDefinition field)
-            {
-                this.field = field;
-                property = null;
-                eventDef = null;
-            }
-
-            public FieldOrProperty(PropertyDefinition property)
-            {
-                this.property = property;
-                field = null;
-                eventDef = null;
-            }
-
-            public FieldOrProperty(EventDefinition e)
-            {
-                eventDef = e;
-                field = null;
-                property = null;
-            }
-        }
-
-        private List<FieldOrProperty> fields = new List<FieldOrProperty>();
+        private List<MemberData> fields = new List<MemberData>();
 
         public override string Name { get { return "ResetStatic"; } }
 
@@ -127,7 +96,7 @@ namespace Hertzole.CecilAttributes.Editor
                         throw new NotSupportedException(type.Fields[i].FullName + " isn't static. ResetStatic can only be on static fields.");
                     }
 
-                    fields.Add(new FieldOrProperty(type.Fields[i]));
+                    fields.Add(new MemberData(type.Fields[i]));
                 }
             }
 
@@ -156,7 +125,7 @@ namespace Hertzole.CecilAttributes.Editor
                         throw new NotSupportedException(type.Properties[i].FullName + " isn't static. ResetStatic can only be on static properties.");
                     }
 
-                    fields.Add(new FieldOrProperty(type.Properties[i]));
+                    fields.Add(new MemberData(type.Properties[i]));
                 }
             }
 
@@ -185,7 +154,7 @@ namespace Hertzole.CecilAttributes.Editor
                         throw new NotSupportedException(type.Events[i].FullName + " isn't static. ResetStatic can only be on static events.");
                     }
 
-                    fields.Add(new FieldOrProperty(type.Events[i]));
+                    fields.Add(new MemberData(type.Events[i]));
                 }
             }
 
