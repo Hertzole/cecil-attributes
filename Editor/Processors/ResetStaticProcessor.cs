@@ -213,31 +213,45 @@ namespace Hertzole.CecilAttributes.Editor
         {
             List<Instruction> instructions = new List<Instruction>();
 
-            MethodDefinition cctor = type.GetMethod(".cctor");
-
-            Instruction root = null;
-
-            foreach (Instruction i in cctor.Body.Instructions)
+            if (type.TryGetMethod(".cctor", out MethodDefinition cctor))
             {
-                if (i.OpCode == OpCodes.Stsfld && i.Operand == field)
+                Instruction root = null;
+
+                foreach (Instruction i in cctor.Body.Instructions)
                 {
-                    root = i;
-                    break;
+                    if (i.OpCode == OpCodes.Stsfld && i.Operand == field)
+                    {
+                        root = i;
+                        break;
+                    }
                 }
-            }
 
-            if (root == null)
+                if (root == null)
+                {
+                    if (field.FieldType.Resolve().IsClass)
+                    {
+                        instructions.Add(Instruction.Create(OpCodes.Ldnull));
+                        return instructions;
+                    }
+
+                    throw new NullReferenceException("There's nothing that sets field " + field.Name + ". Did you set a default value?");
+                }
+
+                while (root.Previous != null && root.Previous.OpCode != OpCodes.Stsfld)
+                {
+                    instructions.Add(root.Previous);
+                    root = root.Previous;
+                }
+
+                return instructions;
+            }
+            else if (field.FieldType.Resolve().IsClass)
             {
-                throw new NullReferenceException("There's nothing that sets field " + field.Name + ". Did you set a default value?");
+                instructions.Add(Instruction.Create(OpCodes.Ldnull));
+                return instructions;
             }
 
-            while (root.Previous != null && root.Previous.OpCode != OpCodes.Stsfld)
-            {
-                instructions.Add(root.Previous);
-                root = root.Previous;
-            }
-
-            return instructions;
+            throw new NullReferenceException();
         }
     }
 }
