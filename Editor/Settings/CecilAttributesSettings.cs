@@ -17,7 +17,7 @@ namespace Hertzole.CecilAttributes.Editor
         [SerializeField]
         private bool includeLogsInBuild = true;
         [SerializeField]
-        private string methodLogFormat = "%method% (%parameters%)";
+        private string methodLogFormat = "%class% %method% (%parameters%)";
         [SerializeField]
         private string parametersSeparator = ", ";
         [SerializeField]

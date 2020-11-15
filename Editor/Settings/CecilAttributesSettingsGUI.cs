@@ -76,6 +76,7 @@ namespace Hertzole.CecilAttributes.Editor
 
             EditorGUILayout.HelpBox("You can format each message to fit your needs. There are some special keywords that can be useful for you.\n" +
                 "All keywords have an to upper variant. For example: %method% -> %METHOD% turns MyMethod into MYMETHOD.\n" +
+                "%class% - Class name\n" +
                 "%method% - Method name\n" +
                 "%parameters% - List of parameters\n" +
                 "%property% - Property name\n" +

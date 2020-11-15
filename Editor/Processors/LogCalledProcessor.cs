@@ -90,6 +90,8 @@ namespace Hertzole.CecilAttributes.Editor
                     instructions.Clear();
 
                     sb.Append(methodFormat);
+                    sb.Replace("%class%", type.Name);
+                    sb.Replace("%CLASS%", type.Name.ToUpperInvariant());
                     sb.Replace("%method%", method.Name);
                     sb.Replace("%METHOD%", method.Name.ToUpperInvariant());
 
