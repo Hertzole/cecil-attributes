@@ -95,11 +95,11 @@ namespace Hertzole.CecilAttributes.Editor
                     sb.Replace("%method%", method.Name);
                     sb.Replace("%METHOD%", method.Name.ToUpperInvariant());
 
+                    parameters.Clear();
+                    fancyParameters.Clear();
+
                     if (method.HasParameters && method.Parameters.Count > 0)
                     {
-                        parameters.Clear();
-                        fancyParameters.Clear();
-
                         int offset = 0;
 
                         for (int j = 0; j < method.Parameters.Count; j++)
@@ -151,7 +151,7 @@ namespace Hertzole.CecilAttributes.Editor
                                 instructions.Add(WeaverHelpers.GetIntInstruction(i));
                             }
 
-                            instructions.Add(GetLoadParameter(i, method.Parameters[i]));
+                            instructions.Add(GetLoadParameter(i, method.Parameters[i], method.IsStatic));
 
                             if (method.Parameters[i].ParameterType.IsByReference)
                             {
@@ -321,16 +321,18 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
-        private static Instruction GetLoadParameter(int index, ParameterDefinition parameter)
+        private static Instruction GetLoadParameter(int index, ParameterDefinition parameter, bool isStatic)
         {
             switch (index)
             {
                 case 0:
-                    return Instruction.Create(OpCodes.Ldarg_1);
+                    return isStatic ? Instruction.Create(OpCodes.Ldarg_0) : Instruction.Create(OpCodes.Ldarg_1);
                 case 1:
-                    return Instruction.Create(OpCodes.Ldarg_2);
+                    return isStatic ? Instruction.Create(OpCodes.Ldarg_1) : Instruction.Create(OpCodes.Ldarg_2);
                 case 2:
-                    return Instruction.Create(OpCodes.Ldarg_3);
+                    return isStatic ? Instruction.Create(OpCodes.Ldarg_2) : Instruction.Create(OpCodes.Ldarg_3);
+                case 3:
+                    return isStatic ? Instruction.Create(OpCodes.Ldarg_3) : Instruction.Create(OpCodes.Ldarg_S, parameter);
                 default:
                     return Instruction.Create(OpCodes.Ldarg_S, parameter);
             }
