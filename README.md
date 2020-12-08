@@ -42,5 +42,20 @@ public void MyMethod(int para1, string para2)
 }
 ```
 
+### Find Property
+**Applies to fields and properties**
+
+Find property will automatically find serialized properties for you and make sure they exist. By default it searches with the same name as the field/property in your editor script, but a custom name/path can be specified to make it search with another name or within another serialized property.
+
+Usage:  
+```cs
+[FindProperty]
+private SerializedProperty myProperty; // Will look for a property called 'myProperty'.
+[FindProperty("customName")]
+private SerializedProperty notMyName; // Will look for a property called 'customName'.
+[FindProperty("firstProperty/secondProperty")]
+private SerializedProperty nested; // Will first look for a property called 'firstProperty' and then 'secondProperty' on the first property.
+```
+
 ## License
 MIT - Basically do whatever, I'm just not liable if it causes any damages.

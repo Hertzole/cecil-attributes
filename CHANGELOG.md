@@ -5,6 +5,10 @@
 ### Changed
 - Moved settings asset into a Packages folder in ProjectSettings to be consistent with other packages.
 
+### Fixed
+- Fixed LogCalled not working on static methods.
+- Fixed LogCalled failing due to index out of bounds exceptions.
+
 ## [0.2.0-preview] - 2020-11-04
 ### Added
 - LogCalled attribute to make a log message appear when calling a method/property.
