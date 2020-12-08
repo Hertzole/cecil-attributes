@@ -25,7 +25,7 @@ namespace Hertzole.CecilAttributes.Editor
         [SerializeField]
         private string propertySetLogFormat = "%property% Set (Old: %old_value%, New: %new_value%)";
         [SerializeField]
-        private string timedMessage = "%method% took %milliseconds% milliseconds (%ticks% ticks)";
+        private string timedMethodFormat = "%class% %method% took %milliseconds% milliseconds (%ticks% ticks)";
         [SerializeField]
         private bool includeTimedInBuild = false;
 
@@ -71,10 +71,10 @@ namespace Hertzole.CecilAttributes.Editor
             set { propertySetLogFormat = value; Save(); }
         }
 
-        public string TimedMessage
+        public string TimedMethodFormat
         {
-            get { return timedMessage; }
-            set { timedMessage = value; Save(); }
+            get { return timedMethodFormat; }
+            set { timedMethodFormat = value; Save(); }
         }
 
         public bool IncludeTimedInBuild

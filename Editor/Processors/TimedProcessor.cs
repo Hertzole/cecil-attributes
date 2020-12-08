@@ -2,7 +2,6 @@
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
@@ -41,22 +40,14 @@ namespace Hertzole.CecilAttributes.Editor
         {
             bool dirty = false;
 
-            StringBuilder sb = new StringBuilder();
-
             for (int i = 0; i < type.Methods.Count; i++)
             {
                 if (type.Methods[i].HasAttribute<TimedAttribute>())
                 {
                     instructions.Clear();
-                    sb.Clear();
-                    sb.Append(CecilAttributesSettings.Instance.TimedMessage);
-
                     MethodDefinition method = type.Methods[i];
 
-                    sb.Replace("%method%", method.Name);
-                    sb.Replace("%METHOD%", method.Name.ToUpperInvariant());
-                    sb.Replace("%milliseconds%", "{0}");
-                    sb.Replace("%ticks%", "{1}");
+                    string message = CecilAttributesSettings.Instance.TimedMethodFormat.FormatMessageTimed(type, method);
 
                     method.Body.InitLocals = true;
 
@@ -82,7 +73,7 @@ namespace Hertzole.CecilAttributes.Editor
                     instructions.Add(GetLdloc(stopwatchIndex));
                     instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("Stop", Type.EmptyTypes))));
 
-                    instructions.Add(Instruction.Create(OpCodes.Ldstr, sb.ToString()));
+                    instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
 
                     instructions.Add(GetLdloc(stopwatchIndex));
                     instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("get_ElapsedMilliseconds", Type.EmptyTypes))));

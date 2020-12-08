@@ -3,7 +3,6 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -62,7 +61,6 @@ namespace Hertzole.CecilAttributes.Editor
 
         private static bool ProcessMethods(TypeDefinition type, ModuleDefinition module)
         {
-            StringBuilder sb = new StringBuilder();
             List<string> parameters = new List<string>();
             List<string> fancyParameters = new List<string>();
             List<Instruction> instructions = new List<Instruction>();
@@ -81,14 +79,7 @@ namespace Hertzole.CecilAttributes.Editor
                         continue;
                     }
 
-                    sb.Clear();
                     instructions.Clear();
-
-                    sb.Append(methodFormat);
-                    sb.Replace("%class%", type.Name);
-                    sb.Replace("%CLASS%", type.Name.ToUpperInvariant());
-                    sb.Replace("%method%", method.Name);
-                    sb.Replace("%METHOD%", method.Name.ToUpperInvariant());
 
                     parameters.Clear();
                     fancyParameters.Clear();
@@ -111,19 +102,13 @@ namespace Hertzole.CecilAttributes.Editor
                                 fancyParameters.Add(p);
                             }
                         }
+                    }
 
-                        sb.Replace("%parameters%", string.Join(parametersSeparator, fancyParameters));
-                        sb.Replace("%PARAMETERS%", string.Join(parametersSeparator, fancyParameters).ToUpperInvariant());
-                    }
-                    else
-                    {
-                        sb.Replace("%parameters%", string.Empty);
-                        sb.Replace("%PARAMETERS%", string.Empty);
-                    }
+                    string message = methodFormat.FormatMessageLogCalled(type, method, parametersSeparator, fancyParameters, null, false);
 
                     ILProcessor il = method.Body.GetILProcessor();
 
-                    instructions.Add(Instruction.Create(OpCodes.Ldstr, sb.ToString()));
+                    instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
 
                     if (parameters.Count > 0)
                     {
@@ -193,7 +178,6 @@ namespace Hertzole.CecilAttributes.Editor
         {
             bool dirty = false;
 
-            StringBuilder sb = new StringBuilder();
             List<Instruction> instructions = new List<Instruction>();
 
             if (type.HasProperties)
@@ -219,17 +203,13 @@ namespace Hertzole.CecilAttributes.Editor
 
                     if (logGet && property.GetMethod != null)
                     {
-                        sb.Clear();
                         instructions.Clear();
 
                         FieldDefinition loadField = property.GetBackingField();
 
-                        sb.Append(propertyGetFormat);
-                        sb.Replace("%property%", property.Name);
-                        sb.Replace("%PROPERTY%", property.Name.ToUpperInvariant());
-                        sb.Replace("%value%", "{0}");
+                        string message = propertyGetFormat.FormatMessageLogCalled(type, property.GetMethod, null, null, property, false);
 
-                        instructions.Add(Instruction.Create(OpCodes.Ldstr, sb.ToString()));
+                        instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
                         instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                         instructions.Add(Instruction.Create(OpCodes.Ldfld, loadField));
 
@@ -254,23 +234,18 @@ namespace Hertzole.CecilAttributes.Editor
 
                     if (logSet && property.SetMethod != null)
                     {
-                        sb.Clear();
                         instructions.Clear();
 
                         FieldDefinition loadField = property.GetBackingField();
 
                         property.SetMethod.Body.Variables.Add(new VariableDefinition(module.ImportReference(loadField.FieldType)));
 
-                        sb.Append(propertySetFormat);
-                        sb.Replace("%property%", property.Name);
-                        sb.Replace("%PROPERTY%", property.Name.ToUpperInvariant());
-                        sb.Replace("%old_value%", "{0}");
-                        sb.Replace("%new_value%", "{1}");
+                        string message = propertySetFormat.FormatMessageLogCalled(type, property.SetMethod, null, null, property, true);
 
                         instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                         instructions.Add(Instruction.Create(OpCodes.Ldfld, loadField));
                         instructions.Add(Instruction.Create(OpCodes.Stloc_0));
-                        instructions.Add(Instruction.Create(OpCodes.Ldstr, sb.ToString()));
+                        instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
                         instructions.Add(Instruction.Create(OpCodes.Ldloc_0));
                         if (loadField.FieldType.IsValueType)
                         {

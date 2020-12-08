@@ -81,9 +81,12 @@ namespace Hertzole.CecilAttributes.Editor
             EditorGUILayout.HelpBox("You can format each message to fit your needs. There are some special keywords that can be useful for you.\n" +
                 "All keywords have an to upper variant. For example: %method% -> %METHOD% turns MyMethod into MYMETHOD.\n" +
                 "%class% - Class name\n" +
+                "%class_full% - The full class name\n" +
                 "%method% - Method name\n" +
+                "%method_full% - The full method name\n" +
                 "%parameters% - List of parameters\n" +
                 "%property% - Property name\n" +
+                "%property_full% - The full property name\n" +
                 "%value% - The value of a property\n" +
                 "%old_value% - The old value of a property\n" +
                 "%new_value% - The new value of a property", MessageType.Info);
@@ -122,7 +125,7 @@ namespace Hertzole.CecilAttributes.Editor
             DrawHeaderLabel("Timed");
 
             bool includeInBuild = CecilAttributesSettings.Instance.IncludeTimedInBuild;
-            string message = CecilAttributesSettings.Instance.TimedMessage;
+            string methodFormat = CecilAttributesSettings.Instance.TimedMethodFormat;
 
             EditorGUI.BeginChangeCheck();
             includeInBuild = EditorGUILayout.Toggle(new GUIContent("Include In Build", "If true, timed messages will be included in the build."), includeInBuild);
@@ -132,10 +135,10 @@ namespace Hertzole.CecilAttributes.Editor
             }
 
             EditorGUI.BeginChangeCheck();
-            message = EditorGUILayout.TextField(new GUIContent("Message", "The message that will be printed to the console."), message);
+            methodFormat = EditorGUILayout.TextField(new GUIContent("Method Format", "The message that will be printed to the console from methods."), methodFormat);
             if (EditorGUI.EndChangeCheck())
             {
-                CecilAttributesSettings.Instance.TimedMessage = message;
+                CecilAttributesSettings.Instance.TimedMethodFormat = methodFormat;
             }
         }
 
