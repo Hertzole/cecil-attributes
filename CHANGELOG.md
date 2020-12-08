@@ -1,4 +1,4 @@
-## [0.3.0-preview] - Unreleased
+## [0.3.0-preview] - 2020-12-08
 ### Added
 - FindProperty attribute to automatically find serialized properties in your editor scripts.
 
