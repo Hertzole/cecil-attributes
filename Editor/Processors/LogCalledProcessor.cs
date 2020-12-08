@@ -4,7 +4,6 @@ using Mono.Cecil.Rocks;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEditor;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -15,14 +14,10 @@ namespace Hertzole.CecilAttributes.Editor
 
         public override bool NeedsMonoBehaviour { get { return false; } }
         public override bool AllowEditor { get { return true; } }
+        public override bool IncludeInBuild { get { return CecilAttributesSettings.Instance.IncludeLogsInBuild; } }
 
         public override bool IsValidClass(TypeDefinition type)
         {
-            if (BuildPipeline.isBuildingPlayer && !CecilAttributesSettings.Instance.IncludeLogsInBuild)
-            {
-                return false;
-            }
-
             if (type.HasMethods)
             {
                 for (int i = 0; i < type.Methods.Count; i++)

@@ -12,6 +12,8 @@ namespace Hertzole.CecilAttributes.Editor
 
         public virtual bool EditorOnly { get { return false; } }
 
+        public virtual bool IncludeInBuild { get { return true; } }
+
         public abstract bool IsValidClass(TypeDefinition type);
 
         public abstract (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type);

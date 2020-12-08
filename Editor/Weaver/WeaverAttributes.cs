@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using UnityEditor;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -9,7 +10,8 @@ namespace Hertzole.CecilAttributes.Editor
         {
             new LogCalledProcessor(),
             new ResetStaticProcessor(),
-            new FindPropertyProcessor()
+            new FindPropertyProcessor(),
+            new TimedProcessor()
         };
 
         public static (bool success, bool dirty) ProcessAssembly(AssemblyDefinition assembly, bool isEditor)
@@ -24,6 +26,11 @@ namespace Hertzole.CecilAttributes.Editor
                     {
                         for (int i = 0; i < processors.Length; i++)
                         {
+                            if (BuildPipeline.isBuildingPlayer && !processors[i].IncludeInBuild)
+                            {
+                                continue;
+                            }
+
                             if (!processors[i].IsValidClass(type))
                             {
                                 continue;

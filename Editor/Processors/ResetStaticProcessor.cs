@@ -3,7 +3,6 @@ using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEditor;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -16,14 +15,10 @@ namespace Hertzole.CecilAttributes.Editor
 
         public override bool NeedsMonoBehaviour { get { return false; } }
         public override bool AllowEditor { get { return true; } }
+        public override bool IncludeInBuild { get { return CecilAttributesSettings.Instance.IncludeResetStaticInBuild; } }
 
         public override bool IsValidClass(TypeDefinition type)
         {
-            if (BuildPipeline.isBuildingPlayer && !CecilAttributesSettings.Instance.IncludeResetStaticInBuild)
-            {
-                return false;
-            }
-
             if (type.HasAttribute<ResetStaticAttribute>())
             {
                 return true;

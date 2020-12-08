@@ -21,6 +21,10 @@ namespace Hertzole.CecilAttributes.Editor
 
                     GUILayout.Space(16f);
 
+                    TimedSection();
+
+                    GUILayout.Space(16f);
+
                     EditorGUILayout.HelpBox("You need to recompile your scripts for these changes to take effect. If you don't do it now, you may see some undesired behavior. " +
                         "Otherwise it will update at some point when you update your scripts manually or when building.", MessageType.Warning);
 
@@ -110,6 +114,28 @@ namespace Hertzole.CecilAttributes.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 CecilAttributesSettings.Instance.PropertySetLogFormat = propSetFormat;
+            }
+        }
+
+        private static void TimedSection()
+        {
+            DrawHeaderLabel("Timed");
+
+            bool includeInBuild = CecilAttributesSettings.Instance.IncludeTimedInBuild;
+            string message = CecilAttributesSettings.Instance.TimedMessage;
+
+            EditorGUI.BeginChangeCheck();
+            includeInBuild = EditorGUILayout.Toggle(new GUIContent("Include In Build", "If true, timed messages will be included in the build."), includeInBuild);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.IncludeTimedInBuild = includeInBuild;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            message = EditorGUILayout.TextField(new GUIContent("Message", "The message that will be printed to the console."), message);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.TimedMessage = message;
             }
         }
 
