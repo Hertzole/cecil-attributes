@@ -25,9 +25,13 @@ namespace Hertzole.CecilAttributes.Editor
         [SerializeField]
         private string propertySetLogFormat = "%property% Set (Old: %old_value%, New: %new_value%)";
         [SerializeField]
+        private bool includeTimedInBuild = false;
+        [SerializeField]
         private string timedMethodFormat = "%class% %method% took %milliseconds% milliseconds (%ticks% ticks)";
         [SerializeField]
-        private bool includeTimedInBuild = false;
+        private string timedPropertyGetFormat = "%class% %property% Get took %milliseconds% milliseconds (%ticks% ticks)";
+        [SerializeField]
+        private string timedPropertySetFormat = "%class% %property% Set took %milliseconds% milliseconds (%ticks% ticks)";
 
         public bool IncludeResetStaticInBuild
         {
@@ -71,16 +75,28 @@ namespace Hertzole.CecilAttributes.Editor
             set { propertySetLogFormat = value; Save(); }
         }
 
+        public bool IncludeTimedInBuild
+        {
+            get { return includeTimedInBuild; }
+            set { includeTimedInBuild = value; Save(); }
+        }
+
         public string TimedMethodFormat
         {
             get { return timedMethodFormat; }
             set { timedMethodFormat = value; Save(); }
         }
 
-        public bool IncludeTimedInBuild
+        public string TimedPropertyGetFormat
         {
-            get { return includeTimedInBuild; }
-            set { includeTimedInBuild = value; Save(); }
+            get { return timedPropertyGetFormat; }
+            set { timedPropertyGetFormat = value; Save(); }
+        }
+
+        public string TimedPropertySetFormat
+        {
+            get { return timedPropertySetFormat; }
+            set { timedPropertySetFormat = value; Save(); }
         }
 
         private static CecilAttributesSettings instance;

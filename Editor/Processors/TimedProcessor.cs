@@ -33,6 +33,17 @@ namespace Hertzole.CecilAttributes.Editor
                 }
             }
 
+            if (type.HasProperties)
+            {
+                for (int i = 0; i < type.Properties.Count; i++)
+                {
+                    if (type.Properties[i].HasAttribute<TimedAttribute>())
+                    {
+                        return true;
+                    }
+                }
+            }
+
             return false;
         }
 
@@ -40,62 +51,116 @@ namespace Hertzole.CecilAttributes.Editor
         {
             bool dirty = false;
 
+            if (type.HasMethods && ProcessMethods(module, type))
+            {
+                dirty = true;
+            }
+
+            if (type.HasProperties && ProcessProperties(module, type))
+            {
+                dirty = true;
+            }
+
+            return (true, dirty);
+        }
+
+        private bool ProcessMethods(ModuleDefinition module, TypeDefinition type)
+        {
+            bool dirty = false;
+
             for (int i = 0; i < type.Methods.Count; i++)
             {
                 if (type.Methods[i].HasAttribute<TimedAttribute>())
                 {
-                    instructions.Clear();
                     MethodDefinition method = type.Methods[i];
 
                     string message = CecilAttributesSettings.Instance.TimedMethodFormat.FormatMessageTimed(type, method);
 
-                    method.Body.InitLocals = true;
-
-                    int stopwatchIndex = method.Body.Variables.Count;
-
-                    method.Body.Variables.Add(new VariableDefinition(module.ImportReference(typeof(Stopwatch))));
-
-                    ILProcessor il = method.Body.GetILProcessor();
-
-                    instructions.Add(Instruction.Create(OpCodes.Newobj, module.ImportReference(typeof(Stopwatch).GetConstructor(Type.EmptyTypes))));
-                    instructions.Add(GetStloc(stopwatchIndex));
-
-                    instructions.Add(GetLdloc(stopwatchIndex));
-                    instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("Start", Type.EmptyTypes))));
-
-                    for (int j = instructions.Count - 1; j >= 0; j--)
-                    {
-                        il.InsertBefore(il.Body.Instructions[0], instructions[j]);
-                    }
-
-                    instructions.Clear();
-
-                    instructions.Add(GetLdloc(stopwatchIndex));
-                    instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("Stop", Type.EmptyTypes))));
-
-                    instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
-
-                    instructions.Add(GetLdloc(stopwatchIndex));
-                    instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("get_ElapsedMilliseconds", Type.EmptyTypes))));
-                    instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(typeof(long))));
-
-                    instructions.Add(GetLdloc(stopwatchIndex));
-                    instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("get_ElapsedTicks", Type.EmptyTypes))));
-                    instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(typeof(long))));
-
-                    instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(string).GetMethod("Format", new Type[] { typeof(string), typeof(object), typeof(object) }))));
-                    instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
-
-                    for (int j = 0; j < instructions.Count; j++)
-                    {
-                        il.InsertBefore(il.Body.Instructions[il.Body.Instructions.Count - 1], instructions[j]);
-                    }
+                    InjectIntoMethod(module, method, message);
 
                     dirty = true;
                 }
             }
 
-            return (true, dirty);
+            return dirty;
+        }
+
+        private bool ProcessProperties(ModuleDefinition module, TypeDefinition type)
+        {
+            bool dirty = false;
+
+            for (int i = 0; i < type.Properties.Count; i++)
+            {
+                if (type.Properties[i].HasAttribute<TimedAttribute>())
+                {
+                    PropertyDefinition property = type.Properties[i];
+
+                    if (property.GetMethod != null)
+                    {
+                        string message = CecilAttributesSettings.Instance.TimedPropertyGetFormat.FormatMessageTimed(type, property.GetMethod, property);
+
+                        InjectIntoMethod(module, property.GetMethod, message);
+                        dirty = true;
+                    }
+
+                    if (property.SetMethod != null)
+                    {
+                        string message = CecilAttributesSettings.Instance.TimedPropertySetFormat.FormatMessageTimed(type, property.SetMethod, property);
+
+                        InjectIntoMethod(module, property.SetMethod, message);
+                        dirty = true;
+                    }
+                }
+            }
+
+            return dirty;
+        }
+
+        private void InjectIntoMethod(ModuleDefinition module, MethodDefinition method, string message)
+        {
+            instructions.Clear();
+
+            method.Body.InitLocals = true;
+
+            int stopwatchIndex = method.Body.Variables.Count;
+
+            method.Body.Variables.Add(new VariableDefinition(module.ImportReference(typeof(Stopwatch))));
+
+            ILProcessor il = method.Body.GetILProcessor();
+
+            instructions.Add(Instruction.Create(OpCodes.Newobj, module.ImportReference(typeof(Stopwatch).GetConstructor(Type.EmptyTypes))));
+            instructions.Add(GetStloc(stopwatchIndex));
+
+            instructions.Add(GetLdloc(stopwatchIndex));
+            instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("Start", Type.EmptyTypes))));
+
+            for (int j = instructions.Count - 1; j >= 0; j--)
+            {
+                il.InsertBefore(il.Body.Instructions[0], instructions[j]);
+            }
+
+            instructions.Clear();
+
+            instructions.Add(GetLdloc(stopwatchIndex));
+            instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("Stop", Type.EmptyTypes))));
+
+            instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
+
+            instructions.Add(GetLdloc(stopwatchIndex));
+            instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("get_ElapsedMilliseconds", Type.EmptyTypes))));
+            instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(typeof(long))));
+
+            instructions.Add(GetLdloc(stopwatchIndex));
+            instructions.Add(Instruction.Create(OpCodes.Callvirt, module.ImportReference(typeof(Stopwatch).GetMethod("get_ElapsedTicks", Type.EmptyTypes))));
+            instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(typeof(long))));
+
+            instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(string).GetMethod("Format", new Type[] { typeof(string), typeof(object), typeof(object) }))));
+            instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
+
+            for (int j = 0; j < instructions.Count; j++)
+            {
+                il.InsertBefore(il.Body.Instructions[il.Body.Instructions.Count - 1], instructions[j]);
+            }
         }
 
         private Instruction GetStloc(int index)

@@ -126,6 +126,8 @@ namespace Hertzole.CecilAttributes.Editor
 
             bool includeInBuild = CecilAttributesSettings.Instance.IncludeTimedInBuild;
             string methodFormat = CecilAttributesSettings.Instance.TimedMethodFormat;
+            string getFormat = CecilAttributesSettings.Instance.TimedPropertyGetFormat;
+            string setFormat = CecilAttributesSettings.Instance.TimedPropertySetFormat;
 
             EditorGUI.BeginChangeCheck();
             includeInBuild = EditorGUILayout.Toggle(new GUIContent("Include In Build", "If true, timed messages will be included in the build."), includeInBuild);
@@ -139,6 +141,20 @@ namespace Hertzole.CecilAttributes.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 CecilAttributesSettings.Instance.TimedMethodFormat = methodFormat;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            getFormat = EditorGUILayout.TextField(new GUIContent("Property Get Format", "The message that will be printed to the console when getting a property."), getFormat);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.TimedPropertyGetFormat = getFormat;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            setFormat = EditorGUILayout.TextField(new GUIContent("Property Set Format", "The message that will be printed to the console when setting a property."), getFormat);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.TimedPropertySetFormat = setFormat;
             }
         }
 
