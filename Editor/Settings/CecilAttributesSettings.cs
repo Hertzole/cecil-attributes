@@ -32,6 +32,8 @@ namespace Hertzole.CecilAttributes.Editor
         private string timedPropertyGetFormat = "%class% %property% Get took %milliseconds% milliseconds (%ticks% ticks)";
         [SerializeField]
         private string timedPropertySetFormat = "%class% %property% Set took %milliseconds% milliseconds (%ticks% ticks)";
+        [SerializeField]
+        private string markInProfilerFormat = "%class% :: %method%";
 
         public bool IncludeResetStaticInBuild
         {
@@ -97,6 +99,12 @@ namespace Hertzole.CecilAttributes.Editor
         {
             get { return timedPropertySetFormat; }
             set { timedPropertySetFormat = value; Save(); }
+        }
+
+        public string MarkInProfilerFormat
+        {
+            get { return markInProfilerFormat; }
+            set { markInProfilerFormat = value; Save(); }
         }
 
         private static CecilAttributesSettings instance;

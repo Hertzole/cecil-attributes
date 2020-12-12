@@ -2,7 +2,6 @@
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using System;
-using UnityEditor.Compilation;
 
 namespace Hertzole.CecilAttributes.Editor
 {
@@ -43,25 +42,12 @@ namespace Hertzole.CecilAttributes.Editor
 
         private static FieldDefinition GetBackingField(PropertyDefinition property, OpCode opCode)
         {
-            if (CompilationPipeline.codeOptimization == CodeOptimization.Release)
+            Collection<Instruction> instructions = property.GetMethod.Body.Instructions;
+            for (int i = instructions.Count - 1; i >= 0; i--)
             {
-                foreach (Instruction i in property.GetMethod.Body.Instructions)
+                if (instructions[i].OpCode == opCode)
                 {
-                    if (i.OpCode == opCode && i.Next != null && i.Next.OpCode == OpCodes.Ret)
-                    {
-                        return (FieldDefinition)i.Operand;
-                    }
-                }
-            }
-            else
-            {
-                Collection<Instruction> instructions = property.GetMethod.Body.Instructions;
-                for (int i = instructions.Count - 1; i >= 0; i--)
-                {
-                    if (instructions[i].OpCode == opCode)
-                    {
-                        return (FieldDefinition)instructions[i].Operand;
-                    }
+                    return (FieldDefinition)instructions[i].Operand;
                 }
             }
 

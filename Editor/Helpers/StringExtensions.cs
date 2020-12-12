@@ -31,6 +31,13 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
+        public static string FormatTypesBase(this string target, TypeDefinition type, MethodDefinition method, PropertyDefinition property)
+        {
+            StringBuilder sb = new StringBuilder(target);
+            ReplaceReplaceablesBase(sb, type, method, property);
+            return sb.ToString();
+        }
+
         public static string FormatMessageLogCalled(this string target, TypeDefinition type, MethodDefinition method, string parametersSeparator, List<string> parameters, PropertyDefinition property, bool propertySet)
         {
             StringBuilder sb = new StringBuilder(target);

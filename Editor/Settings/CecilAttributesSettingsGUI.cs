@@ -25,6 +25,10 @@ namespace Hertzole.CecilAttributes.Editor
 
                     GUILayout.Space(16f);
 
+                    MarkInProfilerSection();
+
+                    GUILayout.Space(16f);
+
                     EditorGUILayout.HelpBox("You need to recompile your scripts for these changes to take effect. If you don't do it now, you may see some undesired behavior. " +
                         "Otherwise it will update at some point when you update your scripts manually or when building.", MessageType.Warning);
 
@@ -155,6 +159,19 @@ namespace Hertzole.CecilAttributes.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 CecilAttributesSettings.Instance.TimedPropertySetFormat = setFormat;
+            }
+        }
+
+        private static void MarkInProfilerSection()
+        {
+            DrawHeaderLabel("Mark In Profiler");
+
+            string format = CecilAttributesSettings.Instance.MarkInProfilerFormat;
+            EditorGUI.BeginChangeCheck();
+            format = EditorGUILayout.TextField(new GUIContent("Mark In Profiler Format", "The format of methods that appear in the profiler."), format);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.MarkInProfilerFormat = format;
             }
         }
 

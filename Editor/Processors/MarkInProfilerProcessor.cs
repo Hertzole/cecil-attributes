@@ -37,18 +37,20 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 if (type.Methods[i].HasAttribute<MarkInProfilerAttribute>())
                 {
-                    InjectIntoMethod(type.Methods[i]);
+                    InjectIntoMethod(type.Methods[i], type);
                 }
             }
 
             return (true, dirty);
         }
 
-        private void InjectIntoMethod(MethodDefinition method)
+        private void InjectIntoMethod(MethodDefinition method, TypeDefinition type)
         {
             ILProcessor il = method.Body.GetILProcessor();
 
-            il.InsertBefore(il.Body.Instructions[0], Instruction.Create(OpCodes.Ldstr, method.Name));
+            string name = CecilAttributesSettings.Instance.MarkInProfilerFormat.FormatTypesBase(type, method, null);
+
+            il.InsertBefore(il.Body.Instructions[0], Instruction.Create(OpCodes.Ldstr, name));
             il.InsertAfter(il.Body.Instructions[0], Instruction.Create(OpCodes.Call, method.Module.ImportReference(typeof(Profiler).GetMethod("BeginSample", new Type[] { typeof(string) }))));
 
             il.InsertBefore(il.Body.Instructions[il.Body.Instructions.Count - 1], Instruction.Create(OpCodes.Call, method.Module.ImportReference(typeof(Profiler).GetMethod("EndSample", Type.EmptyTypes))));
