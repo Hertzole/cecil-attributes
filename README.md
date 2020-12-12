@@ -13,15 +13,13 @@ Unity should now resolve the packages.
 ### Reset Static
 **Applies to classes, fields, properties, and events**
 
-Reset static will automatically reset your statics to their default value when the game starts. This is extremely useful for when you have fast enter play mode settings on without domain reload. Putting it on a class will reset all static fields/properties/events in that class.
+Reset static will automatically reset your statics to their default value when the game starts. The default value can be either a value you've specified (the default assign value) or just the default value for that type. This is extremely useful for when you have fast enter play mode settings on without domain reload. Putting it on a class will reset all static fields/properties/events in that class.
 
 Usage:  
 ```cs
 [ResetStatic]
 public static int testValue = 10;
 ```
-
-You must provide a default value that it will reset too!
 
 ### Log Called
 **Applies to methods and properties**
@@ -55,6 +53,21 @@ private SerializedProperty myProperty; // Will look for a property called 'myPro
 private SerializedProperty notMyName; // Will look for a property called 'customName'.
 [FindProperty("firstProperty/secondProperty")]
 private SerializedProperty nested; // Will first look for a property called 'firstProperty' and then 'secondProperty' on the first property.
+```
+
+### Timed
+**Applies to methods and properties**
+
+Timed will automatically put your entire method inside a stopwatch and log at the end of the method how long it took to execute in both milliseconds and ticks.
+
+Usage:  
+```cs
+[Timed]
+private void MyMethod()
+{
+	//TODO: Code
+	// Will log 'MyMethod took <ms> milliseconds (<ticks> ticks)'
+}
 ```
 
 ## License

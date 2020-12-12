@@ -12,7 +12,8 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "Mono.Cecil.dll",
-        "Mono.Cecil.Rocks.dll"
+        "Mono.Cecil.Rocks.dll",
+        "Mono.Cecil.Mdb.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

@@ -1,3 +1,10 @@
+## [0.4.0-preview] - Unreleased
+### Added
+- Timed attribute to automatically show how long a method or property takes to execute.
+
+### Changed
+- ResetStatic no longer needs default values.
+
 ## [0.3.0-preview] - 2020-12-08
 ### Added
 - FindProperty attribute to automatically find serialized properties in your editor scripts.

@@ -30,6 +30,27 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
+        public TypeReference Type
+        {
+            get
+            {
+                if (field != null)
+                {
+                    return field.Module.ImportReference(field.FieldType);
+                }
+                else if (property != null)
+                {
+                    return property.Module.ImportReference(property.PropertyType);
+                }
+                else
+                {
+                    return eventDef.Module.ImportReference(eventDef.EventType);
+                }
+            }
+        }
+
+        public TypeReference ResolvedType { get { return Type.Module.ImportReference(Type.Resolve()); } }
+
         public MemberData(FieldDefinition field)
         {
             this.field = field;

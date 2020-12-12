@@ -11,6 +11,8 @@ namespace Hertzole.CecilAttributes.Editor
     {
         private List<MemberData> fields = new List<MemberData>();
 
+        private readonly string methodName = "CecilAttributesGenerated_ResetStatics";
+
         public override string Name { get { return "ResetStatic"; } }
 
         public override bool NeedsMonoBehaviour { get { return false; } }
@@ -88,7 +90,8 @@ namespace Hertzole.CecilAttributes.Editor
                     // No need to check for attribute since we just did above.
                     if (!hasAttribute && !type.Fields[i].IsStatic)
                     {
-                        throw new NotSupportedException(type.Fields[i].FullName + " isn't static. ResetStatic can only be on static fields.");
+                        Debug.LogError($"{type.Fields[i].FullName} isn't static. ResetStatic can only be on static fields.");
+                        return (false, false);
                     }
 
                     fields.Add(new MemberData(type.Fields[i]));
@@ -115,9 +118,17 @@ namespace Hertzole.CecilAttributes.Editor
                     }
 
                     // No need to check for attribute since we just did above.
-                    if (!hasAttribute && !type.Properties[i].GetMethod.IsStatic)
+                    if (!hasAttribute && ((type.Properties[i].GetMethod != null && !type.Properties[i].GetMethod.IsStatic) || (type.Properties[i].SetMethod != null && !type.Properties[i].SetMethod.IsStatic)))
                     {
-                        throw new NotSupportedException(type.Properties[i].FullName + " isn't static. ResetStatic can only be on static properties.");
+                        //throw new NotSupportedException(type.Properties[i].FullName + " isn't static. ResetStatic can only be on static properties.");
+                        Debug.LogError($"{type.Properties[i].FullName} isn't static. ResetStatic can only be on static properties.");
+                        return (false, false);
+                    }
+
+                    if (type.Properties[i].SetMethod == null)
+                    {
+                        Debug.LogError($"{type.Properties[i].FullName} doesn't have a set method. You need to be able to set a property in order to reset it.");
+                        return (false, false);
                     }
 
                     fields.Add(new MemberData(type.Properties[i]));
@@ -146,16 +157,17 @@ namespace Hertzole.CecilAttributes.Editor
                     // No need to check for attribute since we just did above.
                     if (!hasAttribute && !type.Events[i].AddMethod.IsStatic)
                     {
-                        throw new NotSupportedException(type.Events[i].FullName + " isn't static. ResetStatic can only be on static events.");
+                        Debug.LogError($"{type.Events[i].FullName} isn't static. ResetStatic can only be on static events.");
+                        return (false, false);
                     }
 
                     fields.Add(new MemberData(type.Events[i]));
                 }
             }
 
-            if (!type.TryGetMethod("CecilAttributesGenerated_ResetStatics", out MethodDefinition resetMethod))
+            if (!type.TryGetMethod(methodName, out MethodDefinition resetMethod))
             {
-                resetMethod = new MethodDefinition("CecilAttributesGenerated_ResetStatics",
+                resetMethod = new MethodDefinition(methodName,
                     MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Static,
                     module.ImportReference(typeof(void)));
 
@@ -172,24 +184,50 @@ namespace Hertzole.CecilAttributes.Editor
 
             ILProcessor il = resetMethod.Body.GetILProcessor();
 
+            int propertyIndex = 0;
+
             for (int i = 0; i < fields.Count; i++)
             {
                 if (!fields[i].IsEvent)
                 {
-                    List<Instruction> loadValues = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetStaticBackingField() : fields[i].field);
+                    (List<Instruction> instructions, bool valueType) = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetStaticBackingField() : fields[i].field);
 
-                    for (int j = loadValues.Count - 1; j >= 0; j--)
+                    if (instructions != null)
                     {
-                        il.Append(loadValues[j]);
+                        for (int j = instructions.Count - 1; j >= 0; j--)
+                        {
+                            il.Append(instructions[j]);
+                        }
                     }
 
-                    if (!fields[i].IsProperty)
+                    if (!valueType)
                     {
-                        il.Emit(OpCodes.Stsfld, fields[i].field);
+                        if (!fields[i].IsProperty)
+                        {
+                            il.Emit(OpCodes.Stsfld, fields[i].field);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Call, fields[i].property.SetMethod);
+                        }
                     }
                     else
                     {
-                        il.Emit(OpCodes.Call, fields[i].property.SetMethod);
+                        if (!fields[i].IsProperty)
+                        {
+                            il.Emit(OpCodes.Ldsflda, fields[i].field);
+                            il.Emit(OpCodes.Initobj, fields[i].ResolvedType);
+                        }
+                        else
+                        {
+                            VariableDefinition varDef = new VariableDefinition(fields[i].ResolvedType);
+                            resetMethod.Body.Variables.Add(varDef);
+                            il.Emit(OpCodes.Ldloca_S, varDef);
+                            il.Emit(OpCodes.Initobj, fields[i].ResolvedType);
+                            il.Append(GetLocation(propertyIndex, varDef));
+                            il.Emit(OpCodes.Call, fields[i].property.SetMethod);
+                            propertyIndex++;
+                        }
                     }
                 }
                 else
@@ -204,11 +242,29 @@ namespace Hertzole.CecilAttributes.Editor
             return (true, true);
         }
 
-        private static List<Instruction> GetStaticSet(TypeDefinition type, FieldDefinition field)
+        private static Instruction GetLocation(int index, VariableDefinition varDef)
         {
+            switch (index)
+            {
+                case 0:
+                    return Instruction.Create(OpCodes.Ldloc_0);
+                case 1:
+                    return Instruction.Create(OpCodes.Ldloc_1);
+                case 2:
+                    return Instruction.Create(OpCodes.Ldloc_2);
+                case 3:
+                    return Instruction.Create(OpCodes.Ldloc_3);
+                default:
+                    return Instruction.Create(OpCodes.Ldloc_S, varDef);
+            }
+        }
+
+        private static (List<Instruction>, bool) GetStaticSet(TypeDefinition classType, FieldDefinition field)
+        {
+            bool valueType = false;
             List<Instruction> instructions = new List<Instruction>();
 
-            if (type.TryGetMethod(".cctor", out MethodDefinition cctor))
+            if (classType.TryGetMethod(".cctor", out MethodDefinition cctor))
             {
                 Instruction root = null;
 
@@ -223,13 +279,45 @@ namespace Hertzole.CecilAttributes.Editor
 
                 if (root == null)
                 {
-                    if (field.FieldType.Resolve().IsClass)
+                    TypeDefinition type = field.FieldType.Resolve();
+
+                    if (type.Is<bool>() || type.Is<int>() || type.Is<uint>() || type.Is<short>() || type.Is<ushort>() || type.Is<byte>() || type.Is<sbyte>())
+                    {
+                        instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                    }
+                    else if (type.Is<long>() || type.Is<ulong>())
+                    {
+                        instructions.Add(Instruction.Create(OpCodes.Conv_I8));
+                        instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                    }
+                    else if (type.Is<float>())
+                    {
+                        Debug.Log(field.Name + " is float");
+                        instructions.Add(Instruction.Create(OpCodes.Ldc_R4, (float)0.0f));
+                    }
+                    else if (type.Is<double>())
+                    {
+                        instructions.Add(Instruction.Create(OpCodes.Ldc_R8, (double)0.0d));
+                    }
+                    else if (type.IsValueType)
+                    {
+                        //instructions.Add(Instruction.Create(OpCodes.Initobj, classType.Module.ImportReference(type)));
+                        //instructions.Add(Instruction.Create(OpCodes.Ldsflda, field));
+                        return (null, true);
+                    }
+                    else
                     {
                         instructions.Add(Instruction.Create(OpCodes.Ldnull));
-                        return instructions;
                     }
 
-                    throw new NullReferenceException("There's nothing that sets field " + field.Name + ". Did you set a default value?");
+                    if (instructions.Count > 0)
+                    {
+                        return (instructions, valueType);
+                    }
+                    else
+                    {
+                        throw new NullReferenceException("There's nothing that sets field " + field.Name + ". Did you set a default value?");
+                    }
                 }
 
                 while (root.Previous != null && root.Previous.OpCode != OpCodes.Stsfld)
@@ -238,12 +326,12 @@ namespace Hertzole.CecilAttributes.Editor
                     root = root.Previous;
                 }
 
-                return instructions;
+                return (instructions, valueType);
             }
             else if (field.FieldType.Resolve().IsClass)
             {
                 instructions.Add(Instruction.Create(OpCodes.Ldnull));
-                return instructions;
+                return (instructions, valueType);
             }
 
             throw new NullReferenceException();
