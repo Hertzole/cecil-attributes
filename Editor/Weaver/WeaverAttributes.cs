@@ -11,7 +11,8 @@ namespace Hertzole.CecilAttributes.Editor
             new LogCalledProcessor(),
             new ResetStaticProcessor(),
             new FindPropertyProcessor(),
-            new TimedProcessor()
+            new TimedProcessor(),
+            new MarkInProfilerProcessor()
         };
 
         public static (bool success, bool dirty) ProcessAssembly(AssemblyDefinition assembly, bool isEditor)

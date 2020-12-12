@@ -292,7 +292,6 @@ namespace Hertzole.CecilAttributes.Editor
                     }
                     else if (type.Is<float>())
                     {
-                        Debug.Log(field.Name + " is float");
                         instructions.Add(Instruction.Create(OpCodes.Ldc_R4, (float)0.0f));
                     }
                     else if (type.Is<double>())
@@ -301,8 +300,7 @@ namespace Hertzole.CecilAttributes.Editor
                     }
                     else if (type.IsValueType)
                     {
-                        //instructions.Add(Instruction.Create(OpCodes.Initobj, classType.Module.ImportReference(type)));
-                        //instructions.Add(Instruction.Create(OpCodes.Ldsflda, field));
+                        // Handle value types differently.
                         return (null, true);
                     }
                     else

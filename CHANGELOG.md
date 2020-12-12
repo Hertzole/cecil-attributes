@@ -1,6 +1,7 @@
 ## [0.4.0-preview] - Unreleased
 ### Added
 - Timed attribute to automatically show how long a method or property takes to execute.
+- MarkInProfiler attribute to make methods show up in the Unity profiler.
 
 ### Changed
 - ResetStatic no longer needs default values.

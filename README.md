@@ -70,5 +70,19 @@ private void MyMethod()
 }
 ```
 
+### Mark In Profiler  
+**Applies to methods**
+
+Mark in profiler will put your method inside a big Profiler.BeginSample(<method name>) and Profiler.EndSample to make it show up in the Unity profiler.
+
+Usage:  
+```cs
+[MarkInProfiler]
+private void MyMethod() // This will show up in the Unity profiler.
+{
+	//TODO: My code
+}
+```
+
 ## License
 MIT - Basically do whatever, I'm just not liable if it causes any damages.
