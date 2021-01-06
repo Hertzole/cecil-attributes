@@ -51,6 +51,25 @@ namespace Hertzole.CecilAttributes.Editor
 
         public TypeReference ResolvedType { get { return Type.Module.ImportReference(Type.Resolve()); } }
 
+        public bool IsGenericParameter
+        {
+            get
+            {
+                if (field != null)
+                {
+                    return field.FieldType.IsGenericParameter;
+                }
+                else if (property != null)
+                {
+                    return property.PropertyType.IsGenericParameter;
+                }
+                else
+                {
+                    return eventDef.EventType.IsGenericParameter;
+                }
+            }
+        }
+
         public MemberData(FieldDefinition field)
         {
             this.field = field;

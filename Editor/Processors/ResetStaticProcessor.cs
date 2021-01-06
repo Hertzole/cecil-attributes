@@ -188,6 +188,12 @@ namespace Hertzole.CecilAttributes.Editor
 
             for (int i = 0; i < fields.Count; i++)
             {
+                if (fields[i].IsGenericParameter)
+                {
+                    Debug.LogError(fields[i].Name + " is a generic. You can't reset a static generic.");
+                    return (false, false);
+                }
+
                 if (!fields[i].IsEvent)
                 {
                     (List<Instruction> instructions, bool valueType) = GetStaticSet(type, fields[i].IsProperty ? fields[i].property.GetStaticBackingField() : fields[i].field);
