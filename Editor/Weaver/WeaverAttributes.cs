@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,6 +24,12 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 foreach (TypeDefinition type in module.GetTypes())
                 {
+                    if (type.HasAttribute<CecilAttributesProcessedAttribute>())
+                    {
+                        continue;
+                    }
+                    bool typeModified = false;
+
                     if (type.Name != "<Module>")
                     {
                         for (int i = 0; i < processors.Length; i++)
@@ -59,6 +66,7 @@ namespace Hertzole.CecilAttributes.Editor
                             if (dirtyClass)
                             {
                                 dirty = true;
+                                typeModified = true;
                             }
 
                             if (!success)
@@ -66,6 +74,11 @@ namespace Hertzole.CecilAttributes.Editor
                                 return (false, false);
                             }
                         }
+                    }
+
+                    if (typeModified)
+                    {
+                        type.CustomAttributes.Add(new CustomAttribute(type.Module.ImportReference(typeof(CecilAttributesProcessedAttribute).GetConstructor(Type.EmptyTypes))));
                     }
                 }
             }

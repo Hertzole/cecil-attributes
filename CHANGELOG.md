@@ -6,6 +6,10 @@
 ### Changed
 - ResetStatic no longer needs default values.
 
+### Fixed
+- Fixed ResetStatic breaking if it's put on a generic field.
+- Fixed code being weaved multiple times.
+
 ## [0.3.0-preview] - 2020-12-08
 ### Added
 - FindProperty attribute to automatically find serialized properties in your editor scripts.
