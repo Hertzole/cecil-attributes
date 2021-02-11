@@ -1,4 +1,8 @@
-## [0.4.0-preview] - Unreleased
+## [0.4.1-preview] - 2021-02-11
+### Changed
+- Updated Mono.Cecil dependency.
+
+## [0.4.0-preview] - 2021-01-12
 ### Added
 - Timed attribute to automatically show how long a method or property takes to execute.
 - MarkInProfiler attribute to make methods show up in the Unity profiler.
