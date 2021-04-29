@@ -13,6 +13,7 @@ jobs:
         fetch-depth: 0
     - name: Create develop package branch
       run: |
+        git checkout development
         git branch -d develop &> /dev/null || echo develop branch not found
         git subtree split -P "$PKG_ROOT" -b develop
         mv README.md /tmp/README.md
