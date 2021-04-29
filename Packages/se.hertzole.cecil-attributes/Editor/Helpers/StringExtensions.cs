@@ -1,19 +1,20 @@
-﻿using Mono.Cecil;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
+using Mono.Cecil;
+using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
 {
     public static partial class Extensions
     {
-        private static void ReplaceReplaceablesBase(StringBuilder sb, TypeDefinition type, MethodDefinition method, PropertyDefinition property)
+        private static void ReplaceReplaceablesBase(StringBuilder sb, TypeReference type, MethodDefinition method, PropertyDefinition property)
         {
             if (type != null)
             {
-                sb.Replace("%class%", type.Name);
-                sb.Replace("%CLASS%", type.Name.ToUpperInvariant());
-                sb.Replace("%class_full%", type.FullName);
-                sb.Replace("%CLASS_FULL%", type.FullName.ToUpperInvariant());
+                sb.Replace("%class%", type.GetFriendlyName());
+                sb.Replace("%CLASS%", type.GetFriendlyName().ToUpperInvariant());
+                sb.Replace("%class_full%", type.GetFriendlyFullName());
+                sb.Replace("%CLASS_FULL%", type.GetFriendlyFullName().ToUpperInvariant());
             }
             if (method != null)
             {
@@ -31,14 +32,14 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
-        public static string FormatTypesBase(this string target, TypeDefinition type, MethodDefinition method, PropertyDefinition property)
+        public static string FormatTypesBase(this string target, TypeReference type, MethodDefinition method, PropertyDefinition property)
         {
             StringBuilder sb = new StringBuilder(target);
             ReplaceReplaceablesBase(sb, type, method, property);
             return sb.ToString();
         }
 
-        public static string FormatMessageLogCalled(this string target, TypeDefinition type, MethodDefinition method, string parametersSeparator, List<string> parameters, PropertyDefinition property, bool propertySet)
+        public static string FormatMessageLogCalled(this string target, TypeReference type, MethodDefinition method, string parametersSeparator, List<string> parameters, PropertyDefinition property, bool propertySet)
         {
             StringBuilder sb = new StringBuilder(target);
             ReplaceReplaceablesBase(sb, type, method, property);
@@ -70,7 +71,7 @@ namespace Hertzole.CecilAttributes.Editor
             return sb.ToString();
         }
 
-        public static string FormatMessageTimed(this string target, TypeDefinition type, MethodDefinition method, PropertyDefinition property = null)
+        public static string FormatMessageTimed(this string target, TypeReference type, MethodDefinition method, PropertyDefinition property = null)
         {
             StringBuilder sb = new StringBuilder(target);
             ReplaceReplaceablesBase(sb, type, method, property);

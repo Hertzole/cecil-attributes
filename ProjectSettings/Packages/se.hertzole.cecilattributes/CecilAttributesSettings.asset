@@ -26,4 +26,4 @@ MonoBehaviour:
     (%ticks% ticks)'
   timedPropertySetFormat: '%class% %property% Set took %milliseconds% milliseconds
     (%ticks% ticks)'
-  markInProfilerFormat: Fucking %class_full% did with the fucking method %method%
+  markInProfilerFormat: '%class% :: %method%'

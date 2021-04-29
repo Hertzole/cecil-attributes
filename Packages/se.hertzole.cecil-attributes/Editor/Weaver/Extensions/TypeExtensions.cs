@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using System;
+using Mono.Collections.Generic;
 
 namespace Hertzole.CecilAttributes.Editor
 {
@@ -83,6 +84,41 @@ namespace Hertzole.CecilAttributes.Editor
             }
 
             return true;
+        }
+        
+        // https://stackoverflow.com/a/26429045/6257193
+        public static string GetFriendlyName(this TypeReference type)
+        {
+            return MakeFriendlyName(type, type.Name);
+        }
+        
+        // https://stackoverflow.com/a/26429045/6257193
+        public static string GetFriendlyFullName(this TypeReference type)
+        {
+            return MakeFriendlyName(type, type.FullName);
+        }
+
+        private static string MakeFriendlyName(TypeReference type, string name)
+        {
+            string friendlyName = name;
+            if (type.HasGenericParameters)
+            {
+                int iBacktick = friendlyName.IndexOf('`');
+                if (iBacktick > 0)
+                {
+                    friendlyName = friendlyName.Remove(iBacktick);
+                }
+                friendlyName += "<";
+                Collection<GenericParameter> typeParameters = type.GenericParameters;
+                for (int i = 0; i < typeParameters.Count; ++i)
+                {
+                    string typeParamName = $"{{{i}}}";
+                    friendlyName += (i == 0 ? typeParamName : ", " + typeParamName);
+                }
+                friendlyName += ">";
+            }
+
+            return friendlyName;
         }
 
         public static bool ImplementsInterface(this TypeDefinition type, InterfaceImplementation baseInterface)

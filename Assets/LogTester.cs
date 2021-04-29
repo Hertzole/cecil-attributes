@@ -16,10 +16,10 @@ public class LogTester : MonoBehaviour
     [LogCalled]
     public int PropertyTest2 { get { return temp; } set { temp = value; } }
 
-    [LogCalled(logPropertyGet: true, logPropertySet: false)]
-    public int OnlyGetMessage { get; set; } = 10;
-
-    [LogCalled(logPropertyGet: false, logPropertySet: true)]
+    // [LogCalled(logPropertyGet = true, logPropertySet: false)]
+    // public int OnlyGetMessage { get; set; } = 10;
+    //
+    // [LogCalled(logPropertyGet: false, logPropertySet: true)]
     public int OnlySetMessage { get; set; } = 5;
 
     [LogCalled]
@@ -48,7 +48,7 @@ public class LogTester : MonoBehaviour
     [LogCalled]
     void Start()
     {
-        int x = OnlyGetMessage;
+        // int x = OnlyGetMessage;
         OnlySetMessage = 5;
 
         PropertyTest = 10;

@@ -30,14 +30,14 @@ namespace Hertzole.CecilAttributes.Editor
             return attribute.AttributeType.Resolve().GetProperty(name);
         }
 
-        public static FieldDefinition GetBackingField(this PropertyDefinition property)
+        public static FieldReference GetBackingField(this PropertyDefinition property)
         {
             bool isStatic = property.IsStatic();
 
             return GetBackingField(property, isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, isStatic ? OpCodes.Stsfld : OpCodes.Stfld);
         }
 
-        private static FieldDefinition GetBackingField(PropertyDefinition property, OpCode ldfld, OpCode stfld)
+        private static FieldReference GetBackingField(PropertyDefinition property, OpCode ldfld, OpCode stfld)
         {
             MethodDefinition m = property.GetMethod ?? property.SetMethod;
             bool isSet = property.GetMethod == null;
@@ -47,7 +47,7 @@ namespace Hertzole.CecilAttributes.Editor
             {
                 if ((isSet && instructions[i].OpCode == stfld) || (!isSet && instructions[i].OpCode == ldfld))
                 {
-                    return (FieldDefinition)instructions[i].Operand;
+                    return (FieldReference)instructions[i].Operand;
                 }
             }
 

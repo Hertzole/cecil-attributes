@@ -265,7 +265,7 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
-        private static (List<Instruction>, bool) GetStaticSet(TypeDefinition classType, FieldDefinition field)
+        private static (List<Instruction>, bool) GetStaticSet(TypeDefinition classType, FieldReference field)
         {
             bool valueType = false;
             List<Instruction> instructions = new List<Instruction>();

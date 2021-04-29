@@ -3,6 +3,9 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEditor.SceneTemplate;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
@@ -44,9 +47,219 @@ namespace Hertzole.CecilAttributes.Editor
 
         public override (bool success, bool dirty) ProcessClass(ModuleDefinition module, TypeDefinition type)
         {
-            bool dirty = ProcessMethods(type, module) || ProcessProperties(type, module);
+            List<MethodDefinition> methods = new List<MethodDefinition>();
+            List<PropertyDefinition> properties = new List<PropertyDefinition>();
 
-            return (true, dirty);
+            for (int i = 0; i < type.Methods.Count; i++)
+            {
+                if (type.Methods[i].HasAttribute<LogCalledAttribute>())
+                {
+                    methods.Add(type.Methods[i]);
+                }
+            }
+
+            for (int i = 0; i < type.Properties.Count; i++)
+            {
+                if (type.Properties[i].HasAttribute<LogCalledAttribute>())
+                {
+                    properties.Add(type.Properties[i]);
+                }
+            }
+
+            if (methods.Count > 0)
+            {
+                string defaultMethodFormat = CecilAttributesSettings.Instance.MethodLogFormat;
+                string defaultParametersSeparator = CecilAttributesSettings.Instance.ParametersSeparator;
+            
+                for (int i = 0; i < methods.Count; i++)
+                {
+                    ProcessMethod(type, module, methods[i], defaultMethodFormat, defaultParametersSeparator);
+                }
+            }
+
+            if (properties.Count > 0)
+            {
+                string defaultGetFormat = CecilAttributesSettings.Instance.PropertyGetLogFormat;
+                string defaultSetFormat = CecilAttributesSettings.Instance.PropertySetLogFormat;
+
+                for (int i = 0; i < properties.Count; i++)
+                {
+                    ProcessProperty(type, module, properties[i], defaultGetFormat, defaultSetFormat);
+                }
+            }
+
+            return (true, true);
+        }
+
+        private static void ProcessMethod(TypeReference type, ModuleDefinition module, MethodDefinition method, string format, string parameterSeparator)
+        {
+            List<Instruction> instructions = new List<Instruction>();
+            List<string> parameters = new List<string>();
+
+            if (method.HasParameters)
+            {
+                int offset = 0;
+
+                for (int i = 0; i < method.Parameters.Count; i++)
+                {
+                    if (method.Parameters[i].IsOut)
+                    {
+                        parameters.Add($"out {method.Parameters[i].Name}");
+                        offset++;
+                    }
+                    else
+                    {
+                        parameters.Add($"{method.Parameters[i].Name}: {{{i - offset + type.GenericParameters.Count}}}");
+                    }
+                }
+            }
+            
+            string message = format.FormatMessageLogCalled(type, method, parameterSeparator, parameters, null, false);
+
+            instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
+
+            // Valid parameters are parameters than can show their value.
+            int validParameters = type.GenericParameters.Count;
+
+            for (int i = 0; i < method.Parameters.Count; i++)
+            {
+                if (method.Parameters[i].IsOut)
+                {
+                    continue;
+                }
+
+                validParameters++;
+            }
+            
+            if (validParameters > 3)
+            {
+                instructions.Add(WeaverHelpers.GetIntInstruction(method.Parameters.Count));
+                instructions.Add(Instruction.Create(OpCodes.Newarr, module.GetTypeReference<object>()));
+            }
+
+            for (int i = 0; i < type.GenericParameters.Count; i++)
+            {
+                instructions.Add(Instruction.Create(OpCodes.Ldtoken, type.GenericParameters[i].GetElementType()));
+                instructions.Add(Instruction.Create(OpCodes.Call, module.GetMethod<Type>("GetTypeFromHandle", new Type[] { typeof(RuntimeTypeHandle) })));
+            }
+            
+            if (method.HasParameters)
+            {
+                for (int i = 0; i < method.Parameters.Count; i++)
+                {
+                    if (method.Parameters[i].IsOut)
+                    {
+                        continue;
+                    }
+
+                    if (parameters.Count > 3)
+                    {
+                        // Too many parameters, need to create an array.
+                        instructions.Add(Instruction.Create(OpCodes.Dup));
+                        instructions.Add(WeaverHelpers.GetIntInstruction(i));
+                    }
+                    
+                    instructions.Add(GetLoadParameter(i, method.Parameters[i], method.IsStatic));
+
+                    if (!method.Parameters[i].ParameterType.Is<string>() && (method.Parameters[i].ParameterType.IsValueType || method.Parameters[i].ParameterType.IsByReference || method.Parameters[i].ParameterType.IsGenericParameter))
+                    {
+                        if (method.Parameters[i].ParameterType.IsByReference)
+                        {
+                            instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(method.Parameters[i].ParameterType.Resolve())));
+                        }
+                        else
+                        {
+                            instructions.Add(Instruction.Create(OpCodes.Box, method.Parameters[i].ParameterType));
+                        }
+                    }
+
+                    if (parameters.Count > 3)
+                    {
+                        instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
+                    }
+                }
+            }
+            
+            if (validParameters > 0)
+            {
+                instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, validParameters)));
+            }
+
+            instructions.Add(Instruction.Create(OpCodes.Call, module.GetMethod<Debug>("Log", new Type[] { typeof(object) })));
+            
+            method.Body.GetILProcessor().InsertBefore(method.Body.Instructions[0], instructions);
+        }
+
+        private static void ProcessProperty(TypeDefinition type, ModuleDefinition module, PropertyDefinition property, string getFormat, string setFormat)
+        {
+            CustomAttribute attribute = property.GetAttribute<LogCalledAttribute>();
+            bool logGet = attribute.GetField("logPropertyGet", true);
+            bool logSet = attribute.GetField("logPropertySet", true);
+
+            if (!logGet && !logSet)
+            {
+                return;
+            }
+            
+            List<Instruction> instructions = new List<Instruction>();
+
+            bool isStatic = property.IsStatic();
+            
+            FieldReference loadField = property.GetBackingField();
+            if (logGet && property.GetMethod != null)
+            {
+                string message = getFormat.FormatMessageLogCalled(type, property.GetMethod, null, null, property, false);
+                
+                instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
+                if (!isStatic)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+                }
+                
+                instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField));
+
+                if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
+                }
+
+                instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 1)));
+                instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
+                
+                property.GetMethod.Body.GetILProcessor().InsertBefore(property.GetMethod.Body.Instructions[0], instructions);
+                instructions.Clear();
+            }
+
+            if (logSet && property.SetMethod != null)
+            {
+                VariableDefinition localVar = property.SetMethod.AddLocalVariable(module, loadField.FieldType, out int varIndex);
+                string message = setFormat.FormatMessageLogCalled(type, property.SetMethod, null, null, property, true);
+                if (!isStatic)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+                }
+
+                instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField));
+                instructions.Add(GetStloc(varIndex, localVar));
+                instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
+                instructions.Add(GetLdloc(varIndex, localVar));
+                if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
+                }
+
+                instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldarg_0 : OpCodes.Ldarg_1));
+
+                if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
+                }
+
+                instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 2)));
+                instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
+
+                property.SetMethod.Body.GetILProcessor().InsertBefore(property.SetMethod.Body.Instructions[0], instructions);
+            }
         }
 
         private static bool ProcessMethods(TypeDefinition type, ModuleDefinition module)
@@ -196,7 +409,7 @@ namespace Hertzole.CecilAttributes.Editor
                     {
                         instructions.Clear();
 
-                        FieldDefinition loadField = property.GetBackingField();
+                        // FieldDefinition loadField = property.GetBackingField();
 
                         string message = propertyGetFormat.FormatMessageLogCalled(type, property.GetMethod, null, null, property, false);
 
@@ -207,12 +420,12 @@ namespace Hertzole.CecilAttributes.Editor
                             instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                         }
 
-                        instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField));
-
-                        if (loadField.FieldType.IsValueType)
-                        {
-                            instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
-                        }
+                        // instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField));
+                        //
+                        // if (loadField.FieldType.IsValueType)
+                        // {
+                        //     instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
+                        // }
 
                         instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 1)));
                         instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new Type[] { typeof(object) }))));
@@ -232,7 +445,7 @@ namespace Hertzole.CecilAttributes.Editor
                     {
                         instructions.Clear();
 
-                        FieldDefinition loadField = property.GetBackingField();
+                        var loadField = property.GetBackingField();
 
                         property.SetMethod.Body.Variables.Add(new VariableDefinition(module.ImportReference(loadField.FieldType)));
 
@@ -296,6 +509,45 @@ namespace Hertzole.CecilAttributes.Editor
                 default:
                     return module.ImportReference(typeof(string).GetMethod("Format", new Type[] { typeof(string), typeof(object[]) }));
 
+            }
+        }
+        
+        public static Instruction GetStloc(int index, VariableDefinition variable)
+        {
+            switch (index)
+            {
+                case 0:
+                    return Instruction.Create(OpCodes.Stloc_0);
+                case 1:
+                    return Instruction.Create(OpCodes.Stloc_1);
+                case 2:
+                    return Instruction.Create(OpCodes.Stloc_2);
+                case 3:
+                    return Instruction.Create(OpCodes.Stloc_3);
+                default:
+                    return Instruction.Create(OpCodes.Stloc_S, variable);
+            }
+        }
+
+        public static Instruction GetLdloc(int index, VariableDefinition variable, bool ldloc_a = false)
+        {
+            if (ldloc_a)
+            {
+                return Instruction.Create(OpCodes.Ldloca_S, variable);
+            }
+
+            switch (index)
+            {
+                case 0:
+                    return Instruction.Create(OpCodes.Ldloc_0);
+                case 1:
+                    return Instruction.Create(OpCodes.Ldloc_1);
+                case 2:
+                    return Instruction.Create(OpCodes.Ldloc_2);
+                case 3:
+                    return Instruction.Create(OpCodes.Ldloc_3);
+                default:
+                    return Instruction.Create(OpCodes.Ldloc_S, variable);
             }
         }
 

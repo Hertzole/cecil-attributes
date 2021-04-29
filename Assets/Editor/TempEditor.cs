@@ -33,33 +33,4 @@ public class TempEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
     }
-
-    //private void OnEnable()
-    //{
-
-    //}
-
-    private void OnEnable()
-    {
-        Debug.Log("I'm a farthead");
-    }
-
-    //private void OnEnable()
-    //{
-    //    if (serializedObject.FindProperty("fuck") == null)
-    //    {
-    //        Debug.LogError($"There's no property called 'fuck' on {target}.");
-    //        return;
-    //    }
-
-    //    if (serializedObject.FindProperty("fuck").FindPropertyRelative("fuck2") == null)
-    //    {
-    //        Debug.LogError($"There's no property called 'fuck2' on {target}.");
-    //        return;
-    //    }
-    //    template1 = serializedObject.FindProperty("test");
-    //    template2 = serializedObject.FindProperty("lel");
-    //    template3 = serializedObject.FindProperty("lel").FindPropertyRelative("lol");
-    //    TemplateProperty = serializedObject.FindProperty("test");
-    //}
 }

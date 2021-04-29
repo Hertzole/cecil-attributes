@@ -9,8 +9,8 @@ namespace Hertzole.CecilAttributes.Tests
         private class TestClass
         {
             [LogCalled] public int TestProperty { get; set; }
-            [LogCalled(true, false)] public int TestPropertyGet { get; set; }
-            [LogCalled(false, true)] public int TestPropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public int TestPropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public int TestPropertySet { get; set; }
             public int TestPropertyGetDirect { [LogCalled] get; set; }
             public int TestPropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public int TestPropertyGetOnly { get; }
@@ -18,16 +18,16 @@ namespace Hertzole.CecilAttributes.Tests
             private int testField;
 
             [LogCalled] public int TestPropertyField { get { return testField; } set { testField = value; } }
-            [LogCalled(true, false)] public int TestPropertyFieldGet { get { return testField; } set { testField = value; } }
-            [LogCalled(false, true)] public int TestPropertyFieldSet { get { return testField; } set { testField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public int TestPropertyFieldGet { get { return testField; } set { testField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public int TestPropertyFieldSet { get { return testField; } set { testField = value; } }
             public int TestPropertyFieldGetDirect { [LogCalled] get { return testField; } set { testField = value; } }
             public int TestPropertyFieldSetDirect { get { return testField; } [LogCalled] set { testField = value; } }
             [LogCalled] public int TestPropertyFieldGetOnly { get { return testField; } }
             [LogCalled] public int TestPropertyFieldSetOnly { set { testField = value; } }
 
             [LogCalled] public static int StaticTestProperty { get; set; }
-            [LogCalled(true, false)] public static int StaticTestPropertyGet { get; set; }
-            [LogCalled(false, true)] public static int StaticTestPropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static int StaticTestPropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static int StaticTestPropertySet { get; set; }
             public static int StaticTestPropertyGetDirect { [LogCalled] get; set; }
             public static int StaticTestPropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public static int StaticTestPropertyGetOnly { get; }
@@ -35,16 +35,16 @@ namespace Hertzole.CecilAttributes.Tests
             private static int staticField;
 
             [LogCalled] public static int StaticTestPropertyField { get { return staticField; } set { staticField = value; } }
-            [LogCalled(true, false)] public static int StaticTestPropertyFieldGet { get { return staticField; } set { staticField = value; } }
-            [LogCalled(false, true)] public static int StaticTestPropertyFieldSet { get { return staticField; } set { staticField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static int StaticTestPropertyFieldGet { get { return staticField; } set { staticField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static int StaticTestPropertyFieldSet { get { return staticField; } set { staticField = value; } }
             public static int StaticTestPropertyFieldGetDirect { [LogCalled] get { return staticField; } set { staticField = value; } }
             public static int StaticTestPropertyFieldSetDirect { get { return staticField; } [LogCalled] set { staticField = value; } }
             [LogCalled] public static int StaticTestPropertyFieldGetOnly { get { return staticField; } }
             [LogCalled] public static int StaticTestPropertyFieldSetOnly { set { staticField = value; } }
 
             [LogCalled] public Vector3 TestValueTypeProperty { get; set; }
-            [LogCalled(true, false)] public Vector3 TestValueTypePropertyGet { get; set; }
-            [LogCalled(false, true)] public Vector3 TestValueTypePropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public Vector3 TestValueTypePropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public Vector3 TestValueTypePropertySet { get; set; }
             public Vector3 TestValueTypePropertyGetDirect { [LogCalled] get; set; }
             public Vector3 TestValueTypePropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public Vector3 TestValueTypePropertyGetOnly { get; }
@@ -52,16 +52,16 @@ namespace Hertzole.CecilAttributes.Tests
             private Vector3 valueTypeField;
 
             [LogCalled] public Vector3 TestValueTypePropertyField { get { return valueTypeField; } set { valueTypeField = value; } }
-            [LogCalled(true, false)] public Vector3 TestValueTypePropertyFieldGet { get { return valueTypeField; } set { valueTypeField = value; } }
-            [LogCalled(false, true)] public Vector3 TestValueTypePropertyFieldSet { get { return valueTypeField; } set { valueTypeField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public Vector3 TestValueTypePropertyFieldGet { get { return valueTypeField; } set { valueTypeField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public Vector3 TestValueTypePropertyFieldSet { get { return valueTypeField; } set { valueTypeField = value; } }
             public Vector3 TestValueTypePropertyFieldGetDirect { [LogCalled] get { return valueTypeField; } set { valueTypeField = value; } }
             public Vector3 TestValueTypePropertyFieldSetDirect { get { return valueTypeField; } [LogCalled] set { valueTypeField = value; } }
             [LogCalled] public Vector3 TestValueTypePropertyFieldGetOnly { get { return valueTypeField; } }
             [LogCalled] public Vector3 TestValueTypePropertyFieldSetOnly { set { valueTypeField = value; } }
 
             [LogCalled] public static Vector3 StaticTestValueTypeProperty { get; set; }
-            [LogCalled(true, false)] public static Vector3 StaticTestValueTypePropertyGet { get; set; }
-            [LogCalled(false, true)] public static Vector3 StaticTestValueTypePropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static Vector3 StaticTestValueTypePropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static Vector3 StaticTestValueTypePropertySet { get; set; }
             public static Vector3 StaticTestValueTypePropertyGetDirect { [LogCalled] get; set; }
             public static Vector3 StaticTestValueTypePropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public static Vector3 StaticTestValueTypePropertyGetOnly { get; }
@@ -69,16 +69,16 @@ namespace Hertzole.CecilAttributes.Tests
             private static Vector3 staticValueTypeField;
 
             [LogCalled] public static Vector3 StaticTestValueTypePropertyField { get { return staticValueTypeField; } set { staticValueTypeField = value; } }
-            [LogCalled(true, false)] public static Vector3 StaticTestValueTypePropertyFieldGet { get { return staticValueTypeField; } set { staticValueTypeField = value; } }
-            [LogCalled(false, true)] public static Vector3 StaticTestValueTypePropertyFieldSet { get { return staticValueTypeField; } set { staticValueTypeField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static Vector3 StaticTestValueTypePropertyFieldGet { get { return staticValueTypeField; } set { staticValueTypeField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static Vector3 StaticTestValueTypePropertyFieldSet { get { return staticValueTypeField; } set { staticValueTypeField = value; } }
             public static Vector3 StaticTestValueTypePropertyFieldGetDirect { [LogCalled] get { return staticValueTypeField; } set { staticValueTypeField = value; } }
             public static Vector3 StaticTestValueTypePropertyFieldSetDirect { get { return staticValueTypeField; } [LogCalled] set { staticValueTypeField = value; } }
             [LogCalled] public static Vector3 StaticTestValueTypePropertyFieldGetOnly { get { return staticValueTypeField; } }
             [LogCalled] public static Vector3 StaticTestValueTypePropertyFieldSetOnly { set { staticValueTypeField = value; } }
 
             [LogCalled] public string TestStringProperty { get; set; }
-            [LogCalled(true, false)] public string TestStringPropertyGet { get; set; }
-            [LogCalled(false, true)] public string TestStringPropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public string TestStringPropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public string TestStringPropertySet { get; set; }
             public string TestStringPropertyGetDirect { [LogCalled] get; set; }
             public string TestStringPropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public string TestStringPropertyGetOnly { get; }
@@ -86,16 +86,16 @@ namespace Hertzole.CecilAttributes.Tests
             private string stringField;
 
             [LogCalled] public string TestStringPropertyField { get { return stringField; } set { stringField = value; } }
-            [LogCalled(true, false)] public string TestStringPropertyFieldGet { get { return stringField; } set { stringField = value; } }
-            [LogCalled(false, true)] public string TestStringPropertyFieldSet { get { return stringField; } set { stringField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public string TestStringPropertyFieldGet { get { return stringField; } set { stringField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public string TestStringPropertyFieldSet { get { return stringField; } set { stringField = value; } }
             public string TestStringPropertyFieldGetDirect { [LogCalled] get { return stringField; } set { stringField = value; } }
             public string TestStringPropertyFieldSetDirect { get { return stringField; } [LogCalled] set { stringField = value; } }
             [LogCalled] public string TestStringPropertyFieldGetOnly { get { return stringField; } }
             [LogCalled] public string TestStringPropertyFieldSetOnly { set { stringField = value; } }
 
             [LogCalled] public static string StaticTestStringProperty { get; set; }
-            [LogCalled(true, false)] public static string StaticTestStringPropertyGet { get; set; }
-            [LogCalled(false, true)] public static string StaticTestStringPropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static string StaticTestStringPropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static string StaticTestStringPropertySet { get; set; }
             public static string StaticTestStringPropertyGetDirect { [LogCalled] get; set; }
             public static string StaticTestStringPropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public static string StaticTestStringPropertyGetOnly { get; }
@@ -103,8 +103,8 @@ namespace Hertzole.CecilAttributes.Tests
             private static string staticStringField;
 
             [LogCalled] public static string StaticTestStringPropertyField { get { return staticStringField; } set { staticStringField = value; } }
-            [LogCalled(true, false)] public static string StaticTestStringPropertyFieldGet { get { return staticStringField; } set { staticStringField = value; } }
-            [LogCalled(false, true)] public static string StaticTestStringPropertyFieldSet { get { return staticStringField; } set { staticStringField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static string StaticTestStringPropertyFieldGet { get { return staticStringField; } set { staticStringField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static string StaticTestStringPropertyFieldSet { get { return staticStringField; } set { staticStringField = value; } }
             public static string StaticTestStringPropertyFieldGetDirect { [LogCalled] get { return staticStringField; } set { staticStringField = value; } }
             public static string StaticTestStringPropertyFieldSetDirect { get { return staticStringField; } [LogCalled] set { staticStringField = value; } }
             [LogCalled] public static string StaticTestStringPropertyFieldGetOnly { get { return staticStringField; } }
@@ -127,13 +127,40 @@ namespace Hertzole.CecilAttributes.Tests
                     templateField = value;
                 }
             }
+
+            [LogCalled]
+            public void NormalMethod() { }
+
+            [LogCalled]
+            public void MethodPara1(int para1) { }
+
+            [LogCalled]
+            public void MethodPara2(int para1, Vector3 para2) { }
+
+            [LogCalled]
+            public void MethodPara3(int para1, Vector3 para2, string para3) { }
+
+            [LogCalled]
+            public void MethodPara4(int para1, Vector3 para2, string para3, bool para4) { }
+
+            [LogCalled]
+            public void MethodOut(out int para)
+            {
+                para = 0;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara1(out int para, int para1)
+            {
+                para = 0;
+            }
         }
         
         private class TestGenericClass<T>
         {
             [LogCalled] public T TestProperty { get; set; }
-            [LogCalled(true, false)] public T TestPropertyGet { get; set; }
-            [LogCalled(false, true)] public T TestPropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public T TestPropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public T TestPropertySet { get; set; }
             public T TestPropertyGetDirect { [LogCalled] get; set; }
             public T TestPropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public T TestPropertyGetOnly { get; }
@@ -141,16 +168,16 @@ namespace Hertzole.CecilAttributes.Tests
             private T testField;
 
             [LogCalled] public T TestPropertyField { get { return testField; } set { testField = value; } }
-            [LogCalled(true, false)] public T TestPropertyFieldGet { get { return testField; } set { testField = value; } }
-            [LogCalled(false, true)] public T TestPropertyFieldSet { get { return testField; } set { testField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public T TestPropertyFieldGet { get { return testField; } set { testField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public T TestPropertyFieldSet { get { return testField; } set { testField = value; } }
             public T TestPropertyFieldGetDirect { [LogCalled] get { return testField; } set { testField = value; } }
             public T TestPropertyFieldSetDirect { get { return testField; } [LogCalled] set { testField = value; } }
             [LogCalled] public T TestPropertyFieldGetOnly { get { return testField; } }
             [LogCalled] public T TestPropertyFieldSetOnly { set { testField = value; } }
 
             [LogCalled] public static T StaticTestProperty { get; set; }
-            [LogCalled(true, false)] public static T StaticTestPropertyGet { get; set; }
-            [LogCalled(false, true)] public static T StaticTestPropertySet { get; set; }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static T StaticTestPropertyGet { get; set; }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static T StaticTestPropertySet { get; set; }
             public static T StaticTestPropertyGetDirect { [LogCalled] get; set; }
             public static T StaticTestPropertySetDirect { get; [LogCalled] set; }
             [LogCalled] public static T StaticTestPropertyGetOnly { get; }
@@ -158,16 +185,17 @@ namespace Hertzole.CecilAttributes.Tests
             private static T staticField;
 
             [LogCalled] public static T StaticTestPropertyField { get { return staticField; } set { staticField = value; } }
-            [LogCalled(true, false)] public static T StaticTestPropertyFieldGet { get { return staticField; } set { staticField = value; } }
-            [LogCalled(false, true)] public static T StaticTestPropertyFieldSet { get { return staticField; } set { staticField = value; } }
+            [LogCalled(logPropertyGet = true, logPropertySet = false)] public static T StaticTestPropertyFieldGet { get { return staticField; } set { staticField = value; } }
+            [LogCalled(logPropertyGet = false, logPropertySet = true)] public static T StaticTestPropertyFieldSet { get { return staticField; } set { staticField = value; } }
             public static T StaticTestPropertyFieldGetDirect { [LogCalled] get { return staticField; } set { staticField = value; } }
             public static T StaticTestPropertyFieldSetDirect { get { return staticField; } [LogCalled] set { staticField = value; } }
             [LogCalled] public static T StaticTestPropertyFieldGetOnly { get { return staticField; } }
             [LogCalled] public static T StaticTestPropertyFieldSetOnly { set { staticField = value; } }
 
-            private static T templateField;
+            private T templateField;
+            private static T staticTemplateField;
 
-            public static T Template
+            public T Template
             {
                 get
                 {
@@ -181,6 +209,32 @@ namespace Hertzole.CecilAttributes.Tests
 
                     templateField = value;
                 }
+            }
+            
+            public static T StaticTemplate
+            {
+                get
+                {
+                    Debug.Log($"Get template field {staticTemplateField}");
+                    return staticTemplateField;
+                }
+                set
+                {
+                    T oldValue = staticTemplateField;
+                    Debug.Log($"Set template field. Old {oldValue} New {value}");
+
+                    staticTemplateField = value;
+                }
+            }
+
+            public void TemplateMethod()
+            {
+                Debug.Log($"LogCalledTest<{typeof(T)}>");
+            }
+
+            public void TemplateMethod(T para1)
+            {
+                Debug.Log($"LogCalledTest<{typeof(T)}> (para1: {para1})");
             }
         }
 
@@ -847,7 +901,7 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestGenericPropertySet()
         {
             testGeneric.TestPropertySet = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(testGeneric.TestPropertySet)} Set (Old: {default(int)}, New: {testGeneric.TestPropertySet})");
+            LogAssert.Expect(LogType.Log, $"{nameof(testGeneric.TestPropertySet)} Set (Old: {default(Vector3)}, New: {testGeneric.TestPropertySet})");
             testGeneric.TestPropertySet = default;
         }
 
@@ -855,14 +909,14 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestGenericPropertyGetDirect()
         {
             Vector3 val = testGeneric.TestPropertyGetDirect;
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} get_{nameof(testGeneric.TestPropertyGetDirect)} ()");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> get_{nameof(testGeneric.TestPropertyGetDirect)} ()");
         }
 
         [Test]
         public void TestGenericPropertySetDirect()
         {
             testGeneric.TestPropertySetDirect = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} set_{nameof(testGeneric.TestPropertySetDirect)} (value: {testGeneric.TestPropertySetDirect})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> set_{nameof(testGeneric.TestPropertySetDirect)} (value: {testGeneric.TestPropertySetDirect})");
             testGeneric.TestPropertySetDirect = default;
         }
 
@@ -894,7 +948,7 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestGenericPropertyFieldSet()
         {
             testGeneric.TestPropertyFieldSet = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(testGeneric.TestPropertyFieldSet)} Set (Old: {default(int)}, New: {testGeneric.TestPropertyFieldSet})");
+            LogAssert.Expect(LogType.Log, $"{nameof(testGeneric.TestPropertyFieldSet)} Set (Old: {default(Vector3)}, New: {testGeneric.TestPropertyFieldSet})");
             testGeneric.TestPropertyFieldSet = default;
         }
 
@@ -902,7 +956,7 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestGenericPropertyFieldSetOnly()
         {
             testGeneric.TestPropertyFieldSetOnly = new Vector3(1, 1 ,1);
-            LogAssert.Expect(LogType.Log, $"{nameof(testGeneric.TestPropertyFieldSetOnly)} Set (Old: {default(int)}, New: {10})");
+            LogAssert.Expect(LogType.Log, $"{nameof(testGeneric.TestPropertyFieldSetOnly)} Set (Old: {default(Vector3)}, New: {new Vector3(1, 1, 1)})");
             testGeneric.TestPropertyFieldSetOnly = default;
         }
 
@@ -910,14 +964,14 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestGenericPropertyFieldGetDirect()
         {
             Vector3 val = testGeneric.TestPropertyFieldGetDirect;
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} get_{nameof(testGeneric.TestPropertyFieldGetDirect)} ()");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> get_{nameof(testGeneric.TestPropertyFieldGetDirect)} ()");
         }
 
         [Test]
         public void TestGenericPropertyFieldSetDirect()
         {
             testGeneric.TestPropertyFieldSetDirect = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} set_{nameof(testGeneric.TestPropertyFieldSetDirect)} (value: {testGeneric.TestPropertyFieldSetDirect})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> set_{nameof(testGeneric.TestPropertyFieldSetDirect)} (value: {testGeneric.TestPropertyFieldSetDirect})");
             testGeneric.TestPropertyFieldSetDirect = default;
         }
         #endregion
@@ -951,7 +1005,7 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestStaticGenericPropertySet()
         {
             TestGenericClass<Vector3>.StaticTestPropertySet = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>.StaticTestPropertySet)} Set (Old: {default(int)}, New: {TestGenericClass<Vector3>.StaticTestPropertySet})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>.StaticTestPropertySet)} Set (Old: {default(Vector3)}, New: {TestGenericClass<Vector3>.StaticTestPropertySet})");
             TestGenericClass<Vector3>.StaticTestPropertySet = default;
         }
 
@@ -959,14 +1013,14 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestStaticGenericPropertyGetDirect()
         {
             Vector3 val = TestGenericClass<Vector3>.StaticTestPropertyGetDirect;
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} get_{nameof(TestGenericClass<Vector3>.StaticTestPropertyGetDirect)} ()");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> get_{nameof(TestGenericClass<Vector3>.StaticTestPropertyGetDirect)} ()");
         }
 
         [Test]
         public void TestStaticGenericPropertySetDirect()
         {
             TestGenericClass<Vector3>.StaticTestPropertySetDirect = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} set_{nameof(TestGenericClass<Vector3>.StaticTestPropertySetDirect)} (value: {TestGenericClass<Vector3>.StaticTestPropertySetDirect})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> set_{nameof(TestGenericClass<Vector3>.StaticTestPropertySetDirect)} (value: {TestGenericClass<Vector3>.StaticTestPropertySetDirect})");
             TestGenericClass<Vector3>.StaticTestPropertySetDirect = default;
         }
 
@@ -998,7 +1052,7 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestStaticGenericPropertyFieldSet()
         {
             TestGenericClass<Vector3>.StaticTestPropertyFieldSet = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldSet)} Set (Old: {default(int)}, New: {TestGenericClass<Vector3>.StaticTestPropertyFieldSet})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldSet)} Set (Old: {default(Vector3)}, New: {TestGenericClass<Vector3>.StaticTestPropertyFieldSet})");
             TestGenericClass<Vector3>.StaticTestPropertyFieldSet = default;
         }
 
@@ -1006,7 +1060,7 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestStaticGenericPropertyFieldSetOnly()
         {
             TestGenericClass<Vector3>.StaticTestPropertyFieldSetOnly = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldSetOnly)} Set (Old: {default(int)}, New: {10})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldSetOnly)} Set (Old: {default(Vector3)}, New: {new Vector3(1, 1, 1)})");
             TestGenericClass<Vector3>.StaticTestPropertyFieldSetOnly = default;
         }
 
@@ -1014,18 +1068,68 @@ namespace Hertzole.CecilAttributes.Tests
         public void TestStaticGenericPropertyFieldGetDirect()
         {
             Vector3 val = TestGenericClass<Vector3>.StaticTestPropertyFieldGetDirect;
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} get_{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldGetDirect)} ()");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> get_{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldGetDirect)} ()");
         }
 
         [Test]
         public void TestStaticGenericPropertyFieldSetDirect()
         {
             TestGenericClass<Vector3>.StaticTestPropertyFieldSetDirect = new Vector3(1, 1, 1);
-            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} set_{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldSetDirect)} (value: {TestGenericClass<Vector3>.StaticTestPropertyFieldSetDirect})");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> set_{nameof(TestGenericClass<Vector3>.StaticTestPropertyFieldSetDirect)} (value: {TestGenericClass<Vector3>.StaticTestPropertyFieldSetDirect})");
             TestGenericClass<Vector3>.StaticTestPropertyFieldSetDirect = default;
         }
         #endregion
 
+        #region Normal methods
+        [Test]
+        public void TestNormalMethod()
+        {
+            test.NormalMethod();
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.NormalMethod)} ()");
+        }
+        
+        [Test]
+        public void TestMethodWith1Parameter()
+        {
+            test.MethodPara1(10);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodPara1)} (para1: 10)");
+        }
+        
+        [Test]
+        public void TestMethodWith2Parameter()
+        {
+            test.MethodPara2(10, Vector3.one);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodPara2)} (para1: 10, para2: {Vector3.one})");
+        }
+        
+        [Test]
+        public void TestMethodWith3Parameter()
+        {
+            test.MethodPara3(10, Vector3.one, "Hello world");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodPara3)} (para1: 10, para2: {Vector3.one}, para3: Hello world)");
+        }
+        
+        [Test]
+        public void TestMethodWith4Parameter()
+        {
+            test.MethodPara4(10, Vector3.one, "Hello world", false);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodPara4)} (para1: 10, para2: {Vector3.one}, para3: Hello world, para4: False)");
+        }
+        
+        [Test]
+        public void TestMethodWithOut()
+        {
+            test.MethodOut(out _);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodOut)} (out para)");
+        }
+        
+        [Test]
+        public void TestMethodWithOutAnd1Parameter()
+        {
+            test.MethodOutPara1(out _, 10);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodOutPara1)} (out para, para1: 10)");
+        }
+        #endregion
     }
 
 }
