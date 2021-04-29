@@ -1,0 +1,35 @@
+name: Tests
+on:
+  push:
+    branch:
+    - master
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  build:
+    name: Run Unity tests
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        lfs: true
+
+    # Cache
+    - uses: actions/cache@v2.1.4
+      with:
+        path: Library
+        key: Library
+    
+    - name: Run tests 2019.4
+      uses: game-ci/unity-test-runner@v2
+      with:
+        unityVersion: "2019.4.20f1"
+
+    - name: Run tests 2020.3
+      uses: game-ci/unity-test-runner@v2
+      with:
+        unityVersion: "2020.3.6f1"
