@@ -18,6 +18,7 @@ jobs:
         mv README.md /tmp/README.md
         git checkout develop
         mv /tmp/README.md README.md
+        git rm -r --cached .
         git add .
         git config --global user.name 'github-bot'
         git config --global user.email 'github-bot@users.noreply.github.com'
