@@ -33,3 +33,8 @@ jobs:
       uses: game-ci/unity-test-runner@v2
       with:
         unityVersion: "2020.3.6f1"
+
+    - name: Run tests 2021.1
+      uses: game-ci/unity-test-runner@v2
+      with:
+        unityVersion: "2021.1.21f1"
