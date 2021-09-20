@@ -1,3 +1,10 @@
+## [0.5.0-preview] Unreleased
+### Changed
+- Log called property set/get is no longer in a constructor and is instead separate fields.
+
+### Fixes
+- A lot of fixes for log called, especially with generics.
+
 ## [0.4.1-preview] - 2021-02-11
 ### Changed
 - Updated Mono.Cecil dependency.

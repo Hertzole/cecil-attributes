@@ -154,6 +154,104 @@ namespace Hertzole.CecilAttributes.Tests
             {
                 para = 0;
             }
+            
+            [LogCalled]
+            public void MethodOutPara2(out int para1Out, int para1, out int para2Out, int para2)
+            {
+                para1Out = 0;
+                para2Out = 0;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara3(out int para1Out, int para1, out int para2Out, int para2, out int para3Out, int para3)
+            {
+                para1Out = 0;
+                para2Out = 0;
+                para3Out = 0;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara4(out int para1Out, int para1, out int para2Out, int para2, out int para3Out, int para3, out int para4Out, int para4)
+            {
+                para1Out = 0;
+                para2Out = 0;
+                para3Out = 0;
+                para4Out = 0;
+            }
+
+            [LogCalled]
+            public int NormalReturnMethod()
+            {
+                return 0;
+            }
+
+            [LogCalled]
+            public int ReturnMethodPara1(int para1)
+            {
+                return 0;
+            }
+
+            [LogCalled]
+            public int ReturnMethodPara2(int para1, Vector3 para2)
+            {
+                return 0;
+            }
+
+            [LogCalled]
+            public int ReturnMethodPara3(int para1, Vector3 para2, string para3)
+            {
+                return 0;
+            }
+
+            [LogCalled]
+            public int ReturnMethodPara4(int para1, Vector3 para2, string para3, bool para4)
+            {
+                return 0;
+            }
+
+            [LogCalled]
+            public int ReturnMethodOut(out int para)
+            {
+                para = 0;
+                return 0;
+            }
+            
+            [LogCalled]
+            public int ReturnMethodOutPara1(out int para, int para1)
+            {
+                para = 0;
+                return 0;
+            }
+            
+            [LogCalled]
+            public int ReturnMethodOutPara2(out int para1Out, int para1, out int para2Out, int para2)
+            {
+                para1Out = 0;
+                para2Out = 0;
+
+                return 0;
+            }
+            
+            [LogCalled]
+            public int ReturnMethodOutPara3(out int para1Out, int para1, out int para2Out, int para2, out int para3Out, int para3)
+            {
+                para1Out = 0;
+                para2Out = 0;
+                para3Out = 0;
+
+                return 0;
+            }
+            
+            [LogCalled]
+            public int ReturnMethodOutPara4(out int para1Out, int para1, out int para2Out, int para2, out int para3Out, int para3, out int para4Out, int para4)
+            {
+                para1Out = 0;
+                para2Out = 0;
+                para3Out = 0;
+                para4Out = 0;
+
+                return 0;
+            }
         }
         
         private class TestGenericClass<T>
@@ -235,6 +333,136 @@ namespace Hertzole.CecilAttributes.Tests
             public void TemplateMethod(T para1)
             {
                 Debug.Log($"LogCalledTest<{typeof(T)}> (para1: {para1})");
+            }
+            
+            [LogCalled]
+            public void NormalMethod() { }
+
+            [LogCalled]
+            public void MethodPara1(T para1) { }
+
+            [LogCalled]
+            public void MethodPara2(T para1, Vector3 para2) { }
+
+            [LogCalled]
+            public void MethodPara3(T para1, Vector3 para2, string para3) { }
+
+            public void MethodPara3Template(T para1, Vector3 para2, string para3)
+            {
+                Debug.Log($"TestGenericClass<{typeof(T)}> MethodPara3 (para1: {para1}, para2: {para2}, para3: {para3})");
+            }
+
+            [LogCalled]
+            public void MethodPara4(T para1, Vector3 para2, string para3, bool para4) { }
+
+            [LogCalled]
+            public void MethodOut(out T para)
+            {
+                para = default;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara1(out T para, T para1)
+            {
+                para = default;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara2(out T para1Out, T para1, out T para2Out, T para2)
+            {
+                para1Out = default;
+                para2Out = default;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara3(out T para1Out, T para1, out T para2Out, T para2, out T para3Out, T para3)
+            {
+                para1Out = default;
+                para2Out = default;
+                para3Out = default;
+            }
+            
+            [LogCalled]
+            public void MethodOutPara4(out T para1Out, T para1, out T para2Out, T para2, out T para3Out, T para3, out T para4Out, T para4)
+            {
+                para1Out = default;
+                para2Out = default;
+                para3Out = default;
+                para4Out = default;
+            }
+
+            [LogCalled]
+            public T NormalReturnMethod()
+            {
+                return default;
+            }
+
+            [LogCalled]
+            public T ReturnMethodPara1(T para1)
+            {
+                return default;
+            }
+
+            [LogCalled]
+            public T ReturnMethodPara2(T para1, Vector3 para2)
+            {
+                return default;
+            }
+
+            [LogCalled]
+            public T ReturnMethodPara3(T para1, Vector3 para2, string para3)
+            {
+                return default;
+            }
+
+            [LogCalled]
+            public T ReturnMethodPara4(T para1, Vector3 para2, string para3, bool para4)
+            {
+                return default;
+            }
+
+            [LogCalled]
+            public T ReturnMethodOut(out T para)
+            {
+                para = default;
+                return default;
+            }
+            
+            [LogCalled]
+            public T ReturnMethodOutPara1(out T para, T para1)
+            {
+                para = default;
+                return default;
+            }
+            
+            [LogCalled]
+            public T ReturnMethodOutPara2(out T para1Out, T para1, out T para2Out, T para2)
+            {
+                para1Out = default;
+                para2Out = default;
+
+                return default;
+            }
+            
+            [LogCalled]
+            public T ReturnMethodOutPara3(out T para1Out, T para1, out T para2Out, T para2, out T para3Out, T para3)
+            {
+                para1Out = default;
+                para2Out = default;
+                para3Out = default;
+
+                return default;
+            }
+            
+            [LogCalled]
+            public T ReturnMethodOutPara4(out T para1Out, T para1, out T para2Out, T para2, out T para3Out, T para3, out T para4Out, T para4)
+            {
+                para1Out = default;
+                para2Out = default;
+                para3Out = default;
+                para4Out = default;
+
+                return default;
             }
         }
 
@@ -1128,6 +1356,243 @@ namespace Hertzole.CecilAttributes.Tests
         {
             test.MethodOutPara1(out _, 10);
             LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodOutPara1)} (out para, para1: 10)");
+        }
+        
+        [Test]
+        public void TestMethodWithOutAnd2Parameters()
+        {
+            test.MethodOutPara2(out _, 10, out _, 20);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodOutPara2)} (out para1Out, para1: 10, out para2Out, para2: 20)");
+        }
+        
+        [Test]
+        public void TestMethodWithOutAnd3Parameters()
+        {
+            test.MethodOutPara3(out _, 10, out _, 20, out _, 30);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodOutPara3)} (out para1Out, para1: 10, out para2Out, para2: 20, out para3Out, para3: 30)");
+        }
+        
+        [Test]
+        public void TestMethodWithOutAnd4Parameters()
+        {
+            test.MethodOutPara4(out _, 10, out _, 20, out _, 30, out _, 40);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.MethodOutPara4)} (out para1Out, para1: 10, out para2Out, para2: 20, out para3Out, para3: 30, out para4Out, para4: 40)");
+        }
+        #endregion
+        
+        #region Return methods
+        [Test]
+        public void TestReturnNormalMethod()
+        {
+            test.NormalReturnMethod();
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.NormalReturnMethod)} ()");
+        }
+        
+        [Test]
+        public void TestReturnMethodWith1Parameter()
+        {
+            test.ReturnMethodPara1(10);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodPara1)} (para1: 10)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWith2Parameter()
+        {
+            test.ReturnMethodPara2(10, Vector3.one);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodPara2)} (para1: 10, para2: {Vector3.one})");
+        }
+        
+        [Test]
+        public void TestReturnMethodWith3Parameter()
+        {
+            test.ReturnMethodPara3(10, Vector3.one, "Hello world");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodPara3)} (para1: 10, para2: {Vector3.one}, para3: Hello world)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWith4Parameter()
+        {
+            test.ReturnMethodPara4(10, Vector3.one, "Hello world", false);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodPara4)} (para1: 10, para2: {Vector3.one}, para3: Hello world, para4: False)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWithOut()
+        {
+            test.ReturnMethodOut(out _);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodOut)} (out para)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWithOutAnd1Parameter()
+        {
+            test.ReturnMethodOutPara1(out _, 10);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodOutPara1)} (out para, para1: 10)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWithOutAnd2Parameters()
+        {
+            test.ReturnMethodOutPara2(out _, 10, out _, 20);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodOutPara2)} (out para1Out, para1: 10, out para2Out, para2: 20)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWithOutAnd3Parameters()
+        {
+            test.ReturnMethodOutPara3(out _, 10, out _, 20, out _, 30);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodOutPara3)} (out para1Out, para1: 10, out para2Out, para2: 20, out para3Out, para3: 30)");
+        }
+        
+        [Test]
+        public void TestReturnMethodWithOutAnd4Parameters()
+        {
+            test.ReturnMethodOutPara4(out _, 10, out _, 20, out _, 30, out _, 40);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestClass)} {nameof(test.ReturnMethodOutPara4)} (out para1Out, para1: 10, out para2Out, para2: 20, out para3Out, para3: 30, out para4Out, para4: 40)");
+        }
+        #endregion
+
+        #region Generic methods
+        [Test]
+        public void TestGenericNormalMethod()
+        {
+            testGeneric.NormalMethod();
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.NormalMethod)} ()");
+        }
+        
+        [Test]
+        public void TestGenericMethodWith1Parameter()
+        {
+            testGeneric.MethodPara1(Vector3.zero);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodPara1)} (para1: {Vector3.zero})");
+        }
+        
+        [Test]
+        public void TestGenericMethodWith2Parameter()
+        {
+            testGeneric.MethodPara2(Vector3.zero, Vector3.one);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodPara2)} (para1: {Vector3.zero}, para2: {Vector3.one})");
+        }
+        
+        [Test]
+        public void TestGenericMethodWith3Parameter()
+        {
+            testGeneric.MethodPara3(Vector3.zero, Vector3.one, "Hello world");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodPara3)} (para1: {Vector3.zero}, para2: {Vector3.one}, para3: Hello world)");
+        }
+        
+        [Test]
+        public void TestGenericMethodWith4Parameter()
+        {
+            testGeneric.MethodPara4(Vector3.zero, Vector3.one, "Hello world", false);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodPara4)} (para1: {Vector3.zero}, para2: {Vector3.one}, para3: Hello world, para4: False)");
+        }
+        
+        [Test]
+        public void TestGenericMethodWithOut()
+        {
+            testGeneric.MethodOut(out _);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodOut)} (out para)");
+        }
+        
+        [Test]
+        public void TestGenericMethodWithOutAnd1Parameter()
+        {
+            testGeneric.MethodOutPara1(out _, Vector3.zero);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodOutPara1)} (out para, para1: {Vector3.zero})");
+        }
+        
+        [Test]
+        public void TestGenericMethodWithOutAnd2Parameters()
+        {
+            testGeneric.MethodOutPara2(out _, Vector3.zero, out _, Vector3.forward);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodOutPara2)} (out para1Out, para1: {Vector3.zero}, out para2Out, para2: {Vector3.forward})");
+        }
+        
+        [Test]
+        public void TestGenericMethodWithOutAnd3Parameters()
+        {
+            testGeneric.MethodOutPara3(out _, Vector3.zero, out _, Vector3.forward, out _, Vector3.back);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodOutPara3)} (out para1Out, para1: {Vector3.zero}, out para2Out, para2: {Vector3.forward}, out para3Out, para3: {Vector3.back})");
+        }
+        
+        [Test]
+        public void TestGenericMethodWithOutAnd4Parameters()
+        {
+            testGeneric.MethodOutPara4(out _, Vector3.zero, out _, Vector3.forward, out _, Vector3.back, out _, Vector3.right);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.MethodOutPara4)} (out para1Out, para1: {Vector3.zero}, out para2Out, para2: {Vector3.forward}, out para3Out, para3: {Vector3.back}, out para4Out, para4: {Vector3.right})");
+        }
+        #endregion
+        
+        #region Generic return methods
+        [Test]
+        public void TestGenericReturnNormalMethod()
+        {
+            testGeneric.NormalReturnMethod();
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.NormalReturnMethod)} ()");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWith1Parameter()
+        {
+            testGeneric.ReturnMethodPara1(Vector3.zero);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodPara1)} (para1: {Vector3.zero})");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWith2Parameter()
+        {
+            testGeneric.ReturnMethodPara2(Vector3.zero, Vector3.one);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodPara2)} (para1: {Vector3.zero}, para2: {Vector3.one})");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWith3Parameter()
+        {
+            testGeneric.ReturnMethodPara3(Vector3.zero, Vector3.one, "Hello world");
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodPara3)} (para1: {Vector3.zero}, para2: {Vector3.one}, para3: Hello world)");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWith4Parameter()
+        {
+            testGeneric.ReturnMethodPara4(Vector3.zero, Vector3.one, "Hello world", false);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodPara4)} (para1: {Vector3.zero}, para2: {Vector3.one}, para3: Hello world, para4: False)");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWithOut()
+        {
+            testGeneric.ReturnMethodOut(out _);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodOut)} (out para)");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWithOutAnd1Parameter()
+        {
+            testGeneric.ReturnMethodOutPara1(out _, Vector3.zero);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodOutPara1)} (out para, para1: {Vector3.zero})");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWithOutAnd2Parameters()
+        {
+            testGeneric.ReturnMethodOutPara2(out _, Vector3.zero, out _, Vector3.forward);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodOutPara2)} (out para1Out, para1: {Vector3.zero}, out para2Out, para2: {Vector3.forward})");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWithOutAnd3Parameters()
+        {
+            testGeneric.ReturnMethodOutPara3(out _, Vector3.zero, out _, Vector3.forward, out _, Vector3.back);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodOutPara3)} (out para1Out, para1: {Vector3.zero}, out para2Out, para2: {Vector3.forward}, out para3Out, para3: {Vector3.back})");
+        }
+        
+        [Test]
+        public void TestGenericReturnMethodWithOutAnd4Parameters()
+        {
+            testGeneric.ReturnMethodOutPara4(out _, Vector3.zero, out _, Vector3.forward, out _, Vector3.back, out _, Vector3.right);
+            LogAssert.Expect(LogType.Log, $"{nameof(TestGenericClass<Vector3>)}<UnityEngine.{nameof(Vector3)}> {nameof(testGeneric.ReturnMethodOutPara4)} (out para1Out, para1: {Vector3.zero}, out para2Out, para2: {Vector3.forward}, out para3Out, para3: {Vector3.back}, out para4Out, para4: {Vector3.right})");
         }
         #endregion
     }

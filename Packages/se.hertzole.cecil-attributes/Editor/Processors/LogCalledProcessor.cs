@@ -130,30 +130,45 @@ namespace Hertzole.CecilAttributes.Editor
             
             if (validParameters > 3)
             {
-                instructions.Add(WeaverHelpers.GetIntInstruction(method.Parameters.Count));
+                instructions.Add(WeaverHelpers.GetIntInstruction(validParameters));
                 instructions.Add(Instruction.Create(OpCodes.Newarr, module.GetTypeReference<object>()));
             }
 
             for (int i = 0; i < type.GenericParameters.Count; i++)
             {
+                if (validParameters > 3)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Dup));
+                    instructions.Add(WeaverHelpers.GetIntInstruction(i));
+                }
+                
                 instructions.Add(Instruction.Create(OpCodes.Ldtoken, type.GenericParameters[i].GetElementType()));
                 instructions.Add(Instruction.Create(OpCodes.Call, module.GetMethod<Type>("GetTypeFromHandle", new Type[] { typeof(RuntimeTypeHandle) })));
+
+                if (validParameters > 3)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
+                }
             }
             
             if (method.HasParameters)
             {
+                // Used to offset int values if there are parameters that don't need to show their value. 
+                int offset = 0;
+                
                 for (int i = 0; i < method.Parameters.Count; i++)
                 {
                     if (method.Parameters[i].IsOut)
                     {
+                        offset++;
                         continue;
                     }
 
-                    if (parameters.Count > 3)
+                    if (validParameters > 3)
                     {
                         // Too many parameters, need to create an array.
                         instructions.Add(Instruction.Create(OpCodes.Dup));
-                        instructions.Add(WeaverHelpers.GetIntInstruction(i));
+                        instructions.Add(WeaverHelpers.GetIntInstruction(type.GenericParameters.Count + i - offset));
                     }
                     
                     instructions.Add(GetLoadParameter(i, method.Parameters[i], method.IsStatic));
@@ -170,7 +185,7 @@ namespace Hertzole.CecilAttributes.Editor
                         }
                     }
 
-                    if (parameters.Count > 3)
+                    if (validParameters > 3)
                     {
                         instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
                     }
