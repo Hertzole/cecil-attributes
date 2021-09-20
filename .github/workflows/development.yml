@@ -19,6 +19,7 @@ jobs:
         git checkout develop2
         mv /tmp/README.md README.md
         git add README.md
+        git add --verbose -f .
         ls
         git status
         git config --global user.name 'github-bot'
