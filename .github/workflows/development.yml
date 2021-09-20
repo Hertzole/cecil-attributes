@@ -14,7 +14,7 @@ jobs:
     - name: Create develop package branch
       run: |
         git checkout -b develop
-        mv Packages/ /tmp/test
+        mv "$PKG_ROOT" /tmp/test
         rm -rf *
         mv /tmp/test .
         cd test
