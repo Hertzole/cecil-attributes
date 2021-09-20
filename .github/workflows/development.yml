@@ -14,7 +14,6 @@ jobs:
     - name: Create develop package branch
       run: |
         git branch -d develop &> /dev/null || echo develop branch not found
-        git checkout development
         git subtree split -P "$PKG_ROOT" -b develop
         mv README.md /tmp/README.md
         git checkout develop
@@ -25,4 +24,4 @@ jobs:
         git commit -am "Packaged project"
         git push -f -u origin develop
       env:
-        PKG_ROOT: Packages/se.hertzole.cecil-attributes/
+        PKG_ROOT: "Packages/se.hertzole.cecil-attributes"
