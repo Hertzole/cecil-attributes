@@ -13,25 +13,15 @@ jobs:
         fetch-depth: 0
     - name: Create develop package branch
       run: |
-        ls
         git branch -d develop &> /dev/null || echo develop branch not found
-        ls
         git subtree split -P "$PKG_ROOT" -b develop
-        ls
         mv README.md /tmp/README.md
-        ls
         git checkout develop
-        ls
         mv /tmp/README.md README.md
-        ls
-        git add README.md
-        ls
+        git add .
         git config --global user.name 'github-bot'
-        ls
         git config --global user.email 'github-bot@users.noreply.github.com'
-        ls
         git commit -am "Packaged project"
-        ls
         git push -f -u origin develop
       env:
         PKG_ROOT: "Packages/se.hertzole.cecil-attributes"
