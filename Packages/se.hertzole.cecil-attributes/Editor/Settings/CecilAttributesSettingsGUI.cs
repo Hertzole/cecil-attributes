@@ -8,34 +8,30 @@ namespace Hertzole.CecilAttributes.Editor
     {
         public static void OnGUI()
         {
-            using (new GUILayout.HorizontalScope())
+            using (new SettingsGUIScope())
             {
-                GUILayout.Space(6f);
-                using (new GUILayout.VerticalScope())
+                OnResetStaticSection();
+
+                GUILayout.Space(16f);
+
+                OnLogCalledSection();
+
+                GUILayout.Space(16f);
+
+                TimedSection();
+
+                GUILayout.Space(16f);
+
+                MarkInProfilerSection();
+
+                GUILayout.Space(16f);
+
+                EditorGUILayout.HelpBox("You need to recompile your scripts for these changes to take effect. If you don't do it now, you may see some undesired behavior. " +
+                                        "Otherwise it will update at some point when you update your scripts manually or when building.", MessageType.Warning);
+
+                if (GUILayout.Button("Apply changes and recompile"))
                 {
-                    OnResetStaticSection();
-
-                    GUILayout.Space(16f);
-
-                    OnLogCalledSection();
-
-                    GUILayout.Space(16f);
-
-                    TimedSection();
-
-                    GUILayout.Space(16f);
-
-                    MarkInProfilerSection();
-
-                    GUILayout.Space(16f);
-
-                    EditorGUILayout.HelpBox("You need to recompile your scripts for these changes to take effect. If you don't do it now, you may see some undesired behavior. " +
-                        "Otherwise it will update at some point when you update your scripts manually or when building.", MessageType.Warning);
-
-                    if (GUILayout.Button("Apply changes and recompile"))
-                    {
-                        CompilationPipeline.RequestScriptCompilation();
-                    }
+                    CompilationPipeline.RequestScriptCompilation();
                 }
             }
         }
@@ -178,6 +174,35 @@ namespace Hertzole.CecilAttributes.Editor
         private static void DrawHeaderLabel(string label)
         {
             EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+        }
+        
+        private class SettingsGUIScope : GUI.Scope
+        {
+            private readonly float labelWidth;
+
+            public SettingsGUIScope()
+            {
+                GUILayout.BeginVertical();
+
+                labelWidth = EditorGUIUtility.labelWidth;
+
+                if (EditorGUILayout.GetControlRect(false, 0).width > 550)
+                {
+                    EditorGUIUtility.labelWidth = 250;
+                }
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(7);
+                GUILayout.BeginVertical();
+                GUILayout.Space(4);
+            }
+
+            protected override void CloseScope()
+            {
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
+                EditorGUIUtility.labelWidth = labelWidth;
+            }
         }
     }
 }
