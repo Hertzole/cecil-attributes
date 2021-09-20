@@ -15,6 +15,7 @@ jobs:
       run: |
         git checkout -b develop
         mv README.md /tmp/README.md
+        mv CHANGELOG.md /tmp/CHANGELOG.md
         mv "$PKG_ROOT" /tmp/package
         rm -rf *
         mv /tmp/package .
@@ -24,6 +25,7 @@ jobs:
         rm -rf .github
         rm -rf package
         mv /tmp/README.md README.md
+        mv /tmp/CHANGELOG.md CHANGELOG.md
         git add .
         git config --global user.name 'github-bot'
         git config --global user.email 'github-bot@users.noreply.github.com'
