@@ -14,12 +14,16 @@ jobs:
     - name: Create develop package branch
       run: |
         git checkout -b develop
-        mv "$PKG_ROOT" /tmp/test
+        mv README.md /tmp/README.md
+        mv "$PKG_ROOT" /tmp/package
         rm -rf *
-        mv /tmp/test .
-        cd test
+        mv /tmp/package .
+        cd package
         mv * ../
         cd ..
+        rm -rf .github
+        rm -rf package
+        mv /tmp/README.md README.md
         git add .
         git config --global user.name 'github-bot'
         git config --global user.email 'github-bot@users.noreply.github.com'
