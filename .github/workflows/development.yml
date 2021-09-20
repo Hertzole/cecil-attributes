@@ -18,8 +18,12 @@ jobs:
         mv README.md /tmp/README.md
         git checkout develop2
         mv /tmp/README.md README.md
-        git add README.md
+        echo VERBOSE
         git add --verbose -f .
+        echo ADD ALL
+        git add --all
+        echo STATUS
+        git status
         ls
         git status
         git config --global user.name 'github-bot'
