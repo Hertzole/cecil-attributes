@@ -1,7 +1,8 @@
-﻿using UnityEditor;
+﻿#if !UNITY_2020_2_OR_NEWER
+using UnityEditor;
 using UnityEngine;
 
-namespace Hertzole.CecilAttributes.Editor
+namespace Hertzole.CecilAttributes.CodeGen
 {
     public static class PlayModeCheck
     {
@@ -35,3 +36,4 @@ namespace Hertzole.CecilAttributes.Editor
         }
     }
 }
+#endif

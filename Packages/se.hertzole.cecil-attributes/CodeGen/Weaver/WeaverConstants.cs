@@ -1,4 +1,4 @@
-﻿namespace Hertzole.CecilAttributes.Editor
+﻿namespace Hertzole.CecilAttributes.CodeGen
 {
     public static class WeaverConstants
     {

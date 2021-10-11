@@ -1,0 +1,24 @@
+{
+    "name": "Unity.Hertzole.CecilAttributes.CodeGen",
+    "rootNamespace": "Hertzole.CecilAttributes.CodeGen",
+    "references": [
+        "GUID:8e6476e98ca45994095daaac0d388517",
+        "GUID:16cb38569a645bb4ca2d8bbfcb54661e"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Mono.Cecil.dll",
+        "Mono.Cecil.Mdb.dll",
+        "Mono.Cecil.Pdb.dll",
+        "Mono.Cecil.Rocks.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
