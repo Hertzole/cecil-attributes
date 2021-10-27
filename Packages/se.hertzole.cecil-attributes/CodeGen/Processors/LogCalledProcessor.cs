@@ -9,17 +9,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
 	public class LogCalledProcessor : BaseProcessor
 	{
-		private readonly CecilAttributesSettings.SettingData settings;
+		private readonly CecilAttributesSettings settings;
 		
 		public override string Name { get { return "LogCalled"; } }
 
 		public override bool NeedsMonoBehaviour { get { return false; } }
 		public override bool AllowEditor { get { return true; } }
-		public override bool IncludeInBuild { get { return settings.includeLogsInBuild; } }
+		public override bool IncludeInBuild { get { return settings.IncludeLogsInBuild; } }
 
 		public LogCalledProcessor()
 		{
-			settings = CecilAttributesSettings.GetData();
+			settings = CecilAttributesSettings.Instance;
 		}
 		
 		public override bool IsValidType()
@@ -72,8 +72,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (methods.Count > 0)
 			{
-				string defaultMethodFormat = settings.methodLogFormat;
-				string defaultParametersSeparator = settings.parametersSeparator;
+				string defaultMethodFormat = settings.MethodLogFormat;
+				string defaultParametersSeparator = settings.ParametersSeparator;
 
 				for (int i = 0; i < methods.Count; i++)
 				{
@@ -83,8 +83,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (properties.Count > 0)
 			{
-				string defaultGetFormat = settings.propertyGetLogFormat;
-				string defaultSetFormat = settings.propertySetLogFormat;
+				string defaultGetFormat = settings.PropertyGetLogFormat;
+				string defaultSetFormat = settings.PropertySetLogFormat;
 
 				for (int i = 0; i < properties.Count; i++)
 				{
@@ -95,8 +95,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		private static void ProcessMethod(TypeReference type, ModuleDefinition module, MethodDefinition method, string format, string parameterSeparator)
 		{
-			Console.WriteLine($"PROCESS METHOD {method} in {type}");
-			
 			List<Instruction> instructions = new List<Instruction>();
 			List<string> parameters = new List<string>();
 

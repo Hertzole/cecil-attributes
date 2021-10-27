@@ -1,4 +1,4 @@
-﻿#if !UNITY_2020_2_OR_NEWER
+﻿// #if !UNITY_2020_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -232,4 +232,4 @@ namespace Hertzole.CecilAttributes.CodeGen
 		}
 	}
 }
-#endif
+// #endif

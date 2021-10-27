@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
-using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -126,26 +124,9 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
-        private void OnEnable()
-        {
-            SaveData(new SettingData(this));
-        }
-
         public static void Save()
         {
             SaveInstance(Instance);
-        }
-        
-        public static SettingData GetData()
-        {
-            if (instance == null)
-            {
-                return LoadData();
-            }
-            else
-            {
-                return new SettingData(instance);
-            }
         }
 
         private static CecilAttributesSettings GetOrCreate()
@@ -162,7 +143,6 @@ namespace Hertzole.CecilAttributes.Editor
 
                 if (settings != null)
                 {
-                    SaveData(new SettingData(settings));
                     return settings;
                 }
             }
@@ -183,7 +163,6 @@ namespace Hertzole.CecilAttributes.Editor
             }
 
             settings.hideFlags = HideFlags.HideAndDontSave;
-            SaveData(new SettingData(settings));
 
             return settings;
         }
@@ -238,112 +217,10 @@ namespace Hertzole.CecilAttributes.Editor
             try
             {
                 InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { settings }, PATH, true);
-                SaveData(new SettingData(settings));
             }
             catch (Exception ex)
             {
                 Debug.LogError("Can't save cecil attribute settings!\n" + ex);
-            }
-        }
-
-        private static void SaveData(SettingData data)
-        {
-            string libraryPath = Path.GetFullPath($"{Assembly.GetExecutingAssembly().Location}/../../se.hertzole.CecilAttributes.settings.bin");
-            using (FileStream stream = File.OpenWrite(libraryPath))
-            {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
-                    writer.Write(data.includeResetStaticInBuild);
-                    writer.Write((int) data.resetStaticMode);
-                    writer.Write(data.includeLogsInBuild);
-                    writer.Write(data.methodLogFormat);
-                    writer.Write(data.parametersSeparator);
-                    writer.Write(data.propertyGetLogFormat);
-                    writer.Write(data.propertySetLogFormat);
-                    writer.Write(data.includeTimedInBuild);
-                    writer.Write(data.timedMethodFormat);
-                    writer.Write(data.timedPropertyGetFormat);
-                    writer.Write(data.timedPropertySetFormat);
-                    writer.Write(data.markInProfilerFormat);
-                }
-            }
-        }
-
-        private static SettingData LoadData()
-        {
-            string libraryPath = Path.GetFullPath($"{Assembly.GetExecutingAssembly().Location}/../../se.hertzole.CecilAttributes.settings.bin");
-            if (File.Exists(libraryPath))
-            {
-                SettingData data = new SettingData();
-                using (FileStream stream = File.OpenRead(libraryPath))
-                {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                    {
-                        data.includeResetStaticInBuild = reader.ReadBoolean();
-                        data.resetStaticMode = (RuntimeInitializeLoadType) reader.ReadInt32();
-                        data.includeLogsInBuild = reader.ReadBoolean();
-                        data.methodLogFormat = reader.ReadString();
-                        data.parametersSeparator = reader.ReadString();
-                        data.propertyGetLogFormat = reader.ReadString();
-                        data.propertySetLogFormat = reader.ReadString();
-                        data.includeTimedInBuild = reader.ReadBoolean();
-                        data.timedMethodFormat = reader.ReadString();
-                        data.timedPropertyGetFormat = reader.ReadString();
-                        data.timedPropertySetFormat = reader.ReadString();
-                        data.markInProfilerFormat = reader.ReadString();
-                    }
-                }
-
-                return data;
-            }
-
-            return SettingData.Default;
-        }
-
-        [Serializable]
-        public struct SettingData
-        {
-            public bool includeResetStaticInBuild;
-            public RuntimeInitializeLoadType resetStaticMode;
-            public bool includeLogsInBuild;
-            public string methodLogFormat;
-            public string parametersSeparator;
-            public string propertyGetLogFormat;
-            public string propertySetLogFormat;
-            public bool includeTimedInBuild;
-            public string timedMethodFormat;
-            public string timedPropertyGetFormat;
-            public string timedPropertySetFormat;
-            public string markInProfilerFormat;
-
-            public SettingData(CecilAttributesSettings settings)
-            {
-                Console.WriteLine("CREATE NEW DATA");
-                
-                includeResetStaticInBuild = settings.includeResetStaticInBuild;
-                resetStaticMode = settings.resetStaticMode;
-                includeLogsInBuild = settings.includeLogsInBuild;
-                methodLogFormat = settings.methodLogFormat;
-                parametersSeparator = settings.parametersSeparator;
-                propertyGetLogFormat = settings.propertyGetLogFormat;
-                propertySetLogFormat = settings.propertySetLogFormat;
-                includeTimedInBuild = settings.includeTimedInBuild;
-                timedMethodFormat = settings.timedMethodFormat;
-                timedPropertyGetFormat = settings.timedPropertyGetFormat;
-                timedPropertySetFormat = settings.timedPropertySetFormat;
-                markInProfilerFormat = settings.markInProfilerFormat;
-            }
-            
-            public static SettingData Default
-            { 
-                get
-                {
-                    return new SettingData()
-                    {
-                        methodLogFormat = "%class% %method% (%parameters%)"
-                    };
-                }
-                
             }
         }
     }

@@ -2,7 +2,8 @@
 #error Cecil attributes requires Unity 2019.4 or later!
 #endif
 
-#if UNITY_2020_2_OR_NEWER
+// #if UNITY_2020_2_OR_NEWER
+#if false
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

@@ -6,6 +6,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Unity.CompilationPipeline.Common.Diagnostics;
 using Unity.CompilationPipeline.Common.ILPostProcessing;
+using UnityEditor;
+using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
@@ -46,18 +48,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 		{
 			AssemblyDefinition assemblyDefinition = WeaverHelpers.AssemblyDefinitionFor(assembly);
 
-			bool isBuildingPlayer = true;
-			// if (defines != null && defines.Length > 0)
-			// {
-			// 	for (int i = 0; i < defines.Length; i++)
-			// 	{
-			// 		if (defines[i] == "UNITY_EDITOR")
-			// 		{
-			// 			isBuildingPlayer = false;
-			// 			break;
-			// 		}
-			// 	}
-			// }
+			bool isBuildingPlayer = BuildPipeline.isBuildingPlayer;
+			bool isEditor = assembly.Name.Contains("-Editor") || assembly.Name.Contains(".Editor");
 
 			for (int i = 0; i < assemblyDefinition.Modules.Count; i++)
 			{
@@ -79,6 +71,29 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 					for (int j = 0; j < processors.Length; j++)
 					{
+						if (!processors[j].IncludeInBuild && isBuildingPlayer)
+						{
+							continue;
+						}
+
+						if (!processors[j].AllowEditor && isEditor)
+						{
+							Debug.LogWarning($"{processors[i].Name} can't be used in the editor. ({type.FullName})");
+							continue;
+						}
+
+						if (processors[i].EditorOnly && !isEditor)
+						{
+							Debug.LogWarning($"{processors[i].Name} can only be used in editor scripts. ({type.FullName})");
+							continue;
+						}
+
+						if (processors[i].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
+						{
+							Debug.LogWarning($"{processors[i].Name} needs to be in a MonoBehaviour. ({type.FullName})");
+							continue;
+						}
+						
 						processors[j].Type = type;
 
 						if (!processors[j].IsValidType())
@@ -93,10 +108,10 @@ namespace Hertzole.CecilAttributes.CodeGen
 				}
 			}
 			
-			var pe = new MemoryStream();
-			var pdb = new MemoryStream();
+			MemoryStream pe = new MemoryStream();
+			MemoryStream pdb = new MemoryStream();
 
-			var writerParameters = new WriterParameters
+			WriterParameters writerParameters = new WriterParameters
 			{
 				SymbolWriterProvider = new PortablePdbWriterProvider(),
 				SymbolStream = pdb,
