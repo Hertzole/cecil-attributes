@@ -1,4 +1,4 @@
-name: Publish to master
+name: Release package
 on:
   release:
     types:

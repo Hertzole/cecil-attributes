@@ -1,4 +1,7 @@
 ## [0.5.0-preview] - Unreleased
+### Added
+- GetComponent attribute to automatically fill in serialized component reference fields.
+
 ### Changed
 - Code processing now happens in ILPostProcessor in newer Unity versions.
 - Log called property set/get is no longer in a constructor and is instead separate fields.

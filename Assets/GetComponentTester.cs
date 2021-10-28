@@ -4,7 +4,7 @@ using UnityEngine;
 public class GetComponentTester : MonoBehaviour
 {
     [SerializeField]
-    [GetComponent]
+    [GetComponent(showInInspector = true)]
     private Transform trs = null;
     [SerializeField]
     [GetComponent(target = GetComponentTarget.Children)]
@@ -26,16 +26,6 @@ public class GetComponentTester : MonoBehaviour
         {
             childBox = GetComponentInChildren<BoxCollider>();
         }
-    }
-
-    private void Reset()
-    {
-        Debug.Log("Reset");
-    }
-
-    private void OnValidate()
-    {
-        Debug.Log("OnValidate");
     }
 
     private void Test()

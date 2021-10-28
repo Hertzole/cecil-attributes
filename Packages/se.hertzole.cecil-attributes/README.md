@@ -40,6 +40,24 @@ public void MyMethod(int para1, string para2)
 }
 ```
 
+### Get Component
+**Applies to fields**
+
+Get Component automatically gets components for your serialized fields at editor time so you can avoid GetComponents calls in Awake. It supports targeting itself, the parent, and children. It also supports arrays and lists! There's also an optinal field to include inactive objects.
+
+Usage:  
+```cs
+[GetComponent]
+[SerializeField]
+private MyScript scriptHere;
+[GetComponent(target = GetComponentTarget.Parent)]
+[SerializeField]
+private MyScript parentScript;
+[GetComponent(target = GetComponentTarget.Children)]
+[SerializeField]
+private MyScript childScript;
+```
+
 ### Find Property
 **Applies to fields and properties**
 

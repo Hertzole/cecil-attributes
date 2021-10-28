@@ -1,7 +1,7 @@
-name: Push to develop
+name: Development package
 on:
   workflow_run:
-    workflows: ["Test Unity 2019","Test Unity 2020","Test Unity 2021"]
+    workflows: ["Test Unity 2020"]
     types:
       - completed
 jobs:

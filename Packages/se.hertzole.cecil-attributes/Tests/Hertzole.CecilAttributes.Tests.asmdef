@@ -1,5 +1,6 @@
 {
     "name": "Hertzole.CecilAttributes.Tests",
+    "rootNamespace": "Hertzole.CecilAttributes.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

@@ -237,5 +237,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trs: {fileID: 4680990467151361929}
   childBox: {fileID: 4680990466132250262}
-  parentRenderer: {fileID: 0}
+  parentRenderer: {fileID: 4680990466085682615}
   test: -10

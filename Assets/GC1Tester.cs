@@ -1,14 +1,9 @@
-﻿using UnityEngine;
-
-public class GC1Tester : MonoBehaviour
-{
-    private void Reset()
-    {
-        Debug.Log("Reset");
-    }
-
-    private void OnValidate()
-    {
-        Debug.Log("OnValidate");
-    }
-}
+﻿// using Hertzole.CecilAttributes;
+// using UnityEngine;
+//
+// public class GC1Tester : MonoBehaviour
+// {
+//     [SerializeField] 
+//     [GetComponent]
+//     private Transform trs = default;
+// }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Collections.Generic;
+using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
@@ -120,7 +122,56 @@ namespace Hertzole.CecilAttributes.CodeGen
 
             return friendlyName;
         }
+        
+        public static bool IsCollection(this TypeReference type)
+        {
+            return type.IsArray() || type.IsList() || type.IsDictionary();
+        }
+        
+        public static bool IsArray(this TypeReference type)
+        {
+            return type.IsArray;
+        }
 
+        public static bool IsList(this TypeReference type)
+        {
+            return type.Is(typeof(List<>));
+        }
+        
+        public static bool IsDictionary(this TypeReference type)
+        {
+            return type.Is(typeof(Dictionary<,>));
+        }
+        
+        public static TypeReference GetCollectionType(this TypeReference type)
+        {
+            if (!type.IsCollection())
+            {
+                return type;
+            }
+
+            if (type.IsArray())
+            {
+                return type.Module.ImportReference(type.Resolve());
+            }
+
+            if (type.IsList() && type is GenericInstanceType generic && generic.GenericArguments.Count == 1)
+            {
+                TypeDefinition resolved = generic.GenericArguments[0].GetElementType().Resolve();
+                if (resolved.Is<GameObject>() || resolved.IsSubclassOf<Component>())
+                {
+                    return type.Module.ImportReference(resolved);
+                }
+            }
+
+            return type;
+        }
+
+        public static bool ImplementsInterface<T>(this TypeDefinition type)
+        {
+            return type.ImplementsInterface(new InterfaceImplementation(type.Module.GetTypeReference<T>()));
+        }
+        
         public static bool ImplementsInterface(this TypeDefinition type, InterfaceImplementation baseInterface)
         {
             if (!type.HasInterfaces)
@@ -138,10 +189,46 @@ namespace Hertzole.CecilAttributes.CodeGen
 
             return false;
         }
-
-        public static bool ImplementsInterface<T>(this TypeDefinition type)
+        
+        public static MethodDefinition AddMethod<T>(this TypeDefinition type, string name, MethodAttributes attributes)
         {
-            return type.ImplementsInterface(new InterfaceImplementation(type.Module.ImportReference(typeof(T))));
+            return type.AddMethod(name, attributes, type.Module.ImportReference(typeof(T)));
+        }
+
+        public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes)
+        {
+            return type.AddMethod(name, attributes, type.Module.Void());
+        }
+
+        public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType)
+        {
+            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+            type.Methods.Add(m);
+
+            return m;
+        }
+        
+        public static MethodDefinition AddMethodOverride<T>(this TypeDefinition type, string name, MethodAttributes attributes, params MethodReference[] overrides)
+        {
+            return type.AddMethodOverride(name, attributes, type.Module.ImportReference(typeof(T)), overrides);
+        }
+
+        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, params MethodReference[] overrides)
+        {
+            return type.AddMethodOverride(name, attributes, type.Module.Void(), overrides);
+        }
+
+        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, params MethodReference[] overrides)
+        {
+            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+            for (int i = 0; i < overrides.Length; i++)
+            {
+                m.Overrides.Add(overrides[i]);
+            }
+
+            type.Methods.Add(m);
+
+            return m;
         }
     }
 }

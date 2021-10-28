@@ -6,7 +6,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Unity.CompilationPipeline.Common.Diagnostics;
 using Unity.CompilationPipeline.Common.ILPostProcessing;
-using UnityEditor;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
@@ -21,7 +20,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 			new LogCalledProcessor(),
 			new MarkInProfilerProcessor(),
 			new ResetStaticProcessor(),
-			new TimedProcessor()
+			new TimedProcessor(),
+			new GetComponentProcessor()
 		};
 
 		public Weaver(List<DiagnosticMessage> diagnostics)
@@ -49,6 +49,21 @@ namespace Hertzole.CecilAttributes.CodeGen
 		public void Error(SequencePoint sequencePoint, string message)
 		{
 			diagnostics.AddError(sequencePoint, message);
+		}
+
+		public void Warn(string message)
+		{
+			diagnostics.AddWarning(message);
+		}
+
+		public void Warn(MethodDefinition methodDefinition, string message)
+		{
+			diagnostics.AddWarning(methodDefinition, message);
+		}
+
+		public void Warn(SequencePoint sequencePoint, string message)
+		{
+			diagnostics.AddWarning(sequencePoint, message);
 		}
 
 		public ILPostProcessResult ProcessAssembly(ICompiledAssembly assembly)
@@ -106,20 +121,20 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 						if (!processors[j].AllowEditor && isEditor)
 						{
-							Debug.LogWarning($"{processors[i].Name} can't be used in the editor. ({type.FullName})");
-							continue;
+							Error($"{processors[i].Name} can't be used in the editor. ({type.FullName})");
+							break;
 						}
 
 						if (processors[j].EditorOnly && !isEditor)
 						{
-							Debug.LogWarning($"{processors[j].Name} can only be used in editor scripts. ({type.FullName})");
-							continue;
+							Error($"{processors[j].Name} can only be used in editor scripts. ({type.FullName})");
+							break;
 						}
 
 						if (processors[j].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
 						{
-							Debug.LogWarning($"{processors[j].Name} needs to be in a MonoBehaviour. ({type.FullName})");
-							continue;
+							Error($"{processors[j].Name} needs to be in a MonoBehaviour. ({type.FullName})");
+							break;
 						}
 
 						processors[j].ProcessType();

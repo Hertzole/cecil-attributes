@@ -3,7 +3,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace My.Fucking.Namespace
+namespace My.Darn.Namespace
 {
     public class TimedTest : MonoBehaviour
     {
