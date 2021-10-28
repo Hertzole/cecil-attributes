@@ -1,9 +1,9 @@
-﻿using Mono.Cecil;
-using System;
+﻿using System;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
 
-namespace Hertzole.CecilAttributes.Editor
+namespace Hertzole.CecilAttributes.CodeGen
 {
     public static partial class WeaverExtensions
     {

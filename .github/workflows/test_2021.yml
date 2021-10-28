@@ -1,8 +1,8 @@
-name: Tests
+name: Test Unity 2021
 on:
   push:
     branch:
-    - master
+    - development
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -23,18 +23,8 @@ jobs:
       with:
         path: Library
         key: Library
-    
-    - name: Run tests 2019.4
-      uses: game-ci/unity-test-runner@v2
-      with:
-        unityVersion: "2019.4.20f1"
 
-    - name: Run tests 2020.3
+    - name: Run tests
       uses: game-ci/unity-test-runner@v2
       with:
-        unityVersion: "2020.3.6f1"
-
-    - name: Run tests 2021.1
-      uses: game-ci/unity-test-runner@v2
-      with:
-        unityVersion: "2021.1.21f1"
+        unityVersion: "2021.2.0f1"

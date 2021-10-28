@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Hertzole.CecilAttributes.Editor;
+using Hertzole.CecilAttributes.CodeGen;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Unity.CompilationPipeline.Common.Diagnostics;
@@ -17,11 +17,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		private static readonly BaseProcessor[] processors =
 		{
-			// new FindPropertyProcessor(),
-			new LogCalledProcessor()
-			// new MarkInProfilerProcessor(),
-			// new ResetStaticProcessor(),
-			// new TimedProcessor()
+			new FindPropertyProcessor(),
+			new LogCalledProcessor(),
+			new MarkInProfilerProcessor(),
+			new ResetStaticProcessor(),
+			new TimedProcessor()
 		};
 
 		public Weaver(List<DiagnosticMessage> diagnostics)

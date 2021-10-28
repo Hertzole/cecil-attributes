@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hertzole.CecilAttributes.Editor
+namespace Hertzole.CecilAttributes.CodeGen
 {
     public struct MemberData : IEquatable<MemberData>
     {

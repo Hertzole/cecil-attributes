@@ -2,7 +2,7 @@
 using UnityEditor.Compilation;
 using UnityEngine;
 
-namespace Hertzole.CecilAttributes.Editor
+namespace Hertzole.CecilAttributes.CodeGen
 {
     internal static class CecilAttributesSettingsGUI
     {

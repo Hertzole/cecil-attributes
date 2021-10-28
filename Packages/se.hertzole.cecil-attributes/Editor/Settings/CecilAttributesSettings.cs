@@ -4,7 +4,7 @@ using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Hertzole.CecilAttributes.Editor
+namespace Hertzole.CecilAttributes.CodeGen
 {
     [Serializable]
     public class CecilAttributesSettings : ScriptableObject

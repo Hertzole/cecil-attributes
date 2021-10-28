@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using Mono.Cecil;
-using UnityEngine;
 
-namespace Hertzole.CecilAttributes.Editor
+namespace Hertzole.CecilAttributes.CodeGen
 {
     public static partial class Extensions
     {

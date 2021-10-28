@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
