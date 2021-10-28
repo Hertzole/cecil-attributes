@@ -19,7 +19,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
         public override bool NeedsMonoBehaviour { get { return false; } }
         public override bool AllowEditor { get { return true; } }
-        public override bool IncludeInBuild { get { return CecilAttributesSettings.Instance.IncludeTimedInBuild; } }
+        public override bool IncludeInBuild { get { return Settings.includeTimedInBuild; } }
 
         public override bool IsValidType()
         {
@@ -71,7 +71,7 @@ namespace Hertzole.CecilAttributes.CodeGen
                 {
                     MethodDefinition method = type.Methods[i];
 
-                    string message = CecilAttributesSettings.Instance.TimedMethodFormat.FormatMessageTimed(type, method);
+                    string message = Settings.timedMethodFormat.FormatMessageTimed(type, method);
 
                     InjectIntoMethod(module, method, message);
 
@@ -94,7 +94,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
                     if (property.GetMethod != null)
                     {
-                        string message = CecilAttributesSettings.Instance.TimedPropertyGetFormat.FormatMessageTimed(type, property.GetMethod, property);
+                        string message = Settings.timedPropertyGetFormat.FormatMessageTimed(type, property.GetMethod, property);
 
                         InjectIntoMethod(module, property.GetMethod, message);
                         dirty = true;
@@ -102,7 +102,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
                     if (property.SetMethod != null)
                     {
-                        string message = CecilAttributesSettings.Instance.TimedPropertySetFormat.FormatMessageTimed(type, property.SetMethod, property);
+                        string message = Settings.timedPropertySetFormat.FormatMessageTimed(type, property.SetMethod, property);
 
                         InjectIntoMethod(module, property.SetMethod, message);
                         dirty = true;

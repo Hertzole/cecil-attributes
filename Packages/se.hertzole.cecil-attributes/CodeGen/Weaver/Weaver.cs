@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Unity.CompilationPipeline.Common.Diagnostics;
@@ -26,6 +27,13 @@ namespace Hertzole.CecilAttributes.CodeGen
 		public Weaver(List<DiagnosticMessage> diagnostics)
 		{
 			this.diagnostics = diagnostics;
+			CecilAttributesSettings.SettingData settings = CecilAttributesSettings.LoadSettingData();
+
+			for (int i = 0; i < processors.Length; i++)
+			{
+				processors[i].Settings = settings;
+				processors[i].Weaver = this;
+			}
 		}
 
 		public void Error(string message)
@@ -47,7 +55,22 @@ namespace Hertzole.CecilAttributes.CodeGen
 		{
 			AssemblyDefinition assemblyDefinition = WeaverHelpers.AssemblyDefinitionFor(assembly);
 
+#if UNITY_2020_2_OR_NEWER
+			bool isBuildingPlayer = true;
+			if (assembly.Defines != null && assembly.Defines.Length > 0)
+			{
+				for (int i = 0; i < assembly.Defines.Length; i++)
+				{
+					if (assembly.Defines[i] == "UNITY_EDITOR")
+					{
+						isBuildingPlayer = false;
+						break;
+					}
+				}
+			}
+#else
 			bool isBuildingPlayer = BuildPipeline.isBuildingPlayer;
+#endif
 			bool isEditor = assembly.Name.Contains("-Editor") || assembly.Name.Contains(".Editor");
 
 			for (int i = 0; i < assemblyDefinition.Modules.Count; i++)
@@ -56,7 +79,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 				for (int j = 0; j < processors.Length; j++)
 				{
-					processors[j].Weaver = this;
 					processors[j].Module = module;
 				}
 

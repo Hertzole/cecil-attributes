@@ -1,4 +1,4 @@
-// #if !UNITY_2020_2_OR_NEWER
+#if !UNITY_2020_2_OR_NEWER
 using Unity.CompilationPipeline.Common.ILPostProcessing;
 
 namespace Hertzole.CecilAttributes.CodeGen
@@ -12,4 +12,4 @@ namespace Hertzole.CecilAttributes.CodeGen
 		public abstract ILPostProcessor GetInstance();
 	}
 }
-// #endif
+#endif

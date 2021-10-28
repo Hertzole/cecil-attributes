@@ -45,7 +45,7 @@ namespace Hertzole.CecilAttributes.CodeGen
         {
             ILProcessor il = method.Body.GetILProcessor();
 
-            string name = CecilAttributesSettings.Instance.MarkInProfilerFormat.FormatTypesBase(type, method, null);
+            string name = Settings.markInProfilerFormat.FormatTypesBase(type, method, null);
 
             il.InsertBefore(il.Body.Instructions[0], Instruction.Create(OpCodes.Ldstr, name));
             il.InsertAfter(il.Body.Instructions[0], Instruction.Create(OpCodes.Call, method.Module.ImportReference(typeof(Profiler).GetMethod("BeginSample", new Type[] { typeof(string) }))));

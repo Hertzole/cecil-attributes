@@ -1,4 +1,4 @@
-﻿// #if !UNITY_2020_2_OR_NEWER
+﻿#if !UNITY_2020_2_OR_NEWER
 using UnityEditor;
 using UnityEngine;
 
@@ -36,4 +36,4 @@ namespace Hertzole.CecilAttributes.CodeGen
         }
     }
 }
-// #endif
+#endif

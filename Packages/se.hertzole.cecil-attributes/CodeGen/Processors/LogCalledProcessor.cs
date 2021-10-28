@@ -9,19 +9,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
 	public class LogCalledProcessor : BaseProcessor
 	{
-		private readonly CecilAttributesSettings settings;
-		
 		public override string Name { get { return "LogCalled"; } }
 
 		public override bool NeedsMonoBehaviour { get { return false; } }
 		public override bool AllowEditor { get { return true; } }
-		public override bool IncludeInBuild { get { return settings.IncludeLogsInBuild; } }
+		public override bool IncludeInBuild { get { return Settings.includeLogsInBuild; } }
 
-		public LogCalledProcessor()
-		{
-			settings = CecilAttributesSettings.Instance;
-		}
-		
 		public override bool IsValidType()
 		{
 			if (Type.HasMethods)
@@ -72,8 +65,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (methods.Count > 0)
 			{
-				string defaultMethodFormat = settings.MethodLogFormat;
-				string defaultParametersSeparator = settings.ParametersSeparator;
+				string defaultMethodFormat = Settings.methodLogFormat;
+				string defaultParametersSeparator = Settings.parametersSeparator;
 
 				for (int i = 0; i < methods.Count; i++)
 				{
@@ -83,8 +76,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (properties.Count > 0)
 			{
-				string defaultGetFormat = settings.PropertyGetLogFormat;
-				string defaultSetFormat = settings.PropertySetLogFormat;
+				string defaultGetFormat = Settings.propertyGetLogFormat;
+				string defaultSetFormat = Settings.propertySetLogFormat;
 
 				for (int i = 0; i < properties.Count; i++)
 				{

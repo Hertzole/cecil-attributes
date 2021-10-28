@@ -18,7 +18,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
         public override bool NeedsMonoBehaviour { get { return false; } }
         public override bool AllowEditor { get { return true; } }
-        public override bool IncludeInBuild { get { return CecilAttributesSettings.Instance.IncludeResetStaticInBuild; } }
+        public override bool IncludeInBuild { get { return Settings.includeResetStaticInBuild; } }
 
         public override bool IsValidType()
         {
@@ -179,7 +179,7 @@ namespace Hertzole.CecilAttributes.CodeGen
             {
                 MethodReference initAttributeCtor = Module.ImportReference(typeof(RuntimeInitializeOnLoadMethodAttribute).GetConstructor(new Type[] { typeof(RuntimeInitializeLoadType) }));
                 CustomAttribute attribute = new CustomAttribute(initAttributeCtor);
-                attribute.ConstructorArguments.Add(new CustomAttributeArgument(Module.ImportReference(typeof(RuntimeInitializeLoadType)), CecilAttributesSettings.Instance.ResetStaticMode));
+                attribute.ConstructorArguments.Add(new CustomAttributeArgument(Module.ImportReference(typeof(RuntimeInitializeLoadType)), Settings.resetStaticMode));
                 resetMethod.CustomAttributes.Add(attribute);
             }
 
