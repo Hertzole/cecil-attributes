@@ -84,7 +84,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				}
 			}
 #else
-			bool isBuildingPlayer = BuildPipeline.isBuildingPlayer;
+			bool isBuildingPlayer = UnityEditor.BuildPipeline.isBuildingPlayer;
 #endif
 			bool isEditor = assembly.Name.Contains("-Editor") || assembly.Name.Contains(".Editor");
 

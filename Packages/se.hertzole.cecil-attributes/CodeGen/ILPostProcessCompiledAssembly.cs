@@ -37,12 +37,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 			References = refs;
 			Defines = defines;
 			this.outputPath = outputPath;
-
-			Debug.Log($"{assemblyFilename} Refs:");
-			for (int i = 0; i < refs.Length; i++)
-			{
-				Debug.Log(refs[i]);
-			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 using UnityEngine;

@@ -113,60 +113,19 @@ namespace Hertzole.CecilAttributes.CodeGen
 			{
 				return;
 			}
-
-			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			bool foundThisAssembly = false;
+			
 			List<string> dependencyPaths = new List<string>();
 
-			foreach (Assembly assembly in assemblies)
+			foreach (UAssembly assembly in CompilationPipeline.GetAssemblies())
 			{
-				// Find the assembly currently being compiled from domain assembly list and check if it's using unet
-				if (assembly.GetName().Name == Path.GetFileNameWithoutExtension(assemblyName))
+				if (assembly.outputPath != assemblyPath)
 				{
-					foundThisAssembly = true;
-					foreach (AssemblyName dependency in assembly.GetReferencedAssemblies())
-					{
-						// Since this assembly is already loaded in the domain this is a no-op and returns the
-						// already loaded assembly
-						dependencyPaths.Add(Assembly.Load(dependency).Location);
-					}
+					continue;
 				}
 
-				// try
-				// {
-				// 	if (assembly.Location.Contains("UnityEngine.CoreModule"))
-				// 	{
-				// 		unityEngine = assembly.Location;
-				// 	}
-				//
-				// 	if (assembly.Location.Contains(WeaverConstants.RUNTIME_ASSEMBLY))
-				// 	{
-				// 		mlapiRuntimeAssemblyPath = assembly.Location;
-				// 	}
-				// }
-				// catch (NotSupportedException)
-				// {
-				// 	// in memory assembly, can't get location
-				// }
-			}
-
-			if (!foundThisAssembly)
-			{
-				// Target assembly not found in current domain, trying to load it to check references 
-				// will lead to trouble in the build pipeline, so lets assume it should go to weaver.
-				// Add all assemblies in current domain to dependency list since there could be a 
-				// dependency lurking there (there might be generated assemblies so ignore file not found exceptions).
-				// (can happen in runtime test framework on editor platform and when doing full library reimport)
-				foreach (Assembly assembly in assemblies)
+				foreach (string assemblyReference in assembly.compiledAssemblyReferences)
 				{
-					try
-					{
-						if (!(assembly.ManifestModule is ModuleBuilder))
-						{
-							dependencyPaths.Add(Assembly.Load(assembly.GetName().Name).Location);
-						}
-					}
-					catch (FileNotFoundException) { }
+					dependencyPaths.Add(Path.GetDirectoryName(assemblyReference));
 				}
 			}
 
