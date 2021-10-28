@@ -1,0 +1,13 @@
+version: 1
+IncludeResetStaticInBuild: false
+ResetStaticMode: 4
+IncludeLogsInBuild: true
+ParametersSeparator: ', '
+MethodLogFormat: '%class% %method% (%parameters%)'
+PropertyGetLogFormat: '%property% Get %value%'
+PropertySetLogFormat: '%property% Set (Old: %old_value%, New: %new_value%)'
+IncludeTimedInBuild: false
+TimedMethodFormat: '%class% %method% took %milliseconds% milliseconds (%ticks% ticks)'
+TimedPropertyGetFormat: '%class% %property% Get took %milliseconds% milliseconds (%ticks% ticks)'
+TimedPropertySetFormat: '%class% %property% Set took %milliseconds% milliseconds (%ticks% ticks)'
+MarkInProfilerFormat: '%class% :: %method%'

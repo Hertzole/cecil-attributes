@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace Hertzole.CecilAttributes.CodeGen
+namespace Hertzole.CecilAttributes.Editor
 {
     internal static class CecilAttributesSettingsProvider
     {

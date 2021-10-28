@@ -2,7 +2,7 @@
 using UnityEditor.Compilation;
 using UnityEngine;
 
-namespace Hertzole.CecilAttributes.CodeGen
+namespace Hertzole.CecilAttributes.Editor
 {
     internal static class CecilAttributesSettingsGUI
     {
@@ -151,7 +151,7 @@ namespace Hertzole.CecilAttributes.CodeGen
             }
 
             EditorGUI.BeginChangeCheck();
-            setFormat = EditorGUILayout.TextField(new GUIContent("Property Set Format", "The message that will be printed to the console when setting a property."), getFormat);
+            setFormat = EditorGUILayout.TextField(new GUIContent("Property Set Format", "The message that will be printed to the console when setting a property."), setFormat);
             if (EditorGUI.EndChangeCheck())
             {
                 CecilAttributesSettings.Instance.TimedPropertySetFormat = setFormat;
