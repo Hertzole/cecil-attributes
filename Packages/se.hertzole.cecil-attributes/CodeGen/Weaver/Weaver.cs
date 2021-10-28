@@ -75,6 +75,13 @@ namespace Hertzole.CecilAttributes.CodeGen
 						{
 							continue;
 						}
+						
+						processors[j].Type = type;
+
+						if (!processors[j].IsValidType())
+						{
+							continue;
+						}
 
 						if (!processors[j].AllowEditor && isEditor)
 						{
@@ -82,22 +89,15 @@ namespace Hertzole.CecilAttributes.CodeGen
 							continue;
 						}
 
-						if (processors[i].EditorOnly && !isEditor)
+						if (processors[j].EditorOnly && !isEditor)
 						{
-							Debug.LogWarning($"{processors[i].Name} can only be used in editor scripts. ({type.FullName})");
+							Debug.LogWarning($"{processors[j].Name} can only be used in editor scripts. ({type.FullName})");
 							continue;
 						}
 
-						if (processors[i].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
+						if (processors[j].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
 						{
-							Debug.LogWarning($"{processors[i].Name} needs to be in a MonoBehaviour. ({type.FullName})");
-							continue;
-						}
-						
-						processors[j].Type = type;
-
-						if (!processors[j].IsValidType())
-						{
+							Debug.LogWarning($"{processors[j].Name} needs to be in a MonoBehaviour. ({type.FullName})");
 							continue;
 						}
 
