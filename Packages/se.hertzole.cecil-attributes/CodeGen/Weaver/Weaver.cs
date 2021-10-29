@@ -85,6 +85,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 			}
 #else
 			bool isBuildingPlayer = UnityEditor.BuildPipeline.isBuildingPlayer;
+			UnityEngine.Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BUILDING PLAYER??? " + isBuildingPlayer);
 #endif
 			bool isEditor = assembly.Name.Contains("-Editor") || assembly.Name.Contains(".Editor");
 
@@ -109,6 +110,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 					{
 						if (!processors[j].IncludeInBuild && isBuildingPlayer)
 						{
+							Logger.Log($"SKIP :: Skipping {processors[j]} because they are not allowed in a built player.");
 							continue;
 						}
 						
@@ -116,23 +118,27 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 						if (!processors[j].IsValidType())
 						{
+							Logger.Log($"SKIP :: Skipping {processors[j]} on type {type} because it was not a valid type.");
 							continue;
 						}
 
 						if (!processors[j].AllowEditor && isEditor)
 						{
+							Logger.Log($"ERROR :: {processors[j]} on type {type} is not allowed because it's not allowed in the editor.");
 							Error($"{processors[i].Name} can't be used in the editor. ({type.FullName})");
 							break;
 						}
 
 						if (processors[j].EditorOnly && !isEditor)
 						{
+							Logger.Log($"ERROR :: {processors[j]} on type {type} is not allowed because it must be on an editor.");
 							Error($"{processors[j].Name} can only be used in editor scripts. ({type.FullName})");
 							break;
 						}
 
 						if (processors[j].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
 						{
+							Logger.Log($"ERROR :: {processors[j]} on type {type} is not allowed because it must be on a MonoBehaviour.");
 							Error($"{processors[j].Name} needs to be in a MonoBehaviour. ({type.FullName})");
 							break;
 						}
