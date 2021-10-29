@@ -35,7 +35,10 @@ public class GetComponentsTemplate : MonoBehaviour, IGetComponent
 
 		if (transformsList == null || transformsList.Count == 0)
 		{
-			transformsList ??= new List<Transform>();
+			if (transformsList == null)
+			{
+				transformsList = new List<Transform>();
+			}
 
 			GetComponentsInChildren(false, transformsList);
 		}
