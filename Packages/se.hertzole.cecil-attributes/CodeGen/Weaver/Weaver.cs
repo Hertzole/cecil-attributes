@@ -85,7 +85,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 			}
 #else
 			bool isBuildingPlayer = UnityEditor.BuildPipeline.isBuildingPlayer;
-			UnityEngine.Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BUILDING PLAYER??? " + isBuildingPlayer);
 #endif
 			bool isEditor = assembly.Name.Contains("-Editor") || assembly.Name.Contains(".Editor");
 
@@ -101,13 +100,18 @@ namespace Hertzole.CecilAttributes.CodeGen
 				IEnumerable<TypeDefinition> types = module.GetTypes();
 				foreach (TypeDefinition type in types)
 				{
+					Logger.Log($"Checking type {type}");
+					
 					if (type.HasAttribute<CecilAttributesProcessedAttribute>())
 					{
+						Logger.Log($"Type {type} has already been processed.");
 						continue;
 					}
 
 					for (int j = 0; j < processors.Length; j++)
 					{
+						Logger.Log($"Starting processor {processors[j]}");
+						
 						if (!processors[j].IncludeInBuild && isBuildingPlayer)
 						{
 							Logger.Log($"SKIP :: Skipping {processors[j]} because they are not allowed in a built player.");
@@ -143,6 +147,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 							break;
 						}
 
+						Logger.Log($"Running {processors[j]} on type {type}");
 						processors[j].ProcessType();
 					}
 
