@@ -218,7 +218,7 @@ namespace Hertzole.CecilAttributes.CodeGen
                     return (T)customField.Argument.Value;
                 }
             }
-
+            
             return defaultValue;
         }
     }

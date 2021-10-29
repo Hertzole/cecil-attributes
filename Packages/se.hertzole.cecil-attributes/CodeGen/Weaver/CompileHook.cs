@@ -96,7 +96,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			// Don't weave itself.
 			string assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-			if (assemblyName == WeaverConstants.RUNTIME_ASSEMBLY || assemblyName == WeaverConstants.EDITOR_ASSEMBLY)
+			if (assemblyName == WeaverConstants.RUNTIME_ASSEMBLY || assemblyName == WeaverConstants.EDITOR_ASSEMBLY || assemblyName == WeaverConstants.CODEGEN_ASSEMBLY)
 			{
 				return;
 			}
@@ -113,8 +113,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 			{
 				return;
 			}
-			
-			List<string> dependencyPaths = new List<string>();
+
+			List<string> dependencyPaths = new List<string>()
+			{
+				Path.GetDirectoryName(assemblyPath),
+				runtimeAssembly
+			};
 
 			foreach (UAssembly assembly in CompilationPipeline.GetAssemblies())
 			{
@@ -125,7 +129,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 				foreach (string assemblyReference in assembly.compiledAssemblyReferences)
 				{
-					dependencyPaths.Add(Path.GetDirectoryName(assemblyReference));
+					dependencyPaths.Add(assemblyReference);
 				}
 			}
 
