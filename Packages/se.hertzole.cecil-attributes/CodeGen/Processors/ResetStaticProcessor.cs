@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
@@ -91,7 +90,7 @@ namespace Hertzole.CecilAttributes.CodeGen
                     // No need to check for attribute since we just did above.
                     if (!hasAttribute && !Type.Fields[i].IsStatic)
                     {
-                        Debug.LogError($"{Type.Fields[i].FullName} isn't static. ResetStatic can only be on static fields.");
+                        Error($"{Type.Fields[i].FullName} isn't static. ResetStatic can only be on static fields.");
                         return;
                     }
 
@@ -122,13 +121,13 @@ namespace Hertzole.CecilAttributes.CodeGen
                     if (!hasAttribute && ((Type.Properties[i].GetMethod != null && !Type.Properties[i].GetMethod.IsStatic) || (Type.Properties[i].SetMethod != null && !Type.Properties[i].SetMethod.IsStatic)))
                     {
                         //throw new NotSupportedException(Type.Properties[i].FullName + " isn't static. ResetStatic can only be on static properties.");
-                        Debug.LogError($"{Type.Properties[i].FullName} isn't static. ResetStatic can only be on static properties.");
+                        Error($"{Type.Properties[i].FullName} isn't static. ResetStatic can only be on static properties.");
                         return;
                     }
 
                     if (Type.Properties[i].SetMethod == null)
                     {
-                        Debug.LogError($"{Type.Properties[i].FullName} doesn't have a set method. You need to be able to set a property in order to reset it.");
+                        Error($"{Type.Properties[i].FullName} doesn't have a set method. You need to be able to set a property in order to reset it.");
                         return;
                     }
 
@@ -158,7 +157,7 @@ namespace Hertzole.CecilAttributes.CodeGen
                     // No need to check for attribute since we just did above.
                     if (!hasAttribute && !Type.Events[i].AddMethod.IsStatic)
                     {
-                        Debug.LogError($"{Type.Events[i].FullName} isn't static. ResetStatic can only be on static events.");
+                        Error($"{Type.Events[i].FullName} isn't static. ResetStatic can only be on static events.");
                         return;
                     }
 
@@ -191,7 +190,7 @@ namespace Hertzole.CecilAttributes.CodeGen
             {
                 if (fields[i].IsGenericParameter)
                 {
-                    Debug.LogError(fields[i].Name + " is a generic. You can't reset a static generic.");
+                    Error(fields[i].Name + " is a generic. You can't reset a static generic.");
                     return;
                 }
 
