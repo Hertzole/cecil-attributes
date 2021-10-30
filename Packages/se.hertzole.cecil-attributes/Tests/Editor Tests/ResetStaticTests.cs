@@ -77,6 +77,12 @@ namespace Hertzole.CecilAttributes.Tests
 		// 	}
 		// }
 
+		[UnitySetUp]
+		public IEnumerator SetUp()
+		{
+			yield return new EnterPlayMode(false);
+		}
+
 		[UnityTest]
 		public IEnumerator PrimitiveDefaultField()
 		{
@@ -206,14 +212,6 @@ namespace Hertzole.CecilAttributes.Tests
 			public IEnumerator Perform()
 			{
 				// Enter play mode
-				ExpectedPlaymodeState = true;
-				EditorApplication.UnlockReloadAssemblies();
-				EditorApplication.isPlaying = true;
-				while (!EditorApplication.isPlaying)
-				{
-					yield return null;
-				}
-
 				Assert.IsTrue(Application.isPlaying);
 
 				try
@@ -269,14 +267,6 @@ namespace Hertzole.CecilAttributes.Tests
 					Debug.LogAssertion(e);
 					EditorApplication.isPlaying = false;
 					yield break;
-				}
-
-				// Exit play mode
-				ExpectedPlaymodeState = false;
-				EditorApplication.isPlaying = false;
-				while (EditorApplication.isPlaying)
-				{
-					yield return null;
 				}
 			}
 		}
