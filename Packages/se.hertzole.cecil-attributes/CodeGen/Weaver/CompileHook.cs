@@ -114,10 +114,18 @@ namespace Hertzole.CecilAttributes.CodeGen
 				return;
 			}
 
+			string unityCoreModule = UnityEditorInternal.InternalEditorUtility.GetEngineCoreModuleAssemblyPath();
+			if (string.IsNullOrEmpty(unityCoreModule))
+			{
+				Debug.LogError("Failed to find UnityEngine assembly.");
+				return;
+			}
+
 			List<string> dependencyPaths = new List<string>()
 			{
 				Path.GetDirectoryName(assemblyPath),
-				runtimeAssembly
+				runtimeAssembly,
+				unityCoreModule
 			};
 
 			foreach (UAssembly assembly in CompilationPipeline.GetAssemblies())
@@ -147,17 +155,25 @@ namespace Hertzole.CecilAttributes.CodeGen
 			ILPostProcessResult result = weaver.ProcessAssembly(compiledAssembly);
 			if (result.Diagnostics.Count > 0)
 			{
+				bool failed = false;	
+			
 				for (int i = 0; i < result.Diagnostics.Count; i++)
 				{
 					switch (result.Diagnostics[i].DiagnosticType)
 					{
 						case DiagnosticType.Error:
 							Debug.LogError($"{nameof(ILPostProcessor)} Error - {result.Diagnostics[i].MessageData} {result.Diagnostics[i].File}:{result.Diagnostics[i].Line}");
+							failed = true;
 							break;
 						case DiagnosticType.Warning:
 							Debug.LogWarning($"{nameof(ILPostProcessor)} Warning - {result.Diagnostics[i].MessageData} {result.Diagnostics[i].File}:{result.Diagnostics[i].Line}");
 							break;
 					}
+				}
+
+				if (failed)
+				{
+					SessionState.SetBool(WeaverConstants.WEAVE_SUCCESS, false);
 				}
 
 				return;

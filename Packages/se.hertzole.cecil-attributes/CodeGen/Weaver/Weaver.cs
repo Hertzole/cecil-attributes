@@ -100,21 +100,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 				IEnumerable<TypeDefinition> types = module.GetTypes();
 				foreach (TypeDefinition type in types)
 				{
-					Logger.Log($"Checking type {type}");
+					bool dirty = false;
 					
 					if (type.HasAttribute<CecilAttributesProcessedAttribute>())
 					{
-						Logger.Log($"Type {type} has already been processed.");
 						continue;
 					}
 
 					for (int j = 0; j < processors.Length; j++)
 					{
-						Logger.Log($"Starting processor {processors[j]}");
-						
 						if (!processors[j].IncludeInBuild && isBuildingPlayer)
 						{
-							Logger.Log($"SKIP :: Skipping {processors[j]} because they are not allowed in a built player.");
 							continue;
 						}
 						
@@ -122,36 +118,35 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 						if (!processors[j].IsValidType())
 						{
-							Logger.Log($"SKIP :: Skipping {processors[j]} on type {type} because it was not a valid type.");
 							continue;
 						}
 
 						if (!processors[j].AllowEditor && isEditor)
 						{
-							Logger.Log($"ERROR :: {processors[j]} on type {type} is not allowed because it's not allowed in the editor.");
 							Error($"{processors[i].Name} can't be used in the editor. ({type.FullName})");
 							break;
 						}
 
 						if (processors[j].EditorOnly && !isEditor)
 						{
-							Logger.Log($"ERROR :: {processors[j]} on type {type} is not allowed because it must be on an editor.");
 							Error($"{processors[j].Name} can only be used in editor scripts. ({type.FullName})");
 							break;
 						}
 
 						if (processors[j].NeedsMonoBehaviour && !type.IsSubclassOf<MonoBehaviour>())
 						{
-							Logger.Log($"ERROR :: {processors[j]} on type {type} is not allowed because it must be on a MonoBehaviour.");
 							Error($"{processors[j].Name} needs to be in a MonoBehaviour. ({type.FullName})");
 							break;
 						}
 
-						Logger.Log($"Running {processors[j]} on type {type}");
 						processors[j].ProcessType();
+						dirty = true;
 					}
 
-					type.CustomAttributes.Add(new CustomAttribute(module.ImportReference(typeof(CecilAttributesProcessedAttribute).GetConstructor(Type.EmptyTypes))));
+					if (dirty)
+					{
+						type.CustomAttributes.Add(new CustomAttribute(module.ImportReference(typeof(CecilAttributesProcessedAttribute).GetConstructor(Type.EmptyTypes))));
+					}
 				}
 			}
 			
