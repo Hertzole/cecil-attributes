@@ -17,14 +17,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         lfs: true
-
-    # Cache
-    - uses: actions/cache@v2.1.4
-      with:
-        path: Library
-        key: Library
     
     - name: Run tests
       uses: game-ci/unity-test-runner@v2
       with:
-        unityVersion: "2019.4.20f1"
+        unityVersion: "2019.4.32f1"
