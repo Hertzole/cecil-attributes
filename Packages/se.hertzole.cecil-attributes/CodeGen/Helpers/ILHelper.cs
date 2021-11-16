@@ -285,5 +285,44 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			return total.ToArray();
 		}
+
+		public static IEnumerable<Instruction> GetStandardValue(TypeReference type)
+		{
+			List<Instruction> instructions = new List<Instruction>();
+
+			if (type.Is<bool>() || type.Is<int>() || type.Is<uint>() || type.Is<short>() || type.Is<ushort>() || type.Is<byte>() || type.Is<sbyte>())
+			{
+				instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+			}
+			else if (type.Is<long>() || type.Is<ulong>())
+			{
+				instructions.Add(Instruction.Create(OpCodes.Conv_I8));
+				instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+			}
+			else if (type.Is<float>())
+			{
+				instructions.Add(Instruction.Create(OpCodes.Ldc_R4, 0.0f));
+			}
+			else if (type.Is<double>())
+			{
+				instructions.Add(Instruction.Create(OpCodes.Ldc_R8, 0.0d));
+			}
+			else if (type.IsValueType)
+			{
+				// Handle value types differently.
+				return instructions;
+			}
+			else
+			{
+				instructions.Add(Instruction.Create(OpCodes.Ldnull));
+			}
+
+			if (instructions.Count > 0)
+			{
+				return instructions;
+			}
+
+			throw new NullReferenceException($"Can't find a default value for type {type}.");
+		}
 	}
 }

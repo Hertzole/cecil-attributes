@@ -265,7 +265,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 
         private static (List<Instruction>, bool) GetStaticSet(TypeDefinition classType, FieldReference field)
         {
-            bool valueType = false;
             List<Instruction> instructions = new List<Instruction>();
 
             if (classType.TryGetMethod(".cctor", out MethodDefinition cctor))
@@ -296,11 +295,11 @@ namespace Hertzole.CecilAttributes.CodeGen
                     }
                     else if (type.Is<float>())
                     {
-                        instructions.Add(Instruction.Create(OpCodes.Ldc_R4, (float)0.0f));
+                        instructions.Add(Instruction.Create(OpCodes.Ldc_R4, 0.0f));
                     }
                     else if (type.Is<double>())
                     {
-                        instructions.Add(Instruction.Create(OpCodes.Ldc_R8, (double)0.0d));
+                        instructions.Add(Instruction.Create(OpCodes.Ldc_R8, 0.0d));
                     }
                     else if (type.IsValueType)
                     {
@@ -314,11 +313,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 
                     if (instructions.Count > 0)
                     {
-                        return (instructions, valueType);
+                        return (instructions, false);
                     }
                     else
                     {
-                        throw new NullReferenceException("There's nothing that sets field " + field.Name + ". Did you set a default value?");
+                        throw new NullReferenceException($"There's nothing that sets field {field.Name}. Did you set a default value?");
                     }
                 }
 
@@ -328,12 +327,12 @@ namespace Hertzole.CecilAttributes.CodeGen
                     root = root.Previous;
                 }
 
-                return (instructions, valueType);
+                return (instructions, false);
             }
             else if (field.FieldType.Resolve().IsClass)
             {
-                instructions.Add(Instruction.Create(OpCodes.Ldnull));
-                return (instructions, valueType);
+                instructions.AddRange(ILHelper.GetStandardValue(field.FieldType));
+                return (instructions, false);
             }
 
             throw new NullReferenceException();

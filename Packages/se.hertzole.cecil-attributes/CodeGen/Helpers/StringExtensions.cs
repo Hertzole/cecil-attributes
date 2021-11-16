@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
@@ -6,6 +7,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
     public static partial class Extensions
     {
+        public static string ToDebugString<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
+        {
+            return $"[{dictionary.Count}] {{{string.Join(", ", dictionary.Select(kv => $"{kv.Key}: {kv.Value}"))}}}";
+        }
+
+        public static string ToDebugString<T>(this IEnumerable<T> array)
+        {
+            T[] a = array as T[] ?? array.ToArray();
+            return $"[{a.Length}] {{{string.Join(", ", a)}}}";
+        }
+        
         private static void ReplaceReplaceablesBase(StringBuilder sb, TypeReference type, MethodDefinition method, PropertyDefinition property)
         {
             if (type != null)

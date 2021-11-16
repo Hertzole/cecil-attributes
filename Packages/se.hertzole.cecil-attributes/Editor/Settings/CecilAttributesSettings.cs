@@ -216,12 +216,12 @@ namespace Hertzole.CecilAttributes.Editor
 			CecilAttributesSettings settings;
 
 			// Backwards compatibility.
-			string oldPath = "ProjectSettings/CecilAttributesSettings.asset";
+			const string old_path = "ProjectSettings/CecilAttributesSettings.asset";
 
-			if (File.Exists(oldPath))
+			if (File.Exists(old_path))
 			{
-				settings = LoadSettings(oldPath);
-				RemoveFile(oldPath);
+				settings = LoadSettings(old_path);
+				RemoveFile(old_path);
 
 				if (settings != null)
 				{
@@ -231,6 +231,10 @@ namespace Hertzole.CecilAttributes.Editor
 
 			// Need to check for old file for backwards compatibility support.
 			if (!File.Exists(PATH) && !File.Exists(DIRECTORY + "/CecilAttributesSettings.asset"))
+			{
+				settings = CreateNewSettings();
+			}
+			else if (!File.Exists(Path.GetFullPath($"{Directory.GetCurrentDirectory()}/{PATH}")))
 			{
 				settings = CreateNewSettings();
 			}
@@ -259,6 +263,11 @@ namespace Hertzole.CecilAttributes.Editor
 
 		public static SettingData LoadSettingData()
 		{
+			if (!File.Exists(Path.GetFullPath($"{Directory.GetCurrentDirectory()}/{PATH}")))
+			{
+				return SettingData.Default;
+			}
+			
 			SettingData data;
 			try
 			{

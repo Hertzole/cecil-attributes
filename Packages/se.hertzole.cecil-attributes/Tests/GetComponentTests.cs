@@ -47,7 +47,7 @@ namespace Hertzole.CecilAttributes.Tests
 			[GetComponent]
 			public ComponentReference2 reference2;
 		}
-		
+
 		private class ComponentReferenceParent1 : MonoBehaviour
 		{
 			[GetComponent(target = GetComponentTarget.Parent)]
@@ -70,6 +70,26 @@ namespace Hertzole.CecilAttributes.Tests
 		{
 			[GetComponent(target = GetComponentTarget.Children)]
 			public ComponentReference reference2;
+		}
+
+		private class CReference : BReference { }
+
+		private class BReference : AReference
+		{
+			[GetComponent]
+			public AReference referenceA;
+		}
+
+		private class AReference : MonoBehaviour
+		{
+			[GetComponent]
+			public AReference referenceB;
+		}
+
+		private class DReference : CReference
+		{
+			[GetComponent]
+			public AReference referenceD;
 		}
 		#endregion
 		
@@ -342,6 +362,29 @@ namespace Hertzole.CecilAttributes.Tests
 
 			Assert.IsNotNull(comp.reference1);
 			Assert.IsNotNull(comp.reference2);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentWeirdOrder()
+		{
+			GameObject obj = new GameObject("", typeof(DReference));
+			objects.Add(obj);
+
+			DReference comp = obj.GetComponent<DReference>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is IGetComponent);
+			Assert.IsNull(comp.referenceA);
+			Assert.IsNull(comp.referenceB);
+			Assert.IsNull(comp.referenceD);
+
+			((IGetComponent) comp).FetchComponents();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.referenceA);
+			Assert.IsNotNull(comp.referenceB);
+			Assert.IsNotNull(comp.referenceD);
 		}
 
 		[UnityTest]

@@ -8,6 +8,7 @@
 
 ### Fixes
 - A lot of fixes for log called, especially with generics.
+- Fixed reset static not setting the correct value on child classes
 
 ## [0.4.1-preview] - 2021-02-11
 ### Changed

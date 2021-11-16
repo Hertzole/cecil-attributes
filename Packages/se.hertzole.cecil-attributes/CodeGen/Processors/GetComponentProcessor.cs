@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Hertzole.CecilAttributes.Interfaces;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -18,12 +19,18 @@ namespace Hertzole.CecilAttributes.CodeGen
 		public override bool IncludeInBuild { get { return false; } }
 
 		private readonly List<(FieldDefinition field, GetComponentTarget target, bool includeInactive)> targetFields = new List<(FieldDefinition, GetComponentTarget, bool)>();
+		private readonly List<TypeDefinition> parents = new List<TypeDefinition>();
 
 		public override bool IsValidType()
 		{
-			if (Type.HasFields)
+			return IsValidType(Type);
+		}
+
+		private static bool IsValidType(TypeDefinition type)
+		{
+			if (type.HasFields)
 			{
-				foreach (FieldDefinition field in Type.Fields)
+				foreach (FieldDefinition field in type.Fields)
 				{
 					if (field.HasAttribute<GetComponentAttribute>())
 					{
@@ -37,14 +44,19 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		public override void ProcessType()
 		{
-			if (!SetInterface(Type, out MethodDefinition fetchComponentsMethod, out MethodDefinition parentFetchComponents, out bool isChild))
+			ProcessType(Type, true);
+		}
+
+		private void ProcessType(TypeDefinition type, bool checkParents)
+		{
+			if (!SetInterface(checkParents, type, parents, out MethodDefinition fetchComponentsMethod, out MethodDefinition parentFetchComponents, out bool isChild))
 			{
 				return;
 			}
 			
 			targetFields.Clear();
 			
-			foreach (FieldDefinition field in Type.Fields)
+			foreach (FieldDefinition field in type.Fields)
 			{
 				if (field.TryGetAttribute<GetComponentAttribute>(out CustomAttribute attribute))
 				{
@@ -58,20 +70,31 @@ namespace Hertzole.CecilAttributes.CodeGen
 			ProcessFields(fetchComponentsMethod, parentFetchComponents, isChild);
 		}
 
-		private static bool SetInterface(TypeDefinition type, out MethodDefinition fetchComponentsMethod, out MethodDefinition parentFetchComponents, out bool isChild)
+		private bool SetInterface(bool checkParents, TypeDefinition type, IList<TypeDefinition> parentList, out MethodDefinition fetchComponentsMethod, out MethodDefinition parentFetchComponents, out bool isChild)
 		{
-			isChild = type.TryGetMethodInBaseType(FETCH_COMPONENTS, out parentFetchComponents);
+			if (checkParents)
+			{
+				CheckParents(type, parentList);
+			}
 
-			if(!isChild && type.ImplementsInterface<IGetComponent>())
+			// If it already implements IGetComponent or has the fetch components method, stop here.
+			if (type.ImplementsInterface<IGetComponent>() || type.TryGetMethod(FETCH_COMPONENTS, out _))
 			{
 				fetchComponentsMethod = null;
+				parentFetchComponents = null;
+				isChild = false;
 				return false;
 			}
-			
+
+			// Try to fetch the parent fetch components method.
+			// If it has it, we're a child of a class.
+			isChild = type.TryGetMethodInBaseType(FETCH_COMPONENTS, out parentFetchComponents);
+
 			fetchComponentsMethod = type.AddMethod(
 				"__CECIL__ATTRIBUTES__GENERATED__FetchComponents",
 				MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual);
 			
+			// If we're not a child, implement the IGetComponent interface.
 			if (!isChild)
 			{
 				fetchComponentsMethod.Attributes |= MethodAttributes.NewSlot;
@@ -93,6 +116,39 @@ namespace Hertzole.CecilAttributes.CodeGen
 			}
 
 			return true;
+		}
+
+		private void CheckParents(TypeDefinition type, IList<TypeDefinition> parentList)
+		{
+			// Clear the list to make sure there are no left overs.
+			parentList.Clear();
+			
+			// Go until we hit a null base type.
+			TypeReference baseType = type.BaseType;
+			while (baseType != null)
+			{
+				// Stop if it basically doesn't exist.
+				if (!baseType.CanBeResolved())
+				{
+					break;
+				}
+
+				// Check if it's a valid type and doesn't implement IGetComponent.
+				TypeDefinition resolved = baseType.Resolve();
+				if (IsValidType(resolved) && !resolved.ImplementsInterface<IGetComponent>())
+				{
+					parentList.Add(resolved);
+				}
+
+				// Go to the next base type.
+				baseType = resolved.BaseType;
+			}
+				
+			// Go through in reverse because we want the top most class.
+			for (int i = parentList.Count - 1; i >= 0; i--)
+			{
+				ProcessType(parentList[i], false);
+			}
 		}
 
 		private void ProcessFields(MethodDefinition method, MethodReference parentMethod, bool isChild)
