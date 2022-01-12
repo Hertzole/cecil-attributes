@@ -9,73 +9,7 @@ namespace Hertzole.CecilAttributes.Tests
 {
 	public class ResetStaticTests
 	{
-		private enum TestEnum
-		{
-			Value1 = 0,
-			Value3 = 1,
-			Consistency = 2
-		}
-
-		private static class TestClass
-		{
-			[ResetStatic]
-			public static int defaultPrimitive;
-			[ResetStatic]
-			public static int valuePrimitive = 42;
-			[ResetStatic]
-			public static Vector3Int defaultValueType;
-			[ResetStatic]
-			public static Vector3Int valueValueType = new Vector3Int(42, 69, 420);
-			[ResetStatic]
-			public static string defaultString;
-			[ResetStatic]
-			public static string valueString = "Hello world!";
-			[ResetStatic]
-			public static TestEnum defaultEnum;
-			[ResetStatic]
-			public static TestEnum valueEnum = TestEnum.Consistency;
-			[ResetStatic]
-			public static int DefaultPrimitive { get; set; }
-			[ResetStatic]
-			public static int ValuePrimitive { get; set; } = 42;
-			[ResetStatic]
-			public static Vector3Int DefaultValueType { get; set; }
-			[ResetStatic]
-			public static Vector3Int ValueValueType { get; set; } = new Vector3Int(42, 69, 420);
-			[ResetStatic]
-			public static string DefaultString { get; set; }
-			[ResetStatic]
-			public static string ValueString { get; set; } = "Hello world!";
-			[ResetStatic]
-			public static TestEnum DefaultEnum { get; set; }
-			[ResetStatic]
-			public static TestEnum ValueEnum { get; set; } = TestEnum.Consistency;
-
-			[ResetStatic]
-			public static event Action OnActionEvent;
-			[ResetStatic]
-			public static event Action<bool> OnActionParameterEvent;
-
-			public static void InvokeEvents()
-			{
-				OnActionEvent?.Invoke();
-				OnActionParameterEvent?.Invoke(true);
-			}
-		}
-
-		private class TestClass2 : TestClass1
-		{
-			[ResetStatic]
-			public static int newIntValue;
-		}
-
-		private class TestClass1
-		{
-			[ResetStatic]
-			public static int intValue = 42;
-		}
-
-		// private static class GenericTestClass<T> where T: MonoBehaviour
+		// private static class GenericResetStaticTestClass<T> where T: MonoBehaviour
 		// {
 		// 	// [ResetStatic]
 		// 	public static T field;
@@ -108,109 +42,109 @@ namespace Hertzole.CecilAttributes.Tests
 		[UnityTest]
 		public IEnumerator PrimitiveDefaultField()
 		{
-			yield return new ResetStaticTest<int>(0, 100, x => TestClass.defaultPrimitive = x, () => TestClass.defaultPrimitive);
+			yield return new ResetStaticTest<int>(0, 100, x => ResetStaticTestClass.defaultPrimitive = x, () => ResetStaticTestClass.defaultPrimitive);
 		}
 
 		[UnityTest]
 		public IEnumerator PrimitiveValueField()
 		{
-			yield return new ResetStaticTest<int>(42, 100, x => TestClass.valuePrimitive = x, () => TestClass.valuePrimitive);
+			yield return new ResetStaticTest<int>(42, 100, x => ResetStaticTestClass.valuePrimitive = x, () => ResetStaticTestClass.valuePrimitive);
 		}
 
 		[UnityTest]
 		public IEnumerator PrimitiveDefaultProperty()
 		{
-			yield return new ResetStaticTest<int>(0, 100, x => TestClass.DefaultPrimitive = x, () => TestClass.DefaultPrimitive);
+			yield return new ResetStaticTest<int>(0, 100, x => ResetStaticTestClass.DefaultPrimitive = x, () => ResetStaticTestClass.DefaultPrimitive);
 		}
 
 		[UnityTest]
 		public IEnumerator PrimitiveValueProperty()
 		{
-			yield return new ResetStaticTest<int>(42, 100, x => TestClass.ValuePrimitive = x, () => TestClass.ValuePrimitive);
+			yield return new ResetStaticTest<int>(42, 100, x => ResetStaticTestClass.ValuePrimitive = x, () => ResetStaticTestClass.ValuePrimitive);
 		}
 
 		[UnityTest]
 		public IEnumerator ValueTypeDefaultField()
 		{
-			yield return new ResetStaticTest<Vector3Int>(Vector3Int.zero, new Vector3Int(1, 2, 3), x => TestClass.defaultValueType = x, () => TestClass.defaultValueType);
+			yield return new ResetStaticTest<Vector3Int>(Vector3Int.zero, new Vector3Int(1, 2, 3), x => ResetStaticTestClass.defaultValueType = x, () => ResetStaticTestClass.defaultValueType);
 		}
 
 		[UnityTest]
 		public IEnumerator ValueTypeValueField()
 		{
-			yield return new ResetStaticTest<Vector3Int>(new Vector3Int(42, 69, 420), new Vector3Int(1, 2, 3), x => TestClass.valueValueType = x, () => TestClass.valueValueType);
+			yield return new ResetStaticTest<Vector3Int>(new Vector3Int(42, 69, 420), new Vector3Int(1, 2, 3), x => ResetStaticTestClass.valueValueType = x, () => ResetStaticTestClass.valueValueType);
 		}
 
 		[UnityTest]
 		public IEnumerator ValueTypeDefaultProperty()
 		{
-			yield return new ResetStaticTest<Vector3Int>(Vector3Int.zero, new Vector3Int(1, 2, 3), x => TestClass.DefaultValueType = x, () => TestClass.DefaultValueType);
+			yield return new ResetStaticTest<Vector3Int>(Vector3Int.zero, new Vector3Int(1, 2, 3), x => ResetStaticTestClass.DefaultValueType = x, () => ResetStaticTestClass.DefaultValueType);
 		}
 
 		[UnityTest]
 		public IEnumerator ValueTypeValueProperty()
 		{
-			yield return new ResetStaticTest<Vector3Int>(new Vector3Int(42, 69, 420), new Vector3Int(1, 2, 3), x => TestClass.ValueValueType = x, () => TestClass.ValueValueType);
+			yield return new ResetStaticTest<Vector3Int>(new Vector3Int(42, 69, 420), new Vector3Int(1, 2, 3), x => ResetStaticTestClass.ValueValueType = x, () => ResetStaticTestClass.ValueValueType);
 		}
 
 		[UnityTest]
 		public IEnumerator StringDefaultField()
 		{
-			yield return new ResetStaticTest<string>(null, "Hi!", x => TestClass.defaultString = x, () => TestClass.defaultString);
+			yield return new ResetStaticTest<string>(null, "Hi!", x => ResetStaticTestClass.defaultString = x, () => ResetStaticTestClass.defaultString);
 		}
 
 		[UnityTest]
 		public IEnumerator StringValueField()
 		{
-			yield return new ResetStaticTest<string>("Hello world!", "Hi!", x => TestClass.valueString = x, () => TestClass.valueString);
+			yield return new ResetStaticTest<string>("Hello world!", "Hi!", x => ResetStaticTestClass.valueString = x, () => ResetStaticTestClass.valueString);
 		}
 
 		[UnityTest]
 		public IEnumerator StringDefaultProperty()
 		{
-			yield return new ResetStaticTest<string>(null, "Hi!", x => TestClass.DefaultString = x, () => TestClass.DefaultString);
+			yield return new ResetStaticTest<string>(null, "Hi!", x => ResetStaticTestClass.DefaultString = x, () => ResetStaticTestClass.DefaultString);
 		}
 
 		[UnityTest]
 		public IEnumerator StringValueProperty()
 		{
-			yield return new ResetStaticTest<string>("Hello world!", "Hi!", x => TestClass.ValueString = x, () => TestClass.ValueString);
+			yield return new ResetStaticTest<string>("Hello world!", "Hi!", x => ResetStaticTestClass.ValueString = x, () => ResetStaticTestClass.ValueString);
 		}
 
 		[UnityTest]
 		public IEnumerator EnumDefaultField()
 		{
-			yield return new ResetStaticTest<TestEnum>(TestEnum.Value1, TestEnum.Value3, x => TestClass.defaultEnum = x, () => TestClass.defaultEnum);
+			yield return new ResetStaticTest<TestEnum>(TestEnum.Value1, TestEnum.Value3, x => ResetStaticTestClass.defaultEnum = x, () => ResetStaticTestClass.defaultEnum);
 		}
 
 		[UnityTest]
 		public IEnumerator EnumValueField()
 		{
-			yield return new ResetStaticTest<TestEnum>(TestEnum.Consistency, TestEnum.Value3, x => TestClass.valueEnum = x, () => TestClass.valueEnum);
+			yield return new ResetStaticTest<TestEnum>(TestEnum.Consistency, TestEnum.Value3, x => ResetStaticTestClass.valueEnum = x, () => ResetStaticTestClass.valueEnum);
 		}
 
 		[UnityTest]
 		public IEnumerator EnumDefaultProperty()
 		{
-			yield return new ResetStaticTest<TestEnum>(TestEnum.Value1, TestEnum.Value3, x => TestClass.DefaultEnum = x, () => TestClass.DefaultEnum);
+			yield return new ResetStaticTest<TestEnum>(TestEnum.Value1, TestEnum.Value3, x => ResetStaticTestClass.DefaultEnum = x, () => ResetStaticTestClass.DefaultEnum);
 		}
 
 		[UnityTest]
 		public IEnumerator EnumValueProperty()
 		{
-			yield return new ResetStaticTest<TestEnum>(TestEnum.Consistency, TestEnum.Value3, x => TestClass.ValueEnum = x, () => TestClass.ValueEnum);
+			yield return new ResetStaticTest<TestEnum>(TestEnum.Consistency, TestEnum.Value3, x => ResetStaticTestClass.ValueEnum = x, () => ResetStaticTestClass.ValueEnum);
 		}
 
 		[UnityTest]
 		public IEnumerator ActionEvent()
 		{
-			yield return new ResetStaticEventTest(x => TestClass.OnActionEvent += x);
+			yield return new ResetStaticEventTest(x => ResetStaticTestClass.OnActionEvent += x);
 		}
 
 		[UnityTest]
 		public IEnumerator ActionParameterEvent()
 		{
-			yield return new ResetStaticEventTest<bool>(x => TestClass.OnActionParameterEvent += x);
+			yield return new ResetStaticEventTest<bool>(x => ResetStaticTestClass.OnActionParameterEvent += x);
 		}
 
 		[UnityTest]
@@ -223,13 +157,13 @@ namespace Hertzole.CecilAttributes.Tests
 		// [UnityTest]
 		// public IEnumerator PrimitiveGenericField()
 		// {
-		// 	yield return new ResetStaticTest<int>(0, 100, x => GenericTestClass<int>.field = x, () => GenericTestClass<int>.field);
+		// 	yield return new ResetStaticTest<int>(0, 100, x => GenericResetStaticTestClass<int>.field = x, () => GenericResetStaticTestClass<int>.field);
 		// }
 		//
 		// [UnityTest]
 		// public IEnumerator PrimitiveGenericProperty()
 		// {
-		// 	yield return new ResetStaticTest<int>(0, 100, x => GenericTestClass<int>.Property = x, () => GenericTestClass<int>.Property);
+		// 	yield return new ResetStaticTest<int>(0, 100, x => GenericResetStaticTestClass<int>.Property = x, () => GenericResetStaticTestClass<int>.Property);
 		// }
 
 		private class ResetStaticTest<T> : IEditModeTestYieldInstruction
@@ -341,7 +275,7 @@ namespace Hertzole.CecilAttributes.Tests
 				eventCalled = false;
 
 				SubscribeEvent();
-				TestClass.InvokeEvents();
+				ResetStaticTestClass.InvokeEvents();
 
 				try
 				{
@@ -387,7 +321,7 @@ namespace Hertzole.CecilAttributes.Tests
 					yield break;
 				}
 
-				TestClass.InvokeEvents();
+				ResetStaticTestClass.InvokeEvents();
 				
 				try
 				{

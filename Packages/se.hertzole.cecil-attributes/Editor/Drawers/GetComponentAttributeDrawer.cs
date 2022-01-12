@@ -14,6 +14,13 @@ namespace Hertzole.CecilAttributes.Editor
 		[InitializeOnLoadMethod]
 		private static void ScanGetComponent()
 		{
+#if CECIL_ATTRIBUTES_PARRAEL_SYNC
+			if (ParrelSync.ClonesManager.IsClone())
+			{
+				return;
+			}
+#endif
+			
 #if UNITY_2020_1_OR_NEWER
 			TypeCache.FieldInfoCollection fields = TypeCache.GetFieldsWithAttribute<GetComponentAttribute>();
 #else

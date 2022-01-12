@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Hertzole.CecilAttributes"
+        "Hertzole.CecilAttributes",
+        "Hertzole.CecilAttributes.Tests"
     ],
     "includePlatforms": [
         "Editor"

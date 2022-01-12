@@ -21,4 +21,4 @@ jobs:
     - name: Run tests
       uses: game-ci/unity-test-runner@v2
       with:
-        unityVersion: "2020.3.6f1"
+        unityVersion: "2020.3.25f1"
