@@ -4,9 +4,9 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
     public sealed class PostProcessorReflectionImporterProvider : IReflectionImporterProvider
     {
-        public IReflectionImporter GetReflectionImporter(ModuleDefinition moduleDefinition)
+        public IReflectionImporter GetReflectionImporter(ModuleDefinition module)
         {
-            return new PostProcessorReflectionImporter(moduleDefinition);
+            return new PostProcessorReflectionImporter(module);
         }
     }
 }

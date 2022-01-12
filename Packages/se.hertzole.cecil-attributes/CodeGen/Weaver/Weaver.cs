@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
@@ -70,6 +71,10 @@ namespace Hertzole.CecilAttributes.CodeGen
 		{
 			AssemblyDefinition assemblyDefinition = WeaverHelpers.AssemblyDefinitionFor(assembly);
 
+#if CECIL_ATTRIBUTES_DEBUG
+			Stopwatch sw = Stopwatch.StartNew();
+#endif
+
 #if UNITY_2020_2_OR_NEWER
 			bool isBuildingPlayer = true;
 			if (assembly.Defines != null && assembly.Defines.Length > 0)
@@ -101,7 +106,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				foreach (TypeDefinition type in types)
 				{
 					bool dirty = false;
-					
+
 					if (type.HasAttribute<CecilAttributesProcessedAttribute>())
 					{
 						continue;
@@ -113,7 +118,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 						{
 							continue;
 						}
-						
+
 						processors[j].Type = type;
 
 						if (!processors[j].IsValidType())
@@ -149,7 +154,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 					}
 				}
 			}
-			
+
 			MemoryStream pe = new MemoryStream();
 			MemoryStream pdb = new MemoryStream();
 
@@ -161,6 +166,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 			};
 
 			assemblyDefinition.Write(pe, writerParameters);
+
+#if CECIL_ATTRIBUTES_DEBUG
+			sw.Stop();
+			diagnostics.AddWarning($"Cecil Attributes Weaver took {sw.ElapsedMilliseconds}ms when processing {assembly.Name}");
+#endif
 
 			return new ILPostProcessResult(new InMemoryAssembly(pe.ToArray(), pdb.ToArray()), diagnostics);
 		}
