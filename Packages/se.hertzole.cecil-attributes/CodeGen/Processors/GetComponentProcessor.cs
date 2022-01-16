@@ -209,33 +209,10 @@ namespace Hertzole.CecilAttributes.CodeGen
 					// if (list == null)
 					il.InsertAt(0, Instruction.Create(OpCodes.Brtrue, insideIfCheck));
 					il.InsertAt(0, Instruction.Create(OpCodes.Ldfld, targetFields[i].field));
-					insideIfCheck = il.InsertAt(0, ILHelper.Ldarg(il));
-				}
-
-				if (targetFields[i].field.FieldType.IsArray() || targetFields[i].field.FieldType.IsList())
-				{
-					// if (field == null || field.Length/Count == 0)
-					il.InsertAt(0, Instruction.Create(OpCodes.Brtrue, previous));
-					// If it's an array, load the length.
-					if (targetFields[i].field.FieldType.IsArray())
-					{
-						il.InsertAt(0, Instruction.Create(OpCodes.Ldlen));
-					}
-					else if (targetFields[i].field.FieldType.IsList()) // Else load the count
-					{
-						il.InsertAt(0, Instruction.Create(OpCodes.Callvirt, 
-							Module.GetMethod(typeof(List<>), "get_Count")
-							      .MakeHostInstanceGeneric(Module.GetTypeReference(typeof(List<>)).MakeGenericInstanceType(targetFields[i].field.FieldType.GetCollectionType()))));
-					}
-
-					il.InsertAt(0, Instruction.Create(OpCodes.Ldfld, targetFields[i].field));
-					il.InsertAt(0, ILHelper.Ldarg(il));
-
-					il.InsertAt(0, Instruction.Create(OpCodes.Brfalse, insideIfCheck));
-					il.InsertAt(0, Instruction.Create(OpCodes.Ldfld, targetFields[i].field));
 					il.InsertAt(0, ILHelper.Ldarg(il));
 				}
-				else
+				
+				if (!targetFields[i].field.FieldType.IsArray() && !targetFields[i].field.FieldType.IsList())
 				{
 					// if (field == null)
 					il.InsertAt(0, Instruction.Create(OpCodes.Brfalse, previous));
