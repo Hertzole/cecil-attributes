@@ -42,6 +42,8 @@ namespace Hertzole.CecilAttributes.Editor
 			int totalProgress = GetTotalProgress(fields, allPrefabs, objectList, fieldToObjects);
 			int progress = 0;
 
+			bool isDirty = false;
+			
 			foreach (KeyValuePair<FieldInfo, Object[]> pair in fieldToObjects)
 			{
 				foreach (Object o in pair.Value)
@@ -55,15 +57,22 @@ namespace Hertzole.CecilAttributes.Editor
 
 					if (o is Component)
 					{
-						PatchPrefab(o);
+						bool isPrefabDirty = PatchPrefab(o);
 						scannedObjects.Add(o);
+						if (isPrefabDirty)
+						{
+							isDirty = true;
+						}
 					}
 
 					progress++;
 				}
 			}
 
-			AssetDatabase.Refresh();
+			if (isDirty)
+			{
+				AssetDatabase.Refresh();
+			}
 
 			EditorUtility.ClearProgressBar();
 		}
@@ -105,12 +114,12 @@ namespace Hertzole.CecilAttributes.Editor
 			return objectsList.Count > 0 ? objectsList.ToArray() : Array.Empty<Object>();
 		}
 
-		private static void PatchPrefab(Object obj)
+		private static bool PatchPrefab(Object obj)
 		{
 			string assetPath = AssetDatabase.GetAssetPath(obj);
 			if (string.IsNullOrEmpty(assetPath))
 			{
-				return;
+				return false;
 			}
 
 			GameObject root = PrefabUtility.LoadPrefabContents(assetPath);
@@ -118,17 +127,27 @@ namespace Hertzole.CecilAttributes.Editor
 			if (root == null)
 			{
 				PrefabUtility.UnloadPrefabContents(root);
-				return;
+				return false;
 			}
 
 			IGetComponent[] getComps = root.GetComponentsInChildren<IGetComponent>();
+			bool isDirty = false;
 			for (int j = 0; j < getComps.Length; j++)
 			{
-				getComps[j].FetchComponents();
+				bool isComponentDirty = getComps[j].FetchComponents();
+				if (isComponentDirty)
+				{
+					isDirty = true;
+				}
 			}
 
-			PrefabUtility.SaveAsPrefabAsset(root, assetPath);
+			if(isDirty)
+			{
+				PrefabUtility.SaveAsPrefabAsset(root, assetPath);
+			}
 			PrefabUtility.UnloadPrefabContents(root);
+
+			return true;
 		}
 
 		private static bool IsSubclassOf(Type type, string typeName)

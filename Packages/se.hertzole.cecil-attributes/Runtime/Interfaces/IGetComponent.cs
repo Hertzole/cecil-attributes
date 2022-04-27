@@ -2,6 +2,6 @@
 {
 	public interface IGetComponent
 	{
-		void FetchComponents();
+		bool FetchComponents();
 	}
 }

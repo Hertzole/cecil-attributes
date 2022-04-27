@@ -217,6 +217,49 @@ namespace Hertzole.CecilAttributes.CodeGen
             return variable;
         }
         
+        public static ParameterDefinition AddParameter<T>(this MethodDefinition m, string name = null)
+        {
+            if (m.Module == null)
+            {
+                throw new NullReferenceException($"This method has yet to be added to the assembly and doesn't have a module. Please provide a module.");
+            }
+
+            return m.AddParameter<T>(m.Module, name);
+        }
+
+        public static ParameterDefinition AddParameter<T>(this MethodDefinition m, ModuleDefinition module, string name = null)
+        {
+            return m.AddParameter(module, module.ImportReference(typeof(T)), name);
+        }
+
+        public static ParameterDefinition AddParameter(this MethodDefinition m, Type type, string name = null)
+        {
+            return AddParameter(m, m.Module.ImportReference(type), name);
+        }
+        
+        public static ParameterDefinition AddParameter(this MethodDefinition m, TypeReference type, string name = null)
+        {
+            if (m.Module == null)
+            {
+                throw new NullReferenceException($"This method has yet to be added to the assembly and doesn't have a module. Please provide a module.");
+            }
+
+            return m.AddParameter(m.Module, type, name);
+        }
+
+        public static ParameterDefinition AddParameter(this MethodDefinition m, ModuleDefinition module, TypeReference type, string name = null)
+        {
+            ParameterDefinition parameter = new ParameterDefinition(module.ImportReference(type));
+            m.Parameters.Add(parameter);
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                parameter.Name = name;
+            }
+
+            return parameter;
+        }
+        
         public static ILProcessor BeginEdit(this MethodDefinition method)
         {
             if (method == null)

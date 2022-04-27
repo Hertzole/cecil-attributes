@@ -7,4 +7,9 @@ public class Animators : MonoBehaviour
 {
     [GetComponent(showInInspector = true)]
     public Animator[] anims;
+    
+    protected virtual bool Template(bool dirty)
+    {
+        return true;
+    }
 }

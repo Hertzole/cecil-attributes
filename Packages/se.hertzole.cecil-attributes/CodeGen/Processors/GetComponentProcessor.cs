@@ -92,7 +92,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			fetchComponentsMethod = type.AddMethod(
 				"__CECIL__ATTRIBUTES__GENERATED__FetchComponents",
-				MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual);
+				MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual,
+				Module.GetTypeReference<bool>());
 			
 			// If we're not a child, implement the IGetComponent interface.
 			if (!isChild)
@@ -103,12 +104,14 @@ namespace Hertzole.CecilAttributes.CodeGen
 				MethodDefinition interfaceMethod = type.AddMethodOverride(
 					"Hertzole.CecilAttributes.Interfaces.IGetComponent.FetchComponents", 
 					MethodAttributes.Private | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
+					type.Module.GetTypeReference<bool>(),
 					type.Module.GetMethod<IGetComponent>(nameof(IGetComponent.FetchComponents)));
 				
 				ILProcessor il = interfaceMethod.BeginEdit();
 				
 				// __CECIL__ATTRIBUTES__GENERATED__FetchComponents()
 				il.EmitLdarg();
+				il.EmitBool(false);
 				il.Emit(OpCodes.Callvirt, fetchComponentsMethod);
 				il.Emit(OpCodes.Ret);
 				
@@ -153,15 +156,24 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		private void ProcessFields(MethodDefinition method, MethodReference parentMethod, bool isChild)
 		{
+			var dirtyParam = method.AddParameter<bool>();
+			
 			ILProcessor il = method.BeginEdit();
 
 			// Create the method in reverse.
 
-			Instruction previous = Instruction.Create(OpCodes.Ret);
+			Instruction previous = isChild ? Instruction.Create(OpCodes.Ret) : ILHelper.Ldarg(il, dirtyParam);
 			il.Append(previous);
+			if (!isChild)
+			{
+				il.Emit(OpCodes.Ret);
+			}
 
 			for (int i = targetFields.Count - 1; i >= 0; i--)
 			{
+				il.InsertAt(0, Instruction.Create(OpCodes.Starg_S, dirtyParam));
+				il.InsertAt(0, ILHelper.Bool(true));
+				
 				// field = GetComponent<Type>()
 				if (!targetFields[i].field.FieldType.IsList())
 				{
@@ -225,11 +237,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 			
 			if (isChild)
 			{
-				// base.FetchComponents()
-				il.InsertAt(0, Instruction.Create(OpCodes.Call, parentMethod));
-				il.InsertAt(0, ILHelper.Ldarg(il));
+				// base.FetchComponents(dirty)
+				il.InsertBefore(previous, ILHelper.Ldarg(il));
+				il.InsertBefore(previous, ILHelper.Ldarg(il, dirtyParam));
+				il.InsertBefore(previous, Instruction.Create(OpCodes.Call, parentMethod));
 			}
-			
+
 			method.EndEdit();
 		}
 
