@@ -11,20 +11,22 @@ namespace Hertzole.CecilAttributes.Editor
 	public static class GetComponentPrefabProcessor
 	{
 		[InitializeOnLoadMethod]
-		#if CECIL_ATTRIBUTES_DEBUG
+#if CECIL_ATTRIBUTES_DEBUG
 		[MenuItem("Tools/Cecil Attributes/Scan Prefabs")]
 #endif
 		private static void ScanGetComponent()
 		{
-			Process();
+			EditorApplication.delayCall += Process;
 		}
-		
+
 		public static void Process()
 		{
 			if (!ProcessorHelpers.CanProcess())
 			{
 				return;
 			}
+
+			EditorUtility.DisplayProgressBar("Cecil Attributes", "Scanning Prefabs", 0);
 
 			IEnumerable<FieldInfo> fields = ProcessorHelpers.GetFieldsWithAttribute<GetComponentAttribute>();
 
@@ -35,7 +37,40 @@ namespace Hertzole.CecilAttributes.Editor
 
 			List<Object> scannedObjects = new List<Object>();
 			List<Object> objectList = new List<Object>();
+			Dictionary<FieldInfo, Object[]> fieldToObjects = new Dictionary<FieldInfo, Object[]>();
 
+			int totalProgress = GetTotalProgress(fields, allPrefabs, objectList, fieldToObjects);
+			int progress = 0;
+
+			foreach (KeyValuePair<FieldInfo, Object[]> pair in fieldToObjects)
+			{
+				foreach (Object o in pair.Value)
+				{
+					EditorUtility.DisplayProgressBar("Cecil Attributes", $"Scanning prefab {o.name} for {pair.Key.Name}", (float) progress / totalProgress);
+
+					if (scannedObjects.Contains(o))
+					{
+						continue;
+					}
+
+					if (o is Component)
+					{
+						PatchPrefab(o);
+						scannedObjects.Add(o);
+					}
+
+					progress++;
+				}
+			}
+
+			AssetDatabase.Refresh();
+
+			EditorUtility.ClearProgressBar();
+		}
+
+		private static int GetTotalProgress(IEnumerable<FieldInfo> fields, string[] allPrefabs, List<Object> objectList, Dictionary<FieldInfo, Object[]> objects)
+		{
+			int progress = 0;
 			foreach (FieldInfo field in fields)
 			{
 				if (field.DeclaringType == null)
@@ -44,23 +79,11 @@ namespace Hertzole.CecilAttributes.Editor
 				}
 
 				Object[] targetObjects = FindAllObjectsOfType(field.DeclaringType.FullName, allPrefabs, objectList);
-				for (int i = 0; i < targetObjects.Length; i++)
-				{
-					if (scannedObjects.Contains(targetObjects[i]))
-					{
-						continue;
-					}
-
-					if (targetObjects[i] is Component)
-					{
-						PatchPrefab(targetObjects[i]);
-
-						scannedObjects.Add(targetObjects[i]);
-					}
-				}
+				objects.Add(field, targetObjects);
+				progress += targetObjects.Length;
 			}
 
-			AssetDatabase.Refresh();
+			return progress;
 		}
 
 		private static Object[] FindAllObjectsOfType(string typeName, string[] guids, List<Object> objectsList)
@@ -85,13 +108,19 @@ namespace Hertzole.CecilAttributes.Editor
 		private static void PatchPrefab(Object obj)
 		{
 			string assetPath = AssetDatabase.GetAssetPath(obj);
-			GameObject root = PrefabUtility.LoadPrefabContents(assetPath);
-			
-			if (root == null || string.IsNullOrEmpty(assetPath))
+			if (string.IsNullOrEmpty(assetPath))
 			{
 				return;
 			}
-			
+
+			GameObject root = PrefabUtility.LoadPrefabContents(assetPath);
+
+			if (root == null)
+			{
+				PrefabUtility.UnloadPrefabContents(root);
+				return;
+			}
+
 			IGetComponent[] getComps = root.GetComponentsInChildren<IGetComponent>();
 			for (int j = 0; j < getComps.Length; j++)
 			{

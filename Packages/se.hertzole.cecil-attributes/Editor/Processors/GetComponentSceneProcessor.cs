@@ -6,7 +6,6 @@ using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Debug = UnityEngine.Debug;
 #if CECIL_ATTRIBUTES_DEBUG
 using System.Diagnostics;
 #endif
@@ -19,7 +18,7 @@ namespace Hertzole.CecilAttributes.Editor
 		private static void RegisterEvent()
 		{
 			EditorSceneManager.sceneSaving += OnSceneSaving;
-			Process();
+			EditorApplication.delayCall += Process;
 		}
 
 		private static void OnSceneSaving(Scene scene, string path)
@@ -81,7 +80,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 #if CECIL_ATTRIBUTES_DEBUG
 			sw.Stop();
-			Debug.Log($"Scene process took {sw.ElapsedMilliseconds}ms");
+			UnityEngine.Debug.Log($"Scene process took {sw.ElapsedMilliseconds}ms");
 #endif
 		}
 
