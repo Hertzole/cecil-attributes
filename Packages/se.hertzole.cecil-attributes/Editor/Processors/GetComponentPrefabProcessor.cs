@@ -16,7 +16,17 @@ namespace Hertzole.CecilAttributes.Editor
 #endif
 		private static void ScanGetComponent()
 		{
-			EditorApplication.delayCall += Process;
+			EditorApplication.delayCall += ProcessOnLoad;
+		}
+
+		private static void ProcessOnLoad()
+		{
+			if (!CecilAttributesSettings.Instance.RunPrefabProcessor)
+			{
+				return;
+			}
+			
+			Process();
 		}
 
 		public static void Process()

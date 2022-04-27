@@ -18,11 +18,26 @@ namespace Hertzole.CecilAttributes.Editor
 		private static void RegisterEvent()
 		{
 			EditorSceneManager.sceneSaving += OnSceneSaving;
-			EditorApplication.delayCall += Process;
+			EditorApplication.delayCall += ProcessOnLoad;
+		}
+
+		private static void ProcessOnLoad()
+		{
+			if (!CecilAttributesSettings.Instance.RunSceneProcessor)
+			{
+				return;
+			}
+			
+			Process();
 		}
 
 		private static void OnSceneSaving(Scene scene, string path)
 		{
+			if (!CecilAttributesSettings.Instance.RunSceneProcessor)
+			{
+				return;
+			}
+			
 			Process();
 		}
 
@@ -32,6 +47,11 @@ namespace Hertzole.CecilAttributes.Editor
 #endif
 		private static void ScanGetComponent()
 		{
+			if (!CecilAttributesSettings.Instance.RunSceneProcessor)
+			{
+				return;
+			}
+			
 			Process();
 		}
 

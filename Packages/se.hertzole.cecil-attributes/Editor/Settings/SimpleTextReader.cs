@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace Hertzole.CecilAttributes.Editor
 {
@@ -45,7 +46,8 @@ namespace Hertzole.CecilAttributes.Editor
 
 			if (!stringKeys.TryGetValue(name, out string stringResult))
 			{
-				throw new ArgumentException($"There's no string key called {name}.", nameof(name));
+				Debug.LogWarning($"There's no string key called {name}.");
+				return defaultValue;
 			}
 
 			switch (stringResult.ToLowerInvariant())
@@ -70,7 +72,8 @@ namespace Hertzole.CecilAttributes.Editor
 
 			if (!stringKeys.TryGetValue(name, out string stringResult))
 			{
-				throw new ArgumentException($"There's no string key called {name}.", nameof(name));
+				Debug.LogWarning($"There's no string key called {name}.");
+				return defaultValue;
 			}
 
 			if (int.TryParse(stringResult, out int intResult))
@@ -91,7 +94,8 @@ namespace Hertzole.CecilAttributes.Editor
 
 			if (!stringKeys.TryGetValue(name, out string stringResult))
 			{
-				throw new ArgumentException($"There's no string key called {name}.", nameof(name));
+				Debug.LogWarning($"There's no string key called {name}.");
+				return defaultValue;
 			}
 
 			if (stringResult.StartsWith("'") && stringResult.EndsWith("'"))

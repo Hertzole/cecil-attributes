@@ -23,6 +23,9 @@ namespace Hertzole.CecilAttributes.Editor
 				writer.WriteString(nameof(CecilAttributesSettings.TimedPropertySetFormat), settings.timedPropertySetFormat);
 
 				writer.WriteString(nameof(CecilAttributesSettings.MarkInProfilerFormat), settings.markInProfilerFormat);
+				
+				writer.WriteBoolean(nameof(CecilAttributesSettings.RunPrefabProcessor), settings.runPrefabProcessor);
+				writer.WriteBoolean(nameof(CecilAttributesSettings.RunSceneProcessor), settings.runSceneProcessor);
 			}
 		}
 
@@ -47,6 +50,9 @@ namespace Hertzole.CecilAttributes.Editor
 				data.timedPropertySetFormat = reader.ReadString(nameof(CecilAttributesSettings.TimedPropertySetFormat), CecilAttributesSettings.TIMED_PROPERTY_SET_FORMAT);
 
 				data.markInProfilerFormat = reader.ReadString(nameof(CecilAttributesSettings.MarkInProfilerFormat), CecilAttributesSettings.MARK_IN_PROFILER_FORMAT);
+				
+				data.runPrefabProcessor = reader.ReadBoolean(nameof(CecilAttributesSettings.RunPrefabProcessor), CecilAttributesSettings.RUN_PREFAB_PROCESSOR);
+				data.runSceneProcessor = reader.ReadBoolean(nameof(CecilAttributesSettings.RunSceneProcessor), CecilAttributesSettings.RUN_SCENE_PROCESSOR);
 			}
 
 			return data;

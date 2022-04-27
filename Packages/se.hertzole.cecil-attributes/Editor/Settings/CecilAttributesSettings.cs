@@ -32,6 +32,10 @@ namespace Hertzole.CecilAttributes.Editor
 		private string timedPropertySetFormat = TIMED_PROPERTY_SET_FORMAT;
 		[SerializeField]
 		private string markInProfilerFormat = MARK_IN_PROFILER_FORMAT;
+		[SerializeField] 
+		private bool runPrefabProcessor = RUN_PREFAB_PROCESSOR;
+		[SerializeField] 
+		private bool runSceneProcessor = RUN_SCENE_PROCESSOR;
 
 		private static CecilAttributesSettings instance;
 
@@ -154,6 +158,27 @@ namespace Hertzole.CecilAttributes.Editor
 				Save();
 			}
 		}
+		
+		public bool RunPrefabProcessor
+		{
+			get { return runPrefabProcessor; }
+			set
+			{
+				runPrefabProcessor = value;
+				Save();
+			}
+		}
+		
+		public bool RunSceneProcessor
+		{
+			get { return runSceneProcessor; }
+			set
+			{
+				runSceneProcessor = value;
+				Save();
+			}
+		}
+		
 		public static CecilAttributesSettings Instance
 		{
 			get
@@ -187,6 +212,9 @@ namespace Hertzole.CecilAttributes.Editor
 		
 		public const string MARK_IN_PROFILER_FORMAT = "%class% :: %method%";
 
+		public const bool RUN_PREFAB_PROCESSOR = true;
+		public const bool RUN_SCENE_PROCESSOR = true;
+
 		private void ApplySettingData(SettingData data)
 		{
 			includeResetStaticInBuild = data.includeResetStaticInBuild;
@@ -204,6 +232,9 @@ namespace Hertzole.CecilAttributes.Editor
 			timedPropertySetFormat = data.timedPropertySetFormat;
 
 			markInProfilerFormat = data.markInProfilerFormat;
+			
+			runPrefabProcessor = data.runPrefabProcessor;
+			runSceneProcessor = data.runSceneProcessor;
 		}
 		
 		public static void Save()
@@ -357,6 +388,8 @@ namespace Hertzole.CecilAttributes.Editor
 			public string timedPropertyGetFormat;
 			public string timedPropertySetFormat;
 			public string markInProfilerFormat;
+			public bool runPrefabProcessor;
+			public bool runSceneProcessor;
 
 			public static SettingData Default
 			{
@@ -376,7 +409,9 @@ namespace Hertzole.CecilAttributes.Editor
 						timedMethodFormat = TIMED_METHOD_FORMAT,
 						timedPropertyGetFormat = TIMED_PROPERTY_GET_FORMAT,
 						timedPropertySetFormat = TIMED_PROPERTY_SET_FORMAT,
-						markInProfilerFormat = MARK_IN_PROFILER_FORMAT
+						markInProfilerFormat = MARK_IN_PROFILER_FORMAT,
+						runPrefabProcessor = RUN_PREFAB_PROCESSOR,
+						runSceneProcessor = RUN_SCENE_PROCESSOR
 					};
 				}
 			}
@@ -395,6 +430,8 @@ namespace Hertzole.CecilAttributes.Editor
 				timedPropertyGetFormat = settings.timedPropertyGetFormat;
 				timedPropertySetFormat = settings.timedPropertySetFormat;
 				markInProfilerFormat = settings.markInProfilerFormat;
+				runPrefabProcessor = settings.runPrefabProcessor;
+				runSceneProcessor = settings.runSceneProcessor;
 			}
 		}
 	}
