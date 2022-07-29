@@ -21,7 +21,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 		private static void ProcessOnLoad()
 		{
-			if (!CecilAttributesSettings.Instance.RunPrefabProcessor)
+			if (!CecilAttributesSettings.Instance.RunPrefabProcessorOnReload)
 			{
 				return;
 			}

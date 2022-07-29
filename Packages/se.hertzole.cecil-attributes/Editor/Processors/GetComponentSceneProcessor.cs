@@ -23,7 +23,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 		private static void ProcessOnLoad()
 		{
-			if (!CecilAttributesSettings.Instance.RunSceneProcessor)
+			if (!CecilAttributesSettings.Instance.RunSceneProcessorOnReload)
 			{
 				return;
 			}
@@ -33,7 +33,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 		private static void OnSceneSaving(Scene scene, string path)
 		{
-			if (!CecilAttributesSettings.Instance.RunSceneProcessor)
+			if (!CecilAttributesSettings.Instance.RunSceneProcessorOnReload)
 			{
 				return;
 			}
@@ -47,7 +47,7 @@ namespace Hertzole.CecilAttributes.Editor
 #endif
 		private static void ScanGetComponent()
 		{
-			if (!CecilAttributesSettings.Instance.RunSceneProcessor)
+			if (!CecilAttributesSettings.Instance.RunSceneProcessorOnReload)
 			{
 				return;
 			}

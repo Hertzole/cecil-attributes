@@ -18,8 +18,8 @@ namespace Hertzole.CecilAttributes.Editor
         private static readonly GUIContent timedPropertyGetFormatLabel = new GUIContent("Property Get Format", "The message that will be printed to the console when getting a property.");
         private static readonly GUIContent timedPropertySetFormatLabel = new GUIContent("Property Set Format", "The message that will be printed to the console when setting a property.");
         private static readonly GUIContent markInProfilerFormatLabel = new GUIContent("Mark In Profiler Format", "The format of methods that appear in the profiler.");
-        private static readonly GUIContent runPrefabProcessorLabel = new GUIContent("Run Prefab Processor", "If true, all prefabs in your project will be checked for GetComponent attributes on recompile.");
-        private static readonly GUIContent runSceneProcessorLabel = new GUIContent("Run Scene Processor", "If true, your current scene will be checked for GetComponent attributes on recompile and scene save.");
+        private static readonly GUIContent runPrefabProcessorLabel = new GUIContent("Run Prefab Processor On Reload", "If true, all prefabs in your project will be checked for GetComponent attributes on recompile.");
+        private static readonly GUIContent runSceneProcessorLabel = new GUIContent("Run Scene Processor On Reload", "If true, your current scene will be checked for GetComponent attributes on recompile and scene save.");
 
         public static void OnGUI()
         {
@@ -194,20 +194,20 @@ namespace Hertzole.CecilAttributes.Editor
         {
             DrawHeaderLabel("Get Component");
 
-            bool runPrefabProcessor = CecilAttributesSettings.Instance.RunPrefabProcessor;
+            bool runPrefabProcessor = CecilAttributesSettings.Instance.RunPrefabProcessorOnReload;
             EditorGUI.BeginChangeCheck();
             runPrefabProcessor = EditorGUILayout.Toggle(runPrefabProcessorLabel, runPrefabProcessor);
             if (EditorGUI.EndChangeCheck())
             {
-                CecilAttributesSettings.Instance.RunPrefabProcessor = runPrefabProcessor;
+                CecilAttributesSettings.Instance.RunPrefabProcessorOnReload = runPrefabProcessor;
             }
             
-            bool runSceneProcessor = CecilAttributesSettings.Instance.RunSceneProcessor;
+            bool runSceneProcessor = CecilAttributesSettings.Instance.RunSceneProcessorOnReload;
             EditorGUI.BeginChangeCheck();
             runSceneProcessor = EditorGUILayout.Toggle(runSceneProcessorLabel, runSceneProcessor);
             if (EditorGUI.EndChangeCheck())
             {
-                CecilAttributesSettings.Instance.RunSceneProcessor = runSceneProcessor;
+                CecilAttributesSettings.Instance.RunSceneProcessorOnReload = runSceneProcessor;
             }
 
             if (GUILayout.Button("Run Prefab Processor Manually"))

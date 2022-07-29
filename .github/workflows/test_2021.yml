@@ -9,7 +9,7 @@ env:
 
 jobs:
   build:
-    name: Run Unity 2021.2 tests
+    name: Run Unity 2021.3 tests
     runs-on: ubuntu-latest
     steps:
     # Checkout
@@ -21,4 +21,4 @@ jobs:
     - name: Run tests
       uses: game-ci/unity-test-runner@v2
       with:
-        unityVersion: "2021.2.7f1"
+        unityVersion: "2021.3.7f1"
