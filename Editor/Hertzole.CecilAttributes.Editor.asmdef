@@ -2,7 +2,8 @@
     "name": "Hertzole.CecilAttributes.Editor",
     "rootNamespace": "Hertzole.CecilAttributes.Editor",
     "references": [
-        "GUID:8e6476e98ca45994095daaac0d388517"
+        "GUID:8e6476e98ca45994095daaac0d388517",
+        "GUID:894a6cc6ed5cd2645bb542978cbed6a9"
     ],
     "includePlatforms": [
         "Editor"
@@ -17,6 +18,12 @@
     ],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.veriorpies.parrelsync",
+            "expression": "",
+            "define": "CECIL_ATTRIBUTES_PARRAEL_SYNC"
+        }
+    ],
     "noEngineReferences": false
 }

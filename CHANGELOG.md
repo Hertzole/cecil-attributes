@@ -1,3 +1,15 @@
+## [0.5.0-preview] - 2022-07-29
+### Added
+- GetComponent attribute to automatically fill in serialized component reference fields.
+
+### Changed
+- Code processing now happens in ILPostProcessor in newer Unity versions.
+- Log called property set/get is no longer in a constructor and is instead separate fields.
+
+### Fixes
+- A lot of fixes for log called, especially with generics.
+- Fixed reset static not setting the correct value on child classes
+
 ## [0.4.1-preview] - 2021-02-11
 ### Changed
 - Updated Mono.Cecil dependency.

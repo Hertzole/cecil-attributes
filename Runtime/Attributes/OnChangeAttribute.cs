@@ -6,7 +6,13 @@ namespace Hertzole.CecilAttributes
     internal sealed class OnChangeAttribute : Attribute
     {
 #pragma warning disable IDE0060 // Remove unused parameter
-        public OnChangeAttribute(string hook, bool equalCheck = true) { }
+        public string hook;
+        public bool equalCheck = true;
+
+        //public OnChangeAttribute(string hook, bool equalCheck = true)
+        //{
+        //    this.hook = hook;
+        //}
 #pragma warning restore IDE0060 // Remove unused parameter
     }
 }

@@ -1,10 +1,39 @@
 # Cecil Attributes
 ### A set of Unity attributes to automate your workflow.
 
+## Status
+
+| Name | Status |
+| --- | --- |
+| OpenUPM | [![openupm](https://img.shields.io/npm/v/se.hertzole.cecil-attributes?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/se.hertzole.cecil-attributes/)
+| Unity 2019.4 | ![Unity 2019.4 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2019.yml/badge.svg) |
+| Unity 2020.3 | ![Unity 2020.3 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2020.yml/badge.svg) |
+| Unity 2021.3 | ![Unity 2021.2 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2021.yml/badge.svg) |
+| Development package | ![Development package](https://github.com/Hertzole/cecil-attributes/actions/workflows/development.yml/badge.svg) |
+
+
 ## Installation
+
+### OpenUPM (Recommended)
+1. Add the OpenUPM reigstry.   
+   Click in the menu bar Edit → Project Settings... → Package Manager
+   Add a new scoped registry with the following parameters:  
+   Name: `OpenUPM`  
+   URL: `https://package.openupm.com`  
+   Scopes:  
+   - `com.openupm`  
+   - `se.hertzole.cecil-attributes`
+2. Click apply and close the project settings.
+3. Open up the package manager.  
+   Click in the menu bar Window → Package Manager
+4. Select `Packages: My Registries` in the menu bar of the package manager window.
+5. You should see Cecil Attributes under the `Hertzole` section. Click on it and then press Install in the bottom right corner.
+
+### Unity package manager through git
 1. Open up the Unity package manager
 2. Click on the plus icon in the top left and "Add package from git url"
-3. Paste in `https://github.com/Hertzole/cecil-attributes.git`
+3. Paste in `https://github.com/Hertzole/cecil-attributes.git`  
+   You can also paste in `https://github.com/Hertzole/cecil-attributes.git#develop` if you want the latest (but unstable!) changes.
 
 Unity should now resolve the packages.
 
@@ -36,7 +65,7 @@ public int MyProperty { get; set; }
 [LogCalled]
 public void MyMethod(int para1, string para2)
 {
-	// Will log "MyMethod (para1: <value>, para2: <value>)
+   // Will log "MyMethod (para1: <value>, para2: <value>)
 }
 ```
 
@@ -65,8 +94,8 @@ Usage:
 [Timed]
 private void MyMethod()
 {
-	//TODO: Code
-	// Will log 'MyMethod took <ms> milliseconds (<ticks> ticks)'
+   // TODO: Code
+   // Will log 'MyMethod took <ms> milliseconds (<ticks> ticks)'
 }
 ```
 
@@ -80,8 +109,28 @@ Usage:
 [MarkInProfiler]
 private void MyMethod() // This will show up in the Unity profiler.
 {
-	//TODO: My code
+   // TODO: Code
 }
+```
+
+### Get Component
+**Applies to serialized fields**
+
+Get component will automatically get your components for you in editor time on prefabs and scene objects. **It does not fetch them at runtime!** A target can be specified to get components in children or the parent.
+
+Usage:  
+```cs
+[SerializeField]
+[GetComponent]
+private MyComponent myComponent; // Will call GetComponent(s)
+
+[SerializeField]
+[GetComponent(target = GetComponentTarget.Parent)]
+private MyComponent myParentComponent; // Will call GetComponent(s)InParent
+
+[SerializeField]
+[GetComponent(target = GetComponentTarget.Children)]
+private MyComponent myChildrenComponent; // Will call GetComponent(s)InChildren
 ```
 
 ## License
