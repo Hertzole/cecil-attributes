@@ -1,4 +1,4 @@
-## [0.5.0-preview] - Unreleased
+## [0.5.0-preview] - 2022-07-29
 ### Added
 - GetComponent attribute to automatically fill in serialized component reference fields.
 

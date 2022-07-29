@@ -3,6 +3,8 @@ on:
   push:
     branch:
     - development
+    paths:
+    - 'Assets/**'
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
