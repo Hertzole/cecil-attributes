@@ -5,6 +5,7 @@ on:
     - development
     paths:
     - 'Assets/**'
+    - 'Packages/**'
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
