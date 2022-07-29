@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 
@@ -17,6 +18,14 @@ namespace Hertzole.CecilAttributes.CodeGen
 				if (name == "netstandard" || name == "mscorlib" || name == SYSTEM_PRIVATE_CORELIB)
 				{
 					correctCorlib = references[i];
+				}
+			}
+
+			for (int i = references.Count - 1; i >= 0; i--)
+			{
+				if (references[i].Name == SYSTEM_PRIVATE_CORELIB || references[i].Name == "System.Private.Uri")
+				{
+					references.RemoveAt(i);
 				}
 			}
 		}
@@ -41,7 +50,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 		private bool TryImportFast(AssemblyName name, out AssemblyNameReference assemblyReference)
 		{
 			string fullName = name.FullName;
-
+			
 			Collection<AssemblyNameReference> references = module.AssemblyReferences;
 			for (int i = 0; i < references.Count; i++)
 			{
