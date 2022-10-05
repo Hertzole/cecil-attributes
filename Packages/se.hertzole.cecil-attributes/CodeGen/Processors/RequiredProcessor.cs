@@ -71,10 +71,19 @@ namespace Hertzole.CecilAttributes.CodeGen
 			List<FieldDefinition> fields = new List<FieldDefinition>();
 			List<Instruction> targetInstructions = new List<Instruction>();
 
+			bool hasError = false;
+			
 			for (int i = 0; i < type.Fields.Count; i++)
 			{
-				if (type.Fields[i].HasAttribute<RequiredAttribute>())
+				if (type.Fields[i].TryGetAttribute<RequiredAttribute>(out CustomAttribute attribute))
 				{
+					if (type.Fields[i].FieldType.CanBeResolved() && !type.Fields[i].FieldType.Resolve().IsSubclassOf<UnityEngine.Object>())
+					{
+						Weaver.Error($"Field '{type.Fields[i].Name}' in '{type.FullName}' is marked with [Required] but is not a UnityEngine.Object.");
+						hasError = true;
+						continue;
+					}
+					
 					if (fields.Count > 0)
 					{
 						targetInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
@@ -82,6 +91,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 					fields.Add(type.Fields[i]);
 				}
+			}
+
+			if (hasError)
+			{
+				return;
 			}
 
 			using (MethodEntryScope il = new MethodEntryScope(checkRequiredMethod))
