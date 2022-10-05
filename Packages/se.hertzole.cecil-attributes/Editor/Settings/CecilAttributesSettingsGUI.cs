@@ -20,6 +20,7 @@ namespace Hertzole.CecilAttributes.Editor
         private static readonly GUIContent markInProfilerFormatLabel = new GUIContent("Mark In Profiler Format", "The format of methods that appear in the profiler.");
         private static readonly GUIContent runPrefabProcessorLabel = new GUIContent("Run Prefab Processor On Reload", "If true, all prefabs in your project will be checked for GetComponent attributes on recompile.");
         private static readonly GUIContent runSceneProcessorLabel = new GUIContent("Run Scene Processor On Reload", "If true, your current scene will be checked for GetComponent attributes on recompile and scene save.");
+        private static readonly GUIContent includeRequiredInBuildLabel = new GUIContent("Include In Build", "If true, fields marked as required will be checked in builds too.");
 
         public static void OnGUI()
         {
@@ -52,6 +53,10 @@ namespace Hertzole.CecilAttributes.Editor
                 GUILayout.Space(16f);
                 
                 GetComponentSection();
+             
+                GUILayout.Space(16f);
+                
+                RequiredSection();
             }
         }
 
@@ -218,6 +223,19 @@ namespace Hertzole.CecilAttributes.Editor
             if (GUILayout.Button("Run Scene Processor Manually"))
             {
                 GetComponentSceneProcessor.Process();
+            }
+        }
+
+        private static void RequiredSection()
+        {
+            DrawHeaderLabel("Required");
+            
+            bool includeInBuild = CecilAttributesSettings.Instance.IncludeRequiredInBuild;
+            EditorGUI.BeginChangeCheck();
+            includeInBuild = EditorGUILayout.Toggle(includeRequiredInBuildLabel, includeInBuild);
+            if (EditorGUI.EndChangeCheck())
+            {
+                CecilAttributesSettings.Instance.IncludeRequiredInBuild = includeInBuild;
             }
         }
 

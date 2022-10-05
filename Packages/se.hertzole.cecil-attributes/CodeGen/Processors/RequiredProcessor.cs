@@ -11,7 +11,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 		public override bool NeedsMonoBehaviour { get { return true; } }
 		public override bool AllowEditor { get { return false; } }
 		//TODO: Make toggleable
-		public override bool IncludeInBuild { get { return false; } }
+		public override bool IncludeInBuild { get { return Settings.includeRequiredInBuild; } }
 
 		private const MethodAttributes CHECK_METHOD_PRIVATE_ATTRIBUTES = MethodAttributes.Private | MethodAttributes.HideBySig;
 		private const MethodAttributes CHECK_METHOD_OVERRIDE_ATTRIBUTES = MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual;

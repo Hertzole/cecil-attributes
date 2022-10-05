@@ -36,6 +36,8 @@ namespace Hertzole.CecilAttributes.Editor
 		private bool runPrefabProcessorOnReload = RUN_PREFAB_PROCESSOR;
 		[SerializeField] 
 		private bool runSceneProcessorOnReload = RUN_SCENE_PROCESSOR;
+		[SerializeField] 
+		private bool includeRequiredInBuild = INCLUDE_REQUIRED_IN_BUILD;
 
 		private static CecilAttributesSettings instance;
 
@@ -179,6 +181,16 @@ namespace Hertzole.CecilAttributes.Editor
 			}
 		}
 		
+		public bool IncludeRequiredInBuild
+		{
+			get { return includeRequiredInBuild; }
+			set
+			{
+				includeRequiredInBuild = value;
+				Save();
+			}
+		}
+		
 		public static CecilAttributesSettings Instance
 		{
 			get
@@ -214,6 +226,8 @@ namespace Hertzole.CecilAttributes.Editor
 
 		public const bool RUN_PREFAB_PROCESSOR = true;
 		public const bool RUN_SCENE_PROCESSOR = true;
+		
+		public const bool INCLUDE_REQUIRED_IN_BUILD = false;
 
 		private void ApplySettingData(SettingData data)
 		{
@@ -390,6 +404,7 @@ namespace Hertzole.CecilAttributes.Editor
 			public string markInProfilerFormat;
 			public bool runPrefabProcessor;
 			public bool runSceneProcessor;
+			public bool includeRequiredInBuild;
 
 			public static SettingData Default
 			{
@@ -411,7 +426,8 @@ namespace Hertzole.CecilAttributes.Editor
 						timedPropertySetFormat = TIMED_PROPERTY_SET_FORMAT,
 						markInProfilerFormat = MARK_IN_PROFILER_FORMAT,
 						runPrefabProcessor = RUN_PREFAB_PROCESSOR,
-						runSceneProcessor = RUN_SCENE_PROCESSOR
+						runSceneProcessor = RUN_SCENE_PROCESSOR,
+						includeRequiredInBuild = INCLUDE_REQUIRED_IN_BUILD
 					};
 				}
 			}
@@ -432,6 +448,7 @@ namespace Hertzole.CecilAttributes.Editor
 				markInProfilerFormat = settings.markInProfilerFormat;
 				runPrefabProcessor = settings.runPrefabProcessorOnReload;
 				runSceneProcessor = settings.runSceneProcessorOnReload;
+				includeRequiredInBuild = settings.includeRequiredInBuild;
 			}
 		}
 	}

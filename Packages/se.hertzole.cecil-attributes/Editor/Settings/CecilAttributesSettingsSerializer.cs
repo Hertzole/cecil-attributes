@@ -26,6 +26,8 @@ namespace Hertzole.CecilAttributes.Editor
 				
 				writer.WriteBoolean(nameof(CecilAttributesSettings.RunPrefabProcessorOnReload), settings.runPrefabProcessor);
 				writer.WriteBoolean(nameof(CecilAttributesSettings.RunSceneProcessorOnReload), settings.runSceneProcessor);
+				
+				writer.WriteBoolean(nameof(CecilAttributesSettings.IncludeRequiredInBuild), settings.includeRequiredInBuild);
 			}
 		}
 
@@ -53,6 +55,8 @@ namespace Hertzole.CecilAttributes.Editor
 				
 				data.runPrefabProcessor = reader.ReadBoolean(nameof(CecilAttributesSettings.RunPrefabProcessorOnReload), CecilAttributesSettings.RUN_PREFAB_PROCESSOR);
 				data.runSceneProcessor = reader.ReadBoolean(nameof(CecilAttributesSettings.RunSceneProcessorOnReload), CecilAttributesSettings.RUN_SCENE_PROCESSOR);
+				
+				data.includeRequiredInBuild = reader.ReadBoolean(nameof(CecilAttributesSettings.IncludeRequiredInBuild), CecilAttributesSettings.INCLUDE_REQUIRED_IN_BUILD);
 			}
 
 			return data;
