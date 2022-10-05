@@ -25,6 +25,8 @@ jobs:
         rm -rf package
         mv /tmp/README.md README.md
         git add .
+        rm -rf Tests
+        rm -f Tests.meta
         git config --global user.name 'github-bot'
         git config --global user.email 'github-bot@users.noreply.github.com'
         git commit -am "Packaged project"
