@@ -15,8 +15,30 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private static readonly Type[] debugLogContextParams = { typeof(string), typeof(Object) };
 		private static readonly Type[] unityObjectEqualityOperationParams = { typeof(Object), typeof(Object) };
 
-		public MethodReference DebugLogErrorContext { get { return debugLogErrorContext ??= module.GetMethod(typeof(Debug), "LogError", debugLogContextParams); } }
-		public MethodReference UnityObjectEqualityOperation { get { return unityObjectEqualityOperation ??= module.GetMethod(typeof(Object), "op_Equality", unityObjectEqualityOperationParams); } }
+		public MethodReference DebugLogErrorContext
+		{
+			get
+			{
+				if (debugLogErrorContext == null)
+				{
+					debugLogErrorContext = module.GetMethod(typeof(Debug), "LogError", debugLogContextParams);
+				}
+
+				return debugLogErrorContext;
+			}
+		}
+		public MethodReference UnityObjectEqualityOperation
+		{
+			get
+			{
+				if (unityObjectEqualityOperation == null)
+				{
+					unityObjectEqualityOperation = module.GetMethod(typeof(Object), "op_Equality", unityObjectEqualityOperationParams);
+				}
+
+				return unityObjectEqualityOperation;
+			}
+		}
 
 		public MethodsCache(ModuleDefinition module)
 		{
