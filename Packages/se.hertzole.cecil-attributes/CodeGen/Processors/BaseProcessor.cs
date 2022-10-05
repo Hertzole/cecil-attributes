@@ -1,4 +1,5 @@
-﻿using Hertzole.CecilAttributes.Editor;
+﻿using Hertzole.CecilAttributes.CodeGen.Caches;
+using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -9,6 +10,7 @@ namespace Hertzole.CecilAttributes.CodeGen
         public Weaver Weaver { get; set; }
         public ModuleDefinition Module { get; set; }
         public TypeDefinition Type { get; set; }
+        public MethodsCache MethodsCache { get; set; }
         public CecilAttributesSettings.SettingData Settings { get; set; }
         
         public abstract string Name { get; }

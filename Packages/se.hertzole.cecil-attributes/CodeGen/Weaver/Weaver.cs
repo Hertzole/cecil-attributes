@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Hertzole.CecilAttributes.CodeGen.Caches;
 using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -22,7 +23,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 			new MarkInProfilerProcessor(),
 			new ResetStaticProcessor(),
 			new TimedProcessor(),
-			new GetComponentProcessor()
+			new GetComponentProcessor(),
+			new RequiredProcessor()
 		};
 
 		public Weaver(List<DiagnosticMessage> diagnostics)
@@ -96,10 +98,13 @@ namespace Hertzole.CecilAttributes.CodeGen
 			for (int i = 0; i < assemblyDefinition.Modules.Count; i++)
 			{
 				ModuleDefinition module = assemblyDefinition.Modules[i];
+				
+				MethodsCache methodsCache = new MethodsCache(module);
 
 				for (int j = 0; j < processors.Length; j++)
 				{
 					processors[j].Module = module;
+					processors[j].MethodsCache = methodsCache;
 				}
 
 				IEnumerable<TypeDefinition> types = module.GetTypes();
