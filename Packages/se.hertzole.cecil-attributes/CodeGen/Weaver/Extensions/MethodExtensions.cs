@@ -3,111 +3,83 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
     public static partial class WeaverExtensions
     {
         private static readonly Dictionary<MethodDefinition, List<VariableDefinitionInfo>> editingMethods = new Dictionary<MethodDefinition, List<VariableDefinitionInfo>>();
-        
-        public static MethodDefinition GetMethodInBaseType(this TypeDefinition type, string method)
+
+        private static MethodDefinition GetMethodInBaseTypeInternal(this TypeDefinition type, Predicate<MethodDefinition> predicate)
         {
-            TypeDefinition typedef = type;
-            while (typedef != null)
+            TypeReference baseType = type.BaseType;
+            while (baseType != null)
             {
-                for (int i = 0; i < typedef.Methods.Count; i++)
+                if (!baseType.CanBeResolved())
                 {
-                    if (typedef.Methods[i].Name == method)
+                    return null;
+                }
+
+                TypeDefinition resolved = baseType.Resolve();
+                for (int i = 0; i < resolved.Methods.Count; i++)
+                {
+                    if (predicate(resolved.Methods[i]))
                     {
-                        return typedef.Methods[i];
+                        return resolved.Methods[i];
                     }
                 }
 
-                try
-                {
-                    TypeReference parent = typedef.BaseType;
-                    typedef = parent?.Resolve();
-                }
-                catch (AssemblyResolutionException)
-                {
-                    break;
-                }
+                baseType = resolved.BaseType;
+            }
+
+            return null;
+
+        }
+        
+        public static MethodDefinition GetMethodInBaseType(this TypeDefinition type, string method)
+        {
+            MethodDefinition result = GetMethodInBaseTypeInternal(type, m => m.Name == method);
+            if (result != null)
+            {
+                return result;
             }
 
             throw new ArgumentException($"There's no method called {method} in {type.FullName} or its base types.");
+
         }
 
         public static bool TryGetMethodInBaseType(this TypeDefinition type, string methodName, out MethodDefinition method)
         {
-            TypeDefinition typedef = type;
-            method = null;
-            while (typedef != null)
-            {
-                for (int i = 0; i < typedef.Methods.Count; i++)
-                {
-                    if (typedef.Methods[i].Name == methodName)
-                    {
-                        method = typedef.Methods[i];
-                        return true;
-                    }
-                }
-
-                try
-                {
-                    TypeReference parent = typedef.BaseType;
-                    typedef = parent?.Resolve();
-                }
-                catch (AssemblyResolutionException)
-                {
-                    break;
-                }
-            }
-
-            return false;
+            method = GetMethodInBaseTypeInternal(type, m => m.Name == methodName);
+            return method != null;
         }
 
         public static bool TryGetMethodInBaseType(this TypeDefinition type, string methodName, out MethodDefinition method, params TypeReference[] parameterTypes)
         {
-            TypeDefinition typedef = type;
-            method = null;
-            while (typedef != null)
+            method = GetMethodInBaseTypeInternal(type, m =>
             {
-                for (int i = 0; i < typedef.Methods.Count; i++)
+                if (m.Name != methodName)
                 {
-                    if (typedef.Methods[i].Name == methodName && typedef.Methods[i].Parameters.Count == parameterTypes.Length)
+                    return false;
+                }
+                
+                if (m.Parameters.Count != parameterTypes.Length)
+                {
+                    return false;
+                }
+                
+                for (int i = 0; i < m.Parameters.Count; i++)
+                {
+                    if (m.Parameters[i].ParameterType.FullName != parameterTypes[i].FullName)
                     {
-                        bool validParamaters = true;
-
-                        for (int j = 0; j < parameterTypes.Length; j++)
-                        {
-                            if (typedef.Methods[i].Parameters[j].ParameterType != parameterTypes[j])
-                            {
-                                validParamaters = false;
-                                break;
-                            }
-                        }
-
-                        if (validParamaters)
-                        {
-                            method = typedef.Methods[i];
-                            return true;
-                        }
+                        return false;
                     }
                 }
 
-                try
-                {
-                    TypeReference parent = typedef.BaseType;
-                    typedef = parent?.Resolve();
-                }
-                catch (AssemblyResolutionException)
-                {
-                    break;
-                }
-            }
-
-            return false;
+                return true;
+            });
+            
+            return method != null;
         }
 
         public static MethodDefinition GetMethod(this TypeDefinition type, string methodName)
@@ -325,6 +297,19 @@ namespace Hertzole.CecilAttributes.CodeGen
             }
 
             return self.Module.ImportReference(reference);
+        }
+
+        public static MethodDefinition MakeOverridable(this MethodDefinition method)
+        {
+            method.Attributes |= MethodAttributes.NewSlot | MethodAttributes.Virtual;
+            // Remove private flag
+            if (method.IsPrivate)
+            {
+                method.Attributes &= ~MethodAttributes.Private;
+                method.Attributes |= MethodAttributes.Family;
+            }
+
+            return method;
         }
         
         private readonly struct VariableDefinitionInfo

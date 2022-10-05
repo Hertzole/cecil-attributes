@@ -6,9 +6,15 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
 	public sealed class RequiredProcessor : BaseProcessor
 	{
+		private readonly HashSet<TypeDefinition> processedTypes = new HashSet<TypeDefinition>();
 		public override string Name { get { return nameof(RequiredProcessor); } }
 		public override bool NeedsMonoBehaviour { get { return true; } }
 		public override bool AllowEditor { get { return false; } }
+		//TODO: Make toggleable
+		public override bool IncludeInBuild { get { return false; } }
+
+		private const MethodAttributes CHECK_METHOD_PRIVATE_ATTRIBUTES = MethodAttributes.Private | MethodAttributes.HideBySig;
+		private const MethodAttributes CHECK_METHOD_OVERRIDE_ATTRIBUTES = MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual;
 
 		public override bool IsValidType()
 		{
@@ -30,37 +36,73 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		public override void ProcessType()
 		{
-			MethodDefinition awake = FindMethod(Type, "Awake");
-			if (awake == null)
+			ProcessType(Type);
+		}
+
+		private void ProcessType(TypeDefinition type)
+		{
+			if (type.Fields.Count == 0)
 			{
 				return;
 			}
+
+			if (processedTypes.Contains(type))
+			{
+				return;
+			}
+
+			processedTypes.Add(type);
+
+			const string generated_method_name = "CECILATTRIBUTES__GENERATED__CheckRequired";
+
+			bool hasParent = type.TryGetMethodInBaseType(generated_method_name, out MethodDefinition parentMethod);
+
+			if (hasParent)
+			{
+				parentMethod.MakeOverridable();
+
+				ProcessType(parentMethod.DeclaringType);
+			}
+
+			MethodDefinition checkRequiredMethod = GetOrAddMethod(type, generated_method_name, hasParent ? CHECK_METHOD_OVERRIDE_ATTRIBUTES : CHECK_METHOD_PRIVATE_ATTRIBUTES, Module.TypeSystem.Boolean);
+			MethodDefinition awake = GetOrAddMethod(type, "Awake", MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
 
 			//TODO: Get from pool.
 			List<FieldDefinition> fields = new List<FieldDefinition>();
 			List<Instruction> targetInstructions = new List<Instruction>();
 
-			for (int i = 0; i < Type.Fields.Count; i++)
+			for (int i = 0; i < type.Fields.Count; i++)
 			{
-				if (Type.Fields[i].HasAttribute<RequiredAttribute>())
+				if (type.Fields[i].HasAttribute<RequiredAttribute>())
 				{
 					if (fields.Count > 0)
 					{
 						targetInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
 					}
 
-					fields.Add(Type.Fields[i]);
+					fields.Add(type.Fields[i]);
 				}
 			}
 
-			using (MethodEntryScope il = new MethodEntryScope(awake))
+			using (MethodEntryScope il = new MethodEntryScope(checkRequiredMethod))
 			{
-				VariableDefinition error = awake.AddLocalVariable<bool>("error");
+				checkRequiredMethod.Body.InitLocals = true;
+				VariableDefinition error = checkRequiredMethod.AddLocalVariable<bool>("error");
 				Instruction end = ILHelper.Ldloc(error);
 
-				// bool error = false
-				il.EmitBool(false);
-				il.EmitStloc(error);
+				if (!hasParent)
+				{
+					// bool error = false
+					il.EmitBool(false);
+					il.EmitStloc(error);
+				}
+				else
+				{
+					// bool error = base.CheckRequired()
+					il.EmitLdarg();
+					il.EmitCall(Module.ImportReference(parentMethod));
+					il.EmitStloc(error);
+				}
 
 				for (int i = 0; i < fields.Count; i++)
 				{
@@ -92,6 +134,25 @@ namespace Hertzole.CecilAttributes.CodeGen
 				}
 
 				il.Emit(end);
+			}
+
+			if (hasParent && type.TryGetMethodInBaseType("Awake", out MethodDefinition parentAwake))
+			{
+				parentAwake.MakeOverridable();
+
+				awake.Attributes |= MethodAttributes.Virtual;
+
+				if (awake.IsPrivate)
+				{
+					awake.Attributes &= ~MethodAttributes.Private;
+					awake.Attributes |= MethodAttributes.Family;
+				}
+			}
+
+			using (MethodEntryScope il = new MethodEntryScope(awake))
+			{
+				il.EmitLdarg();
+				il.EmitCall(checkRequiredMethod);
 				il.Emit(OpCodes.Brfalse, il.First);
 				il.EmitReturn();
 			}
@@ -108,6 +169,28 @@ namespace Hertzole.CecilAttributes.CodeGen
 			}
 
 			return null;
+		}
+
+		private static MethodDefinition GetOrAddMethod(TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, params TypeReference[] parameters)
+		{
+			MethodDefinition method = FindMethod(type, name);
+			if (method != null)
+			{
+				return method;
+			}
+
+			method = new MethodDefinition(name, attributes, returnType);
+			for (int i = 0; i < parameters.Length; i++)
+			{
+				method.Parameters.Add(new ParameterDefinition(parameters[i]));
+			}
+
+			ILProcessor il = method.Body.GetILProcessor();
+
+			il.Emit(OpCodes.Ret);
+
+			type.Methods.Add(method);
+			return method;
 		}
 	}
 }

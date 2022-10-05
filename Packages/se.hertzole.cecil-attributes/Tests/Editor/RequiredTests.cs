@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.TestTools;
-using Object = UnityEngine.Object;
 
 namespace Hertzole.CecilAttributes.Tests
 {
@@ -15,25 +13,25 @@ namespace Hertzole.CecilAttributes.Tests
 		{
 			yield return new RequiredTest<RequiredBaseWithAwake>("box");
 		}
-		
+
 		[UnityTest]
 		public IEnumerator Base_WithVirtualAwake()
 		{
 			yield return new RequiredTest<RequiredBaseWithVirtualAwake>("box");
 		}
-		
+
 		[UnityTest]
 		public IEnumerator Base_WithoutAwake()
 		{
 			yield return new RequiredTest<RequiredBaseWithoutAwake>("box");
 		}
-		
+
 		[UnityTest]
 		public IEnumerator Child_WithAwake_ParentWithoutAwake()
 		{
 			yield return new RequiredTest<RequiredChild_WithAwake_ParentWithoutAwake>("box", "ren");
 		}
-		
+
 		[UnityTest]
 		public IEnumerator Child_WithAwake_ParentWithVirtualAwake()
 		{
@@ -54,9 +52,16 @@ namespace Hertzole.CecilAttributes.Tests
 
 			public IEnumerator Perform()
 			{
+				ExpectedPlaymodeState = false;
+				EditorApplication.UnlockReloadAssemblies();
+				while (EditorApplication.isPlaying)
+				{
+					yield return null;
+				}
+
 				Assert.IsFalse(Application.isPlaying);
 
-				var go = new GameObject("Test object", typeof(T));
+				GameObject go = new GameObject("Test object");
 
 				// Enter play mode
 				ExpectedPlaymodeState = true;
@@ -71,6 +76,8 @@ namespace Hertzole.CecilAttributes.Tests
 
 				try
 				{
+					go.AddComponent<T>();
+
 					for (int i = 0; i < variableNames.Length; i++)
 					{
 						LogAssert.Expect(LogType.Error, $"'{variableNames[i]}' is not assigned. It is required. Please assign it in the inspector.");
@@ -80,16 +87,17 @@ namespace Hertzole.CecilAttributes.Tests
 				{
 					Debug.LogAssertion(e);
 					EditorApplication.isPlaying = false;
+					Object.DestroyImmediate(go);
 					yield break;
 				}
-				
+
 				ExpectedPlaymodeState = false;
 				EditorApplication.isPlaying = false;
 				while (EditorApplication.isPlaying)
 				{
 					yield return null;
 				}
-				
+
 				Object.DestroyImmediate(go);
 			}
 		}

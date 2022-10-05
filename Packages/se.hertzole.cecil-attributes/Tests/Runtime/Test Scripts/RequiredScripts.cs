@@ -12,7 +12,7 @@ namespace Hertzole.CecilAttributes.Tests
 
 		private void Awake()
 		{
-			Debug.Log("Awake");
+			Debug.Log("Base Awake");
 		}
 	}
 
@@ -24,7 +24,7 @@ namespace Hertzole.CecilAttributes.Tests
 
 		protected virtual void Awake()
 		{
-			Debug.Log("Awake");
+			Debug.Log("Base Awake");
 		}
 	}
 
@@ -55,6 +55,7 @@ namespace Hertzole.CecilAttributes.Tests
 
 		protected override void Awake()
 		{
+			base.Awake();
 			Debug.Log("Child Awake");
 		}
 	}
