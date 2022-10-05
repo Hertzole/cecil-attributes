@@ -1,8 +1,8 @@
 {
   "name": "se.hertzole.cecil-attributes",
-  "version": "0.5.0-preview",
+  "version": "0.6.0-preview",
   "displayName": "Cecil Attributes",
-  "description": "Adds advanced attributes that post-processes your assembly to generate code for you. \n\nDo repetetive tasks with one simple attribute!",
+  "description": "Adds advanced attributes that post-processes your assembly to generate code for you. \n\nDo repetitive tasks with one simple attribute!",
   "unity": "2019.4",
   "unityRelease": "0f1",
   "dependencies": {
@@ -17,6 +17,6 @@
     "email": "contact@hertzole.se",
     "url": "https://www.hertzole.se"
   },
-  "type": "library",
+  "type": "module",
   "hideInEditor": false
 }
