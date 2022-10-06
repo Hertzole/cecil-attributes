@@ -80,7 +80,7 @@ namespace Hertzole.CecilAttributes.Tests
 
 					for (int i = 0; i < variableNames.Length; i++)
 					{
-						LogAssert.Expect(LogType.Error, $"'{variableNames[i]}' is not assigned. It is required. Please assign it in the inspector.");
+						LogAssert.Expect(LogType.Error, $"'{variableNames[i]}' is not assigned on {go.name}. It is required. Please assign it in the inspector.");
 					}
 				}
 				catch (AssertionException e)

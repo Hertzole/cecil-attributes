@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
@@ -10,7 +11,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 		public override string Name { get { return nameof(RequiredProcessor); } }
 		public override bool NeedsMonoBehaviour { get { return true; } }
 		public override bool AllowEditor { get { return false; } }
-		//TODO: Make toggleable
 		public override bool IncludeInBuild { get { return Settings.includeRequiredInBuild; } }
 
 		private const MethodAttributes CHECK_METHOD_PRIVATE_ATTRIBUTES = MethodAttributes.Private | MethodAttributes.HideBySig;
@@ -67,15 +67,14 @@ namespace Hertzole.CecilAttributes.CodeGen
 			MethodDefinition checkRequiredMethod = GetOrAddMethod(type, generated_method_name, hasParent ? CHECK_METHOD_OVERRIDE_ATTRIBUTES : CHECK_METHOD_PRIVATE_ATTRIBUTES, Module.TypeSystem.Boolean);
 			MethodDefinition awake = GetOrAddMethod(type, "Awake", MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
 
-			//TODO: Get from pool.
-			List<FieldDefinition> fields = new List<FieldDefinition>();
-			List<Instruction> targetInstructions = new List<Instruction>();
+			List<FieldDefinition> fields = ListPool<FieldDefinition>.Get();
+			List<Instruction> targetInstructions = ListPool<Instruction>.Get();
 
 			bool hasError = false;
 			
 			for (int i = 0; i < type.Fields.Count; i++)
 			{
-				if (type.Fields[i].TryGetAttribute<RequiredAttribute>(out CustomAttribute attribute))
+				if (type.Fields[i].HasAttribute<RequiredAttribute>())
 				{
 					if (type.Fields[i].FieldType.CanBeResolved() && !type.Fields[i].FieldType.Resolve().IsSubclassOf<UnityEngine.Object>())
 					{
@@ -138,8 +137,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 					il.EmitCall(MethodsCache.UnityObjectEqualityOperation);
 					il.Emit(OpCodes.Brfalse, jumpTarget);
 
-					// Debug.LogError("Field is null", this)
-					il.EmitString($"'{field.Name}' is not assigned. It is required. Please assign it in the inspector.");
+					// Debug.LogError(string.Format("'field' is not assigned on {0}. It is required. Please assign it in the inspector.", gameObject.name), this)
+					il.EmitString($"'{field.Name}' is not assigned on {{0}}. It is required. Please assign it in the inspector.");
+					il.EmitLdarg();
+					il.EmitCall(Module.GetMethod<Component>("get_gameObject"));
+					il.EmitCall(Module.GetMethod<Object>("get_name"), true);
+					il.EmitCall(MethodsCache.GetStringFormat(1));
 					il.EmitLdarg();
 					il.EmitCall(MethodsCache.DebugLogErrorContext);
 					// error = true
@@ -149,6 +152,9 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 				il.Emit(end);
 			}
+
+			ListPool<FieldDefinition>.Release(fields);
+			ListPool<Instruction>.Release(targetInstructions);
 
 			if (hasParent && type.TryGetMethodInBaseType("Awake", out MethodDefinition parentAwake))
 			{
