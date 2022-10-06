@@ -1,7 +1,9 @@
 ﻿using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
+#if UNITY_2020_3_OR_NEWER
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+#endif
 
 namespace Hertzole.CecilAttributes.Editor
 {
@@ -24,6 +26,7 @@ namespace Hertzole.CecilAttributes.Editor
 			EditorGUI.PropertyField(r, property, label);
 		}
 
+#if UNITY_2020_3_OR_NEWER
 		public override VisualElement CreatePropertyGUI(SerializedProperty property)
 		{
 			GetIcons();
@@ -77,6 +80,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 			return root;
 		}
+#endif
 
 		private static void GetIcons()
 		{
