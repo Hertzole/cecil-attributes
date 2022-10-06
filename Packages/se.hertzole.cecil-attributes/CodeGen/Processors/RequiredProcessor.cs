@@ -94,6 +94,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (hasError)
 			{
+				ListPool<FieldDefinition>.Release(fields);
+				ListPool<Instruction>.Release(targetInstructions);
 				return;
 			}
 
