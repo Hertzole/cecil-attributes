@@ -1,18 +1,43 @@
 # Cecil Attributes
-### A set of Unity attributes to automate your workflow.
 
-## Status
+[![openupm](https://img.shields.io/npm/v/se.hertzole.cecil-attributes?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/se.hertzole.cecil-attributes/)
+![Unity 2019.4 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2019.yml/badge.svg)
+![Unity 2020.3 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2020.yml/badge.svg)
+![Unity 2021.2 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2021.yml/badge.svg)
 
-| Name | Status |
-| --- | --- |
-| OpenUPM | [![openupm](https://img.shields.io/npm/v/se.hertzole.cecil-attributes?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/se.hertzole.cecil-attributes/)
-| Unity 2019.4 | ![Unity 2019.4 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2019.yml/badge.svg) |
-| Unity 2020.3 | ![Unity 2020.3 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2020.yml/badge.svg) |
-| Unity 2021.3 | ![Unity 2021.2 tests](https://github.com/Hertzole/cecil-attributes/actions/workflows/test_2021.yml/badge.svg) |
-| Development package | ![Development package](https://github.com/Hertzole/cecil-attributes/actions/workflows/development.yml/badge.svg) |
+## 📕 Table of Contents
+- [What, why, and how?](#-what-why-and-how)
+   - [What](#what)
+   - [Why](#why)
+   - [How](#how)
+- [Installation](#-installation)
+   - [OpenUPM (Recommended)](#openupm-recommended)
+   - [Unity package manager through git](#unity-package-manager-through-git)
+- [The Attributes](#-the-attributes)
+   - [Reset Static](#reset-static)
+   - [Log Called](#log-called)
+   - [Find Property](#find-property)
+   - [Timed](#timed)
+   - [Mark In Profiler](#mark-in-profiler)
+   - [Get Component](#get-component)
+   - [Required](#required)
+- [License](#-license)
 
+## ❓ What, why, and how?
 
-## Installation
+### What
+Cecil attributes allows you to use normal C# attributes to automatically inject code into your compiled code. That way you can automate small repetitive tasks with a single attribute.
+
+### Why
+There are several small tasks that aren't necessarily difficult, but time consuimg to do, like [adding a log message for when a method is called](#log-called). I wanted to automate some of these tasks so I can just add an attribute and it will generate the code for me, like small code snippets!
+
+### How
+Cecil Attributes uses [Mono.Cecil](https://github.com/jbevain/cecil) and IL weaving to inject code into your compiled assemblies. By carefully building the instructions for fields, methods, and classes it can create brand new code and alter existing code.   
+You may be thinking, why not source generators? Simple: it can't modify existing code, which is required for some of these attributes. That way they can much more easily adapt to your code instead of you having to work around the code it creates.
+
+## 📦 Installation
+
+Cecil Attributes supports all Unity versions from **Unity 2019.4** and onward.
 
 ### OpenUPM (Recommended)
 1. Add the OpenUPM reigstry.   
@@ -37,7 +62,7 @@
 
 Unity should now resolve the packages.
 
-## The Attributes
+## 🎇 The Attributes
 
 ### Reset Static
 **Applies to classes, fields, properties, and events**
@@ -114,7 +139,7 @@ private void MyMethod() // This will show up in the Unity profiler.
 ```
 
 ### Get Component
-**Applies to serialized fields**
+**Applies to serialized object reference fields**
 
 Get component will automatically get your components for you in editor time on prefabs and scene objects. **It does not fetch them at runtime!** A target can be specified to get components in children or the parent.
 
@@ -133,5 +158,26 @@ private MyComponent myParentComponent; // Will call GetComponent(s)InParent
 private MyComponent myChildrenComponent; // Will call GetComponent(s)InChildren
 ```
 
-## License
+### Required
+**Applies to serialized object reference fields**
+
+Required will inject a null check in your Awake method to make sure you've assigned all the required objects. If any of the objects are not met, it will not call the rest of your awake method.
+
+It will also display a small icon in your inspector if it's required.
+![Editor icons](https://user-images.githubusercontent.com/5569364/194349761-3933a29f-15c0-4852-a656-348f7f8ddbd8.png)
+
+Usage:
+```cs
+[SerializeField]
+[Required]
+private Animator animator;
+   
+private void Awake()
+{
+    // Will not be called in 'animator' is null.
+    Debug.Log("Awake");
+}
+```
+
+## 📜 License
 MIT - Basically do whatever, I'm just not liable if it causes any damages.
