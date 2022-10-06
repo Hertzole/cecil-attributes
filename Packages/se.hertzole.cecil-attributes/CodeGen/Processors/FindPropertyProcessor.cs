@@ -127,10 +127,10 @@ namespace Hertzole.CecilAttributes.CodeGen
                         }
                     }
 
-                    instructions.Add(Instruction.Create(OpCodes.Ldstr, "There's no serialized property called '" + paths[j] + "' on {0}"));
+                    instructions.Add(Instruction.Create(OpCodes.Ldstr, $"There's no serialized property called '{paths[j]}' on {{0}}"));
                     instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                     instructions.Add(Instruction.Create(OpCodes.Call, getTarget));
-                    instructions.Add(Instruction.Create(OpCodes.Call, LogCalledProcessor.GetStringFormatMethod(Module, 1)));
+                    instructions.Add(Instruction.Create(OpCodes.Call, MethodsCache.GetStringFormat(1)));
                     instructions.Add(Instruction.Create(OpCodes.Call, logError));
                     instructions.Add(Instruction.Create(OpCodes.Ret));
                 }

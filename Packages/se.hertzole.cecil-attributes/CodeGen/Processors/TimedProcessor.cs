@@ -10,10 +10,9 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
     // Idea based on https://github.com/ByronMayne/Weaver
 
-    //TODO: Make work with properties.
     public class TimedProcessor : BaseProcessor
     {
-        private List<Instruction> instructions = new List<Instruction>();
+        private readonly List<Instruction> instructions = new List<Instruction>();
 
         public override string Name { get { return "Timed"; } }
 

@@ -9,15 +9,14 @@ namespace Hertzole.CecilAttributes.CodeGen
 		private readonly MethodDefinition targetMethod;
 		public ILProcessor IL { get; }
 		public List<Instruction> Instructions { get; }
-		
+
 		public Instruction First { get; }
 
 		public MethodEntryScope(MethodDefinition targetMethod)
 		{
 			this.targetMethod = targetMethod;
 			IL = targetMethod.BeginEdit();
-			//TODO: Pool lists
-			Instructions = new List<Instruction>();
+			Instructions = ListPool<Instruction>.Get();
 			First = targetMethod.Body.Instructions[0];
 		}
 
@@ -25,6 +24,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 		{
 			IL.InsertAt(0, Instructions);
 			targetMethod.EndEdit();
+			ListPool<Instruction>.Release(Instructions);
 		}
 	}
 }

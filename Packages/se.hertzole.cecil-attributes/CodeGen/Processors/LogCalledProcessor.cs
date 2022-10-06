@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Hertzole.CecilAttributes.Editor;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
@@ -44,8 +42,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		public override void ProcessType()
 		{
-			List<MethodDefinition> methods = new List<MethodDefinition>();
-			List<PropertyDefinition> properties = new List<PropertyDefinition>();
+			List<MethodDefinition> methods = ListPool<MethodDefinition>.Get();
+			List<PropertyDefinition> properties = ListPool<PropertyDefinition>.Get();
 
 			for (int i = 0; i < Type.Methods.Count; i++)
 			{
@@ -84,123 +82,119 @@ namespace Hertzole.CecilAttributes.CodeGen
 					ProcessProperty(Type, Module, properties[i], defaultGetFormat, defaultSetFormat);
 				}
 			}
+
+			ListPool<MethodDefinition>.Release(methods);
+			ListPool<PropertyDefinition>.Release(properties);
 		}
 
-		private static void ProcessMethod(TypeReference type, ModuleDefinition module, MethodDefinition method, string format, string parameterSeparator)
+		private void ProcessMethod(TypeReference type, ModuleDefinition module, MethodDefinition method, string format, string parameterSeparator)
 		{
-			List<Instruction> instructions = new List<Instruction>();
-			List<string> parameters = new List<string>();
-
-			if (method.HasParameters)
+			using (MethodEntryScope il = new MethodEntryScope(method))
 			{
-				int offset = 0;
-
-				for (int i = 0; i < method.Parameters.Count; i++)
+				List<string> parameters = ListPool<string>.Get();
+				if (method.HasParameters)
 				{
-					if (method.Parameters[i].IsOut)
+					int offset = 0;
+
+					for (int i = 0; i < method.Parameters.Count; i++)
 					{
-						parameters.Add($"out {method.Parameters[i].Name}");
-						offset++;
-					}
-					else
-					{
-						parameters.Add($"{method.Parameters[i].Name}: {{{i - offset + type.GenericParameters.Count}}}");
-					}
-				}
-			}
-
-			string message = format.FormatMessageLogCalled(type, method, parameterSeparator, parameters, null, false);
-
-			instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
-
-			// Valid parameters are parameters than can show their value.
-			int validParameters = type.GenericParameters.Count;
-
-			for (int i = 0; i < method.Parameters.Count; i++)
-			{
-				if (method.Parameters[i].IsOut)
-				{
-					continue;
-				}
-
-				validParameters++;
-			}
-
-			if (validParameters > 3)
-			{
-				instructions.Add(WeaverHelpers.GetIntInstruction(validParameters));
-				instructions.Add(Instruction.Create(OpCodes.Newarr, module.GetTypeReference<object>()));
-			}
-
-			for (int i = 0; i < type.GenericParameters.Count; i++)
-			{
-				if (validParameters > 3)
-				{
-					instructions.Add(Instruction.Create(OpCodes.Dup));
-					instructions.Add(WeaverHelpers.GetIntInstruction(i));
-				}
-
-				instructions.Add(Instruction.Create(OpCodes.Ldtoken, type.GenericParameters[i].GetElementType()));
-				instructions.Add(Instruction.Create(OpCodes.Call, module.GetMethod<Type>("GetTypeFromHandle", typeof(RuntimeTypeHandle))));
-
-				if (validParameters > 3)
-				{
-					instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
-				}
-			}
-
-			if (method.HasParameters)
-			{
-				// Used to offset int values if there are parameters that don't need to show their value. 
-				int offset = 0;
-
-				for (int i = 0; i < method.Parameters.Count; i++)
-				{
-					if (method.Parameters[i].IsOut)
-					{
-						offset++;
-						continue;
-					}
-
-					if (validParameters > 3)
-					{
-						// Too many parameters, need to create an array.
-						instructions.Add(Instruction.Create(OpCodes.Dup));
-						instructions.Add(WeaverHelpers.GetIntInstruction(type.GenericParameters.Count + i - offset));
-					}
-
-					instructions.Add(GetLoadParameter(i, method.Parameters[i], method.IsStatic));
-
-					if (!method.Parameters[i].ParameterType.Is<string>() && (method.Parameters[i].ParameterType.IsValueType || method.Parameters[i].ParameterType.IsByReference || method.Parameters[i].ParameterType.IsGenericParameter))
-					{
-						if (method.Parameters[i].ParameterType.IsByReference)
+						if (method.Parameters[i].IsOut)
 						{
-							instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(method.Parameters[i].ParameterType.Resolve())));
+							parameters.Add($"out {method.Parameters[i].Name}");
+							offset++;
 						}
 						else
 						{
-							instructions.Add(Instruction.Create(OpCodes.Box, method.Parameters[i].ParameterType));
+							parameters.Add($"{method.Parameters[i].Name}: {{{(i - offset + type.GenericParameters.Count).ToString(CultureInfo.InvariantCulture)}}}");
 						}
 					}
+				}
+
+				string message = format.FormatMessageLogCalled(type, method, parameterSeparator, parameters, null, false);
+				ListPool<string>.Release(parameters);
+
+				il.EmitString(message);
+
+				// Valid parameters are parameters than can show their value.
+				int validParameters = type.GenericParameters.Count;
+
+				for (int i = 0; i < method.Parameters.Count; i++)
+				{
+					if (method.Parameters[i].IsOut)
+					{
+						continue;
+					}
+
+					validParameters++;
+				}
+
+				if (validParameters > 3)
+				{
+					il.EmitInt(validParameters);
+					il.Emit(OpCodes.Newarr, module.ImportReference(typeof(object)));
+				}
+
+				for (int i = 0; i < type.GenericParameters.Count; i++)
+				{
+					if (validParameters > 3)
+					{
+						il.Emit(OpCodes.Dup);
+						il.EmitInt(i);
+					}
+
+					il.Emit(OpCodes.Ldtoken, type.GenericParameters[i]);
+					il.Emit(OpCodes.Call, MethodsCache.GetTypeFromHandle);
 
 					if (validParameters > 3)
 					{
-						instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
+						il.Emit(OpCodes.Stelem_Ref);
 					}
 				}
+
+				if (method.HasParameters)
+				{
+					// Used to offset int values if there are parameters that don't need to show their value. 
+					int offset = 0;
+
+					for (int i = 0; i < method.Parameters.Count; i++)
+					{
+						if (method.Parameters[i].IsOut)
+						{
+							offset++;
+							continue;
+						}
+
+						if (validParameters > 3)
+						{
+							// Too many parameters, need to create an array.
+							il.Emit(OpCodes.Dup);
+							il.EmitInt(i - offset + type.GenericParameters.Count);
+						}
+
+						il.Emit(GetLoadParameter(i, method.Parameters[i], method.IsStatic));
+
+						if (!method.Parameters[i].ParameterType.Is<string>() && (method.Parameters[i].ParameterType.IsValueType || method.Parameters[i].ParameterType.IsByReference || method.Parameters[i].ParameterType.IsGenericParameter))
+						{
+							il.Emit(OpCodes.Box, method.Parameters[i].ParameterType.IsByReference ? module.ImportReference(method.Parameters[i].ParameterType.Resolve()) : method.Parameters[i].ParameterType);
+						}
+
+						if (validParameters > 3)
+						{
+							il.Emit(OpCodes.Stelem_Ref);
+						}
+					}
+				}
+
+				if (validParameters > 0)
+				{
+					il.EmitCall(MethodsCache.GetStringFormat(validParameters));
+				}
+
+				il.EmitCall(MethodsCache.DebugLog);
 			}
-
-			if (validParameters > 0)
-			{
-				instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, validParameters)));
-			}
-
-			instructions.Add(Instruction.Create(OpCodes.Call, module.GetMethod<Debug>("Log", typeof(object))));
-
-			method.Body.GetILProcessor().InsertBefore(method.Body.Instructions[0], instructions);
 		}
 
-		private static void ProcessProperty(TypeDefinition type, ModuleDefinition module, PropertyDefinition property, string getFormat, string setFormat)
+		private void ProcessProperty(TypeDefinition type, ModuleDefinition module, PropertyDefinition property, string getFormat, string setFormat)
 		{
 			CustomAttribute attribute = property.GetAttribute<LogCalledAttribute>();
 			bool logGet = attribute.GetField("logPropertyGet", true);
@@ -211,118 +205,63 @@ namespace Hertzole.CecilAttributes.CodeGen
 				return;
 			}
 
-			List<Instruction> instructions = new List<Instruction>();
-
 			bool isStatic = property.IsStatic();
 
 			FieldReference loadField = property.GetBackingField();
 			if (logGet && property.GetMethod != null)
 			{
-				string message = getFormat.FormatMessageLogCalled(type, property.GetMethod, null, null, property, false);
-
-				instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
-				if (!isStatic)
+				using (MethodEntryScope il = new MethodEntryScope(property.GetMethod))
 				{
-					instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+					string message = getFormat.FormatMessageLogCalled(type, property.GetMethod, null, null, property, false);
+
+					il.EmitString(message);
+					if (!isStatic)
+					{
+						il.EmitLdarg();
+					}
+
+					il.Emit(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField);
+
+					if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
+					{
+						il.Emit(OpCodes.Box, module.ImportReference(loadField.FieldType));
+					}
+
+					il.EmitCall(MethodsCache.GetStringFormat(1));
+					il.EmitCall(MethodsCache.DebugLog);
 				}
-
-				instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField));
-
-				if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
-				{
-					instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
-				}
-
-				instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 1)));
-				instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new[] { typeof(object) }))));
-
-				property.GetMethod.Body.GetILProcessor().InsertBefore(property.GetMethod.Body.Instructions[0], instructions);
-				instructions.Clear();
 			}
 
 			if (logSet && property.SetMethod != null)
 			{
-				VariableDefinition localVar = property.SetMethod.AddLocalVariable(module, loadField.FieldType, out int varIndex);
-				string message = setFormat.FormatMessageLogCalled(type, property.SetMethod, null, null, property, true);
-				if (!isStatic)
+				using (MethodEntryScope il = new MethodEntryScope(property.SetMethod))
 				{
-					instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+					VariableDefinition localVar = property.SetMethod.AddLocalVariable(module, loadField.FieldType, out int _);
+					string message = setFormat.FormatMessageLogCalled(type, property.SetMethod, null, null, property, true);
+					if (!isStatic)
+					{
+						il.EmitLdarg();
+					}
+
+					il.Emit(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField);
+					il.EmitStloc(localVar);
+					il.EmitString(message);
+					il.EmitLdloc(localVar);
+					if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
+					{
+						il.Emit(OpCodes.Box, module.ImportReference(loadField.FieldType));
+					}
+
+					il.Emit(isStatic ? OpCodes.Ldarg_0 : OpCodes.Ldarg_1);
+
+					if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
+					{
+						il.Emit(OpCodes.Box, module.ImportReference(loadField.FieldType));
+					}
+
+					il.EmitCall(MethodsCache.GetStringFormat(2));
+					il.EmitCall(MethodsCache.DebugLog);
 				}
-
-				instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, loadField));
-				instructions.Add(GetStloc(varIndex, localVar));
-				instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
-				instructions.Add(GetLdloc(varIndex, localVar));
-				if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
-				{
-					instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
-				}
-
-				instructions.Add(Instruction.Create(isStatic ? OpCodes.Ldarg_0 : OpCodes.Ldarg_1));
-
-				if (loadField.FieldType.IsValueType || loadField.FieldType.IsGenericParameter)
-				{
-					instructions.Add(Instruction.Create(OpCodes.Box, module.ImportReference(loadField.FieldType)));
-				}
-
-				instructions.Add(Instruction.Create(OpCodes.Call, GetStringFormatMethod(module, 2)));
-				instructions.Add(Instruction.Create(OpCodes.Call, module.ImportReference(typeof(Debug).GetMethod("Log", new[] { typeof(object) }))));
-
-				property.SetMethod.Body.GetILProcessor().InsertBefore(property.SetMethod.Body.Instructions[0], instructions);
-			}
-		}
-
-		public static MethodReference GetStringFormatMethod(ModuleDefinition module, int amount)
-		{
-			switch (amount)
-			{
-				case 1:
-					return module.ImportReference(typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
-				case 2:
-					return module.ImportReference(typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object), typeof(object) }));
-				case 3:
-					return module.ImportReference(typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
-				default:
-					return module.ImportReference(typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object[]) }));
-			}
-		}
-
-		public static Instruction GetStloc(int index, VariableDefinition variable)
-		{
-			switch (index)
-			{
-				case 0:
-					return Instruction.Create(OpCodes.Stloc_0);
-				case 1:
-					return Instruction.Create(OpCodes.Stloc_1);
-				case 2:
-					return Instruction.Create(OpCodes.Stloc_2);
-				case 3:
-					return Instruction.Create(OpCodes.Stloc_3);
-				default:
-					return Instruction.Create(OpCodes.Stloc_S, variable);
-			}
-		}
-
-		public static Instruction GetLdloc(int index, VariableDefinition variable, bool ldloc_a = false)
-		{
-			if (ldloc_a)
-			{
-				return Instruction.Create(OpCodes.Ldloca_S, variable);
-			}
-
-			switch (index)
-			{
-				case 0:
-					return Instruction.Create(OpCodes.Ldloc_0);
-				case 1:
-					return Instruction.Create(OpCodes.Ldloc_1);
-				case 2:
-					return Instruction.Create(OpCodes.Ldloc_2);
-				case 3:
-					return Instruction.Create(OpCodes.Ldloc_3);
-				default:
-					return Instruction.Create(OpCodes.Ldloc_S, variable);
 			}
 		}
 
@@ -341,23 +280,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 				default:
 					return Instruction.Create(OpCodes.Ldarg_S, parameter);
 			}
-		}
-
-		private static Instruction GetLoadIn(TypeReference parameterType, ModuleDefinition module)
-		{
-			TypeDefinition type = parameterType.Resolve();
-
-			if (!type.IsPrimitive && !type.IsValueType && type.IsClass && type.IsAutoLayout)
-			{
-				return Instruction.Create(OpCodes.Ldind_Ref);
-			}
-
-			if (!type.IsPrimitive && type.IsValueType && !type.IsEnum)
-			{
-				return Instruction.Create(OpCodes.Ldobj, module.ImportReference(parameterType.Resolve()));
-			}
-
-			return Instruction.Create(OpCodes.Ldind_I4);
 		}
 	}
 }
