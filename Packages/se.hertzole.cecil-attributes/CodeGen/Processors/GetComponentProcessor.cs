@@ -228,7 +228,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				{
 					// if (field == null)
 					il.InsertAt(0, Instruction.Create(OpCodes.Brfalse, previous));
-					il.InsertAt(0, Instruction.Create(OpCodes.Call, Module.GetMethod<Object>("op_Equality", typeof(Object), typeof(Object))));
+					il.InsertAt(0, Instruction.Create(OpCodes.Call, MethodsCache.UnityObjectEqualityOperation));
 					il.InsertAt(0, Instruction.Create(OpCodes.Ldnull));
 					il.InsertAt(0, Instruction.Create(OpCodes.Ldfld, targetFields[i].field));
 					previous = il.InsertAt(0, ILHelper.Ldarg(il));

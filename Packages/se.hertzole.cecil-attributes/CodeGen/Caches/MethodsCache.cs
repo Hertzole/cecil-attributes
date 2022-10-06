@@ -10,6 +10,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private readonly ModuleDefinition module;
 
 		private MethodReference debugLog;
+		private MethodReference debugLogError;
 		private MethodReference debugLogErrorContext;
 		private MethodReference unityObjectEqualityOperation;
 		private MethodReference getTypeFromHandle;
@@ -19,7 +20,8 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private MethodReference stringFormatParams;
 
 		private static readonly Type[] debugLogParams = { typeof(object) };
-		private static readonly Type[] debugLogContextParams = { typeof(string), typeof(Object) };
+		private static readonly Type[] debugLogErrorParams = { typeof(object) };
+		private static readonly Type[] debugLogErrorContextParams = { typeof(object), typeof(Object) };
 		private static readonly Type[] unityObjectEqualityOperationParams = { typeof(Object), typeof(Object) };
 		private static readonly Type[] getTypeFromHandleParams = { typeof(RuntimeTypeHandle) };
 		private static readonly Type[] stringFormat1Params = { typeof(string), typeof(object) };
@@ -39,6 +41,19 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 				return debugLog;
 			}
 		}
+		
+		public MethodReference DebugLogError
+		{
+			get
+			{
+				if (debugLogError == null)
+				{
+					debugLogError = module.GetMethod(typeof(Debug), "LogError", debugLogErrorParams);
+				}
+
+				return debugLogError;
+			}
+		}
 
 		public MethodReference DebugLogErrorContext
 		{
@@ -46,7 +61,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			{
 				if (debugLogErrorContext == null)
 				{
-					debugLogErrorContext = module.GetMethod(typeof(Debug), "LogError", debugLogContextParams);
+					debugLogErrorContext = module.GetMethod(typeof(Debug), "LogError", debugLogErrorContextParams);
 				}
 
 				return debugLogErrorContext;

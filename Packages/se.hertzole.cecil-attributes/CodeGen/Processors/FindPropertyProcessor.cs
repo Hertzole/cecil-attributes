@@ -3,180 +3,188 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEditor;
-using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
-    public class FindPropertyProcessor : BaseProcessor
-    {
-        private List<MemberData> members = new List<MemberData>();
-        private List<Instruction> instructions = new List<Instruction>();
-        private List<Instruction> firstInstructions = new List<Instruction>();
-        private List<Tuple<Instruction, Instruction>> ifsLast = new List<Tuple<Instruction, Instruction>>();
+	public class FindPropertyProcessor : BaseProcessor
+	{
+		private static readonly Type[] singleStringArray = { typeof(string) };
 
-        public override string Name { get { return "FindProperty"; } }
+		public override string Name { get { return "FindProperty"; } }
 
-        public override bool NeedsMonoBehaviour { get { return false; } }
-        public override bool AllowEditor { get { return true; } }
-        public override bool EditorOnly { get { return true; } }
+		public override bool NeedsMonoBehaviour { get { return false; } }
+		public override bool AllowEditor { get { return true; } }
+		public override bool EditorOnly { get { return true; } }
 
-        public override bool IsValidType()
-        {
-            if (Type.HasFields)
-            {
-                for (int i = 0; i < Type.Fields.Count; i++)
-                {
-                    if (Type.Fields[i].HasAttribute<FindProperty>())
-                    {
-                        return true;
-                    }
-                }
-            }
+		public override bool IsValidType()
+		{
+			if (Type.HasFields)
+			{
+				for (int i = 0; i < Type.Fields.Count; i++)
+				{
+					if (Type.Fields[i].HasAttribute<FindProperty>())
+					{
+						return true;
+					}
+				}
+			}
 
-            if (Type.HasProperties)
-            {
-                for (int i = 0; i < Type.Properties.Count; i++)
-                {
-                    if (Type.Properties[i].HasAttribute<FindProperty>())
-                    {
-                        return true;
-                    }
-                }
-            }
+			if (Type.HasProperties)
+			{
+				for (int i = 0; i < Type.Properties.Count; i++)
+				{
+					if (Type.Properties[i].HasAttribute<FindProperty>())
+					{
+						return true;
+					}
+				}
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        public override void ProcessType()
-        {
-            members.Clear();
-            instructions.Clear();
-            firstInstructions.Clear();
-            ifsLast.Clear();
+		public override void ProcessType()
+		{
+			List<MemberData> members = ListPool<MemberData>.Get();
+			List<Instruction> firstInstructions = ListPool<Instruction>.Get();
+			List<(Instruction, Instruction)> ifsLast = ListPool<(Instruction, Instruction)>.Get();
 
-            if (Type.HasFields)
-            {
-                for (int i = 0; i < Type.Fields.Count; i++)
-                {
-                    if (Type.Fields[i].HasAttribute<FindProperty>())
-                    {
-                        members.Add(new MemberData(Type.Fields[i]));
-                    }
-                }
-            }
+			if (Type.HasFields)
+			{
+				for (int i = 0; i < Type.Fields.Count; i++)
+				{
+					if (Type.Fields[i].HasAttribute<FindProperty>())
+					{
+						members.Add(new MemberData(Type.Fields[i]));
+					}
+				}
+			}
 
-            if (Type.HasProperties)
-            {
-                for (int i = 0; i < Type.Properties.Count; i++)
-                {
-                    if (Type.Properties[i].HasAttribute<FindProperty>())
-                    {
-                        members.Add(new MemberData(Type.Properties[i]));
-                    }
-                }
-            }
+			if (Type.HasProperties)
+			{
+				for (int i = 0; i < Type.Properties.Count; i++)
+				{
+					if (Type.Properties[i].HasAttribute<FindProperty>())
+					{
+						members.Add(new MemberData(Type.Properties[i]));
+					}
+				}
+			}
 
-            if (members.Count == 0)
-            {
-                // There are no valid fields/properties. Stop here.
-                return;
-            }
+			if (members.Count == 0)
+			{
+				// There are no valid fields/properties. Stop here.
+				ListPool<MemberData>.Release(members);
+				ListPool<Instruction>.Release(firstInstructions);
+				ListPool<(Instruction, Instruction)>.Release(ifsLast);
+				return;
+			}
 
-            bool createdOnEnable = false;
+			bool createdOnEnable = false;
 
-            if (!Type.TryGetMethod("OnEnable", out MethodDefinition enableMethod))
-            {
-                enableMethod = new MethodDefinition("OnEnable", MethodAttributes.Private | MethodAttributes.HideBySig, Module.ImportReference(typeof(void)));
-                Type.Methods.Add(enableMethod);
-                createdOnEnable = true;
-            }
+			if (!Type.TryGetMethod("OnEnable", out MethodDefinition enableMethod))
+			{
+				enableMethod = new MethodDefinition("OnEnable", MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
+				Type.Methods.Add(enableMethod);
+				createdOnEnable = true;
+			}
 
-            MethodReference getSerializedObject = Module.ImportReference(Type.GetMethodInBaseType("get_serializedObject"));
-            MethodReference getTarget = Module.ImportReference(Type.GetMethodInBaseType("get_target"));
-            MethodReference findProperty = Module.ImportReference(typeof(SerializedObject).GetMethod("FindProperty", new Type[] { typeof(string) }));
-            MethodReference findPropertyRelative = Module.ImportReference(typeof(SerializedProperty).GetMethod("FindPropertyRelative", new Type[] { typeof(string) }));
-            MethodReference logError = Module.ImportReference(typeof(Debug).GetMethod("LogError", new Type[] { typeof(object) }));
+			MethodReference getSerializedObject = Module.ImportReference(Type.GetMethodInBaseType("get_serializedObject"));
+			MethodReference getTarget = Module.ImportReference(Type.GetMethodInBaseType("get_target"));
+			MethodReference findProperty = Module.ImportReference(typeof(SerializedObject).GetMethod("FindProperty", singleStringArray));
+			MethodReference findPropertyRelative = Module.ImportReference(typeof(SerializedProperty).GetMethod("FindPropertyRelative", singleStringArray));
+			MethodReference logError = MethodsCache.DebugLogError;
 
-            for (int i = 0; i < members.Count; i++)
-            {
-                CustomAttribute attribute = members[i].GetAttribute<FindProperty>();
-                string path = attribute.GetConstructorArgument(0, string.Empty);
+			using (MethodEntryScope il = new MethodEntryScope(enableMethod))
+			{
+				string[] singlePath = new string[1];
 
-                Instruction beforeGetProperty = Instruction.Create(OpCodes.Ldarg_0);
-                string[] paths = string.IsNullOrWhiteSpace(path) ? (new string[1] { members[i].Name }) : path.Split('/');
+				for (int i = 0; i < members.Count; i++)
+				{
+					CustomAttribute attribute = members[i].GetAttribute<FindProperty>();
+					string path = attribute.GetConstructorArgument(0, string.Empty);
 
-                for (int j = 0; j < paths.Length; j++)
-                {
-                    firstInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-                }
+					Instruction beforeGetProperty = Instruction.Create(OpCodes.Ldarg_0);
+					string[] paths;
+					if (string.IsNullOrWhiteSpace(path))
+					{
+						singlePath[0] = members[i].Name;
+						paths = singlePath;
+					}
+					else
+					{
+						paths = path.Split('/');
+					}
 
-                for (int j = 0; j < paths.Length; j++)
-                {
-                    instructions.Add(firstInstructions[j]);
-                    instructions.Add(Instruction.Create(OpCodes.Call, getSerializedObject));
+					for (int j = 0; j < paths.Length; j++)
+					{
+						firstInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+					}
 
-                    for (int k = 0; k <= j; k++)
-                    {
-                        instructions.Add(Instruction.Create(OpCodes.Ldstr, paths[k]));
-                        Instruction last = Instruction.Create(OpCodes.Call, k == 0 ? findProperty : findPropertyRelative);
-                        instructions.Add(last);
+					for (int j = 0; j < paths.Length; j++)
+					{
+						il.Emit(firstInstructions[j]);
+						il.EmitCall(getSerializedObject);
 
-                        if (k == j)
-                        {
-                            ifsLast.Add(new Tuple<Instruction, Instruction>(last, j == paths.Length - 1 ? beforeGetProperty : firstInstructions[j + 1]));
-                        }
-                    }
+						for (int k = 0; k <= j; k++)
+						{
+							il.Emit(OpCodes.Ldstr, paths[k]);
+							Instruction last = Instruction.Create(OpCodes.Call, k == 0 ? findProperty : findPropertyRelative);
+							il.Emit(last);
 
-                    instructions.Add(Instruction.Create(OpCodes.Ldstr, $"There's no serialized property called '{paths[j]}' on {{0}}"));
-                    instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-                    instructions.Add(Instruction.Create(OpCodes.Call, getTarget));
-                    instructions.Add(Instruction.Create(OpCodes.Call, MethodsCache.GetStringFormat(1)));
-                    instructions.Add(Instruction.Create(OpCodes.Call, logError));
-                    instructions.Add(Instruction.Create(OpCodes.Ret));
-                }
+							if (k == j)
+							{
+								ifsLast.Add((last, j == paths.Length - 1 ? beforeGetProperty : firstInstructions[j + 1]));
+							}
+						}
 
-                instructions.Add(beforeGetProperty);
-                instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-                instructions.Add(Instruction.Create(OpCodes.Call, getSerializedObject));
+						il.EmitString($"There's no serialized property called '{paths[j]}' on {{0}}");
+						il.EmitLdarg();
+						il.EmitCall(getTarget);
+						il.EmitCall(MethodsCache.GetStringFormat(1));
+						il.EmitCall(logError);
+						il.EmitReturn();
+					}
 
-                for (int j = 0; j < paths.Length; j++)
-                {
-                    instructions.Add(Instruction.Create(OpCodes.Ldstr, paths[j]));
-                    instructions.Add(Instruction.Create(OpCodes.Callvirt, j == 0 ? findProperty : findPropertyRelative));
-                }
+					il.Emit(beforeGetProperty);
+					il.EmitLdarg();
+					il.EmitCall(getSerializedObject);
 
-                if (members[i].IsProperty)
-                {
-                    instructions.Add(Instruction.Create(OpCodes.Call, members[i].property.SetMethod));
-                }
-                else
-                {
-                    instructions.Add(Instruction.Create(OpCodes.Stfld, members[i].field));
-                }
-            }
+					for (int j = 0; j < paths.Length; j++)
+					{
+						il.Emit(OpCodes.Ldstr, paths[j]);
+						il.EmitCall(j == 0 ? findProperty : findPropertyRelative, true);
+					}
 
-            ILProcessor il = enableMethod.Body.GetILProcessor();
-            for (int i = 0; i < instructions.Count; i++)
-            {
-                if (createdOnEnable)
-                {
-                    il.Append(instructions[i]);
-                }
-                else
-                {
-                    il.InsertBefore(enableMethod.Body.Instructions[i], instructions[i]);
-                }
-            }
+					if (members[i].IsProperty)
+					{
+						il.EmitCall(members[i].property.SetMethod);
+					}
+					else
+					{
+						il.Emit(OpCodes.Stfld, members[i].field);
+					}
+				}
 
-            if (createdOnEnable)
-            {
-                il.Emit(OpCodes.Ret);
-            }
+				if (createdOnEnable)
+				{
+					il.EmitReturn();
+				}
+			}
 
-            for (int i = 0; i < ifsLast.Count; i++)
-            {
-                il.InsertAfter(ifsLast[i].Item1, Instruction.Create(OpCodes.Brtrue_S, ifsLast[i].Item2));
-            }
-        }
-    }
+			ListPool<MemberData>.Release(members);
+			ListPool<Instruction>.Release(firstInstructions);
+
+			ILProcessor bodyIl = enableMethod.BeginEdit();
+
+			for (int i = 0; i < ifsLast.Count; i++)
+			{
+				bodyIl.InsertAfter(ifsLast[i].Item1, Instruction.Create(OpCodes.Brtrue, ifsLast[i].Item2));
+			}
+
+			ListPool<(Instruction, Instruction)>.Release(ifsLast);
+
+			enableMethod.EndEdit();
+		}
+	}
 }
