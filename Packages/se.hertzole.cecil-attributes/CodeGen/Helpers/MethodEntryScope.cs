@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -17,6 +18,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 			this.targetMethod = targetMethod;
 			IL = targetMethod.BeginEdit();
 			Instructions = ListPool<Instruction>.Get();
+
+			if (targetMethod.Body.Instructions.Count == 0)
+			{
+				throw new Exception($"Method {this.targetMethod.FullName} has no instructions in its body.");
+			}
+
 			First = targetMethod.Body.Instructions[0];
 		}
 

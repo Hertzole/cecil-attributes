@@ -80,13 +80,13 @@ namespace Hertzole.CecilAttributes.CodeGen
 				return;
 			}
 
-			bool createdOnEnable = false;
-
 			if (!Type.TryGetMethod("OnEnable", out MethodDefinition enableMethod))
 			{
 				enableMethod = new MethodDefinition("OnEnable", MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
 				Type.Methods.Add(enableMethod);
-				createdOnEnable = true;
+				// Must add a return at the end or else the method will be invalid.
+				ILProcessor il = enableMethod.Body.GetILProcessor();
+				il.Emit(OpCodes.Ret);
 			}
 
 			MethodReference getSerializedObject = Module.ImportReference(Type.GetMethodInBaseType("get_serializedObject"));
@@ -164,11 +164,6 @@ namespace Hertzole.CecilAttributes.CodeGen
 					{
 						il.Emit(OpCodes.Stfld, members[i].field);
 					}
-				}
-
-				if (createdOnEnable)
-				{
-					il.EmitReturn();
 				}
 			}
 
