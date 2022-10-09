@@ -198,7 +198,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
         public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes)
         {
-            return type.AddMethod(name, attributes, type.Module.Void());
+            return type.AddMethod(name, attributes, type.Module.TypeSystem.Void);
         }
 
         public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType)
