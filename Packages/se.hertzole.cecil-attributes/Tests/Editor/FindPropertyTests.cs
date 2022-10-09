@@ -13,6 +13,7 @@ namespace Hertzole.CecilAttributes.Tests
 	{
 		private readonly List<Object> objects = new List<Object>();
 
+#pragma warning disable CS0414 // The field 'FindPropertyTests._test' is assigned but its value is never used
 		private class TargetClass : MonoBehaviour
 		{
 			[SerializeField]
@@ -131,6 +132,7 @@ namespace Hertzole.CecilAttributes.Tests
 				Debug.Log("OnEnable");
 			}
 		}
+#pragma warning restore CS0414 // The field 'FindPropertyTests._test' is assigned but its value is never used
 
 		[SetUp]
 		public void SetUp()
