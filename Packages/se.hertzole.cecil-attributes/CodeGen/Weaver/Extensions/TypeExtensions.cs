@@ -1,268 +1,279 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Text;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 using UnityEngine;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
-    public static partial class WeaverExtensions
-    {
-        // https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L10
-        public static bool Is(this TypeReference tr, Type ttype)
-        {
-            if (ttype.IsGenericType)
-            {
-                return tr.GetElementType().FullName == ttype.FullName;
-            }
-            else
-            {
-                return tr.FullName == ttype.FullName;
-            }
-        }
+	public static partial class WeaverExtensions
+	{
+		// https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L10
+		public static bool Is(this TypeReference tr, Type ttype)
+		{
+			if (ttype.IsGenericType)
+			{
+				return tr.GetElementType().FullName == ttype.FullName;
+			}
 
-        public static bool Is<T>(this TypeReference tr)
-        {
-            return Is(tr, typeof(T));
-        }
+			return tr.FullName == ttype.FullName;
+		}
 
-        // https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L23
-        public static bool IsSubclassOf(this TypeDefinition td, Type type)
-        {
-            if (!td.IsClass)
-            {
-                return false;
-            }
+		public static bool Is<T>(this TypeReference tr)
+		{
+			return Is(tr, typeof(T));
+		}
 
-            TypeReference parent = td.BaseType;
+		// https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L23
+		public static bool IsSubclassOf(this TypeDefinition td, Type type)
+		{
+			if (!td.IsClass)
+			{
+				return false;
+			}
 
-            if (parent == null)
-            {
-                return false;
-            }
+			TypeReference parent = td.BaseType;
 
-            if (parent.Is(type))
-            {
-                return true;
-            }
+			if (parent == null)
+			{
+				return false;
+			}
 
-            if (parent.CanBeResolved())
-            {
-                return IsSubclassOf(parent.Resolve(), type);
-            }
+			if (parent.Is(type))
+			{
+				return true;
+			}
 
-            return false;
-        }
+			if (parent.CanBeResolved())
+			{
+				return IsSubclassOf(parent.Resolve(), type);
+			}
 
-        public static bool IsSubclassOf<T>(this TypeDefinition td)
-        {
-            return IsSubclassOf(td, typeof(T));
-        }
+			return false;
+		}
 
-        // https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L87
-        public static bool CanBeResolved(this TypeReference parent)
-        {
-            while (parent != null)
-            {
-                if (parent.Scope.Name == "Windows")
-                {
-                    return false;
-                }
+		public static bool IsSubclassOf<T>(this TypeDefinition td)
+		{
+			return IsSubclassOf(td, typeof(T));
+		}
 
-                if (parent.Scope.Name == "mscorlib")
-                {
-                    TypeDefinition resolved = parent.Resolve();
-                    return resolved != null;
-                }
+		// https://github.com/vis2k/Mirror/blob/master/Assets/Mirror/Editor/Weaver/Extensions.cs#L87
+		public static bool CanBeResolved(this TypeReference parent)
+		{
+			while (parent != null)
+			{
+				if (parent.Scope.Name == "Windows")
+				{
+					return false;
+				}
 
-                try
-                {
-                    parent = parent.Resolve().BaseType;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
+				if (parent.Scope.Name == "mscorlib")
+				{
+					TypeDefinition resolved = parent.Resolve();
+					return resolved != null;
+				}
 
-            return true;
-        }
-        
-        // https://stackoverflow.com/a/26429045/6257193
-        public static string GetFriendlyName(this TypeReference type)
-        {
-            return MakeFriendlyName(type, type.Name);
-        }
-        
-        // https://stackoverflow.com/a/26429045/6257193
-        public static string GetFriendlyFullName(this TypeReference type)
-        {
-            return MakeFriendlyName(type, type.FullName);
-        }
+				try
+				{
+					parent = parent.Resolve().BaseType;
+				}
+				catch
+				{
+					return false;
+				}
+			}
 
-        private static string MakeFriendlyName(TypeReference type, string name)
-        {
-            string friendlyName = name;
-            if (type.HasGenericParameters)
-            {
-                int iBacktick = friendlyName.IndexOf('`');
-                if (iBacktick > 0)
-                {
-                    friendlyName = friendlyName.Remove(iBacktick);
-                }
-                friendlyName += "<";
-                Collection<GenericParameter> typeParameters = type.GenericParameters;
-                for (int i = 0; i < typeParameters.Count; ++i)
-                {
-                    string typeParamName = $"{{{i}}}";
-                    friendlyName += (i == 0 ? typeParamName : ", " + typeParamName);
-                }
-                friendlyName += ">";
-            }
+			return true;
+		}
 
-            return friendlyName;
-        }
-        
-        public static bool IsCollection(this TypeReference type)
-        {
-            return type.IsArray() || type.IsList() || type.IsDictionary();
-        }
-        
-        public static bool IsArray(this TypeReference type)
-        {
-            return type.IsArray;
-        }
+		// https://stackoverflow.com/a/26429045/6257193
+		public static string GetFriendlyName(this TypeReference type)
+		{
+			return MakeFriendlyName(type, type.Name);
+		}
 
-        public static bool IsList(this TypeReference type)
-        {
-            return type.Is(typeof(List<>));
-        }
-        
-        public static bool IsDictionary(this TypeReference type)
-        {
-            return type.Is(typeof(Dictionary<,>));
-        }
-        
-        public static TypeReference GetCollectionType(this TypeReference type)
-        {
-            if (!type.IsCollection())
-            {
-                return type;
-            }
+		// https://stackoverflow.com/a/26429045/6257193
+		public static string GetFriendlyFullName(this TypeReference type)
+		{
+			return MakeFriendlyName(type, type.FullName);
+		}
 
-            if (type.IsArray())
-            {
-                return type.Module.ImportReference(type.Resolve());
-            }
+		private static string MakeFriendlyName(IGenericParameterProvider type, string name)
+		{
+			if (!type.HasGenericParameters)
+			{
+				return name;
+			}
+			
+			StringBuilder sb = StaticPool<StringBuilder>.Get();
+			sb.Clear();
+			sb.Append(name);
 
-            if (type.IsList() && type is GenericInstanceType generic && generic.GenericArguments.Count == 1)
-            {
-                TypeDefinition resolved = generic.GenericArguments[0].GetElementType().Resolve();
-                if (resolved.Is<GameObject>() || resolved.IsSubclassOf<Component>())
-                {
-                    return type.Module.ImportReference(resolved);
-                }
-            }
+			if (type.HasGenericParameters)
+			{
+				int iBacktick = name.IndexOf('`');
+				if (iBacktick > 0)
+				{
+					sb.Remove(iBacktick, sb.Length - iBacktick);
+				}
 
-            return type;
-        }
+				sb.Append('<');
 
-        public static bool ImplementsInterface<T>(this TypeDefinition type)
-        {
-            return type.ImplementsInterface(new InterfaceImplementation(type.Module.GetTypeReference<T>()));
-        }
-        
-        public static bool ImplementsInterface(this TypeDefinition type, InterfaceImplementation baseInterface)
-        {
-            if (!type.HasInterfaces)
-            {
-                return false;
-            }
+				Collection<GenericParameter> typeParameters = type.GenericParameters;
+				for (int i = 0; i < typeParameters.Count; ++i)
+				{
+					string typeParamName = $"{{{i}}}";
+					sb.Append(i == 0 ? typeParamName : $", {typeParamName}");
+				}
 
-            for (int i = 0; i < type.Interfaces.Count; i++)
-            {
-                if (type.Interfaces[i].InterfaceType.FullName == baseInterface.InterfaceType.FullName)
-                {
-                    return true;
-                }
-            }
+				sb.Append('>');
+			}
 
-            return false;
-        }
-        
-        public static MethodDefinition AddMethod<T>(this TypeDefinition type, string name, MethodAttributes attributes)
-        {
-            return type.AddMethod(name, attributes, type.Module.ImportReference(typeof(T)));
-        }
+			string result = sb.ToString();
 
-        public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes)
-        {
-            return type.AddMethod(name, attributes, type.Module.TypeSystem.Void);
-        }
+			sb.Clear();
+			StaticPool<StringBuilder>.Release(sb);
 
-        public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType)
-        {
-            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
-            type.Methods.Add(m);
+			return result;
+		}
 
-            return m;
-        }
-        
-        public static MethodDefinition AddMethodOverride<T>(this TypeDefinition type, string name, MethodAttributes attributes, params MethodReference[] overrides)
-        {
-            return type.AddMethodOverride(name, attributes, type.Module.ImportReference(typeof(T)), overrides);
-        }
+		public static bool IsCollection(this TypeReference type)
+		{
+			return type.IsArray() || type.IsList() || type.IsDictionary();
+		}
 
-        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, params MethodReference[] overrides)
-        {
-            return type.AddMethodOverride(name, attributes, type.Module.Void(), overrides);
-        }
+		public static bool IsArray(this TypeReference type)
+		{
+			return type.IsArray;
+		}
 
-        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1)
-        {
-            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
-            m.Overrides.Add(override1);
+		public static bool IsList(this TypeReference type)
+		{
+			return type.Is(typeof(List<>));
+		}
 
-            type.Methods.Add(m);
+		public static bool IsDictionary(this TypeReference type)
+		{
+			return type.Is(typeof(Dictionary<,>));
+		}
 
-            return m;
-        }
-        
-        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1, MethodReference override2)
-        {
-            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
-            m.Overrides.Add(override1);
-            m.Overrides.Add(override2);
+		public static TypeReference GetCollectionType(this TypeReference type)
+		{
+			if (!type.IsCollection())
+			{
+				return type;
+			}
 
-            type.Methods.Add(m);
+			if (type.IsArray())
+			{
+				return type.Module.ImportReference(type.Resolve());
+			}
 
-            return m;
-        }
-        
-        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1, MethodReference override2, MethodReference override3)
-        {
-            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
-            m.Overrides.Add(override1);
-            m.Overrides.Add(override2);
-            m.Overrides.Add(override3);
+			if (type.IsList() && type is GenericInstanceType generic && generic.GenericArguments.Count == 1)
+			{
+				TypeDefinition resolved = generic.GenericArguments[0].GetElementType().Resolve();
+				if (resolved.Is<GameObject>() || resolved.IsSubclassOf<Component>())
+				{
+					return type.Module.ImportReference(resolved);
+				}
+			}
 
-            type.Methods.Add(m);
+			return type;
+		}
 
-            return m;
-        }
-        
-        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, params MethodReference[] overrides)
-        {
-            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
-            for (int i = 0; i < overrides.Length; i++)
-            {
-                m.Overrides.Add(overrides[i]);
-            }
+		public static bool ImplementsInterface<T>(this TypeDefinition type)
+		{
+			if (!type.HasInterfaces)
+			{
+				return false;
+			}
 
-            type.Methods.Add(m);
+			Type targetType = typeof(T);
 
-            return m;
-        }
-    }
+			for (int i = 0; i < type.Interfaces.Count; i++)
+			{
+				if (type.Interfaces[i].InterfaceType.FullName == targetType.FullName)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public static MethodDefinition AddMethod<T>(this TypeDefinition type, string name, MethodAttributes attributes)
+		{
+			return type.AddMethod(name, attributes, type.Module.ImportReference(typeof(T)));
+		}
+
+		public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes)
+		{
+			return type.AddMethod(name, attributes, type.Module.TypeSystem.Void);
+		}
+
+		public static MethodDefinition AddMethod(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType)
+		{
+			MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+			type.Methods.Add(m);
+
+			return m;
+		}
+
+		public static MethodDefinition AddMethodOverride<T>(this TypeDefinition type, string name, MethodAttributes attributes, params MethodReference[] overrides)
+		{
+			return type.AddMethodOverride(name, attributes, type.Module.ImportReference(typeof(T)), overrides);
+		}
+
+		public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, params MethodReference[] overrides)
+		{
+			return type.AddMethodOverride(name, attributes, type.Module.Void(), overrides);
+		}
+
+		public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1)
+		{
+			MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+			m.Overrides.Add(override1);
+
+			type.Methods.Add(m);
+
+			return m;
+		}
+
+		public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1, MethodReference override2)
+		{
+			MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+			m.Overrides.Add(override1);
+			m.Overrides.Add(override2);
+
+			type.Methods.Add(m);
+
+			return m;
+		}
+
+		public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1, MethodReference override2, MethodReference override3)
+		{
+			MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+			m.Overrides.Add(override1);
+			m.Overrides.Add(override2);
+			m.Overrides.Add(override3);
+
+			type.Methods.Add(m);
+
+			return m;
+		}
+
+		public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, params MethodReference[] overrides)
+		{
+			MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+			for (int i = 0; i < overrides.Length; i++)
+			{
+				m.Overrides.Add(overrides[i]);
+			}
+
+			type.Methods.Add(m);
+
+			return m;
+		}
+	}
 }
