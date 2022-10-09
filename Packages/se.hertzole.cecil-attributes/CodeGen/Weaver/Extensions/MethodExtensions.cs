@@ -130,17 +130,41 @@ namespace Hertzole.CecilAttributes.CodeGen
             return (T)attribute.ConstructorArguments[index].Value;
         }
 
+        public static GenericInstanceMethod MakeGenericMethod(this MethodReference self, TypeReference type1)
+        {
+            GenericInstanceMethod generic = new GenericInstanceMethod(self);
+            generic.GenericArguments.Add(type1);
+            return generic;
+        }
+        
+        public static GenericInstanceMethod MakeGenericMethod(this MethodReference self, TypeReference type1, TypeReference type2)
+        {
+            GenericInstanceMethod generic = new GenericInstanceMethod(self);
+            generic.GenericArguments.Add(type1);
+            generic.GenericArguments.Add(type2);
+            return generic;
+        }
+        
+        public static GenericInstanceMethod MakeGenericMethod(this MethodReference self, TypeReference type1, TypeReference type2, TypeReference type3)
+        {
+            GenericInstanceMethod generic = new GenericInstanceMethod(self);
+            generic.GenericArguments.Add(type1);
+            generic.GenericArguments.Add(type2);
+            generic.GenericArguments.Add(type3);
+            return generic;
+        }
+
         public static GenericInstanceMethod MakeGenericMethod(this MethodReference self, params TypeReference[] genericTypes)
         {
             GenericInstanceMethod result = new GenericInstanceMethod(self);
-            foreach (TypeReference argument in genericTypes)
+            for (int i = 0; i < genericTypes.Length; i++)
             {
-                result.GenericArguments.Add(argument);
+                result.GenericArguments.Add(genericTypes[i]);
             }
 
             return result;
         }
-        
+
         public static VariableDefinition AddLocalVariable<T>(this MethodDefinition m, string name = "")
         {
             if (m.Module == null)

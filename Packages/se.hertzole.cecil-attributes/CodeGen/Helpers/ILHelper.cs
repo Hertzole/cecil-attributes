@@ -205,29 +205,35 @@ namespace Hertzole.CecilAttributes.CodeGen
 			// 5. Appends the end instructions.
 			// 6. Appends all the if check instructions before each body block.
 
-			Instruction[] targets = new Instruction[items.Count];
-			
-			Dictionary<int, List<Instruction>> bodyFills = new Dictionary<int, List<Instruction>>();
-			
-			List<Instruction> endFill = new List<Instruction>();
-			
+			Instruction[] targets =
+#if UNITY_2021_3_OR_NEWER
+				// Use a new array pool to avoid allocations.
+				System.Buffers.ArrayPool<Instruction>.Shared.Rent(items.Count);
+#else
+				new Instruction[items.Count];
+#endif
+
+			Dictionary<int, List<Instruction>> bodyFills = DictionaryPool<int, List<Instruction>>.Get();
+
+			List<Instruction> endFill = ListPool<Instruction>.Get();
+
 			endElse.Invoke(endFill);
 			targets[0] = endFill[0];
 			
 			for (int i = 0; i < items.Count; i++)
 			{
-				bodyFills.Add(i, new List<Instruction>());
+				bodyFills.Add(i, ListPool<Instruction>.Get());
 				body.Invoke(items[i], i, targets[0], bodyFills[i]);
 			}
 
-			Dictionary<int, List<Instruction>> checkFills = new Dictionary<int, List<Instruction>>();
+			Dictionary<int, List<Instruction>> checkFills = DictionaryPool<int, List<Instruction>>.Get();
 
 			int index = 0;
 			// Create all the if checks in reverse order.
 			for (int i = items.Count - 1; i >= 0; i--)
 			{
 				index = i;
-				checkFills.Add(i, new List<Instruction>());
+				checkFills.Add(i, ListPool<Instruction>.Get());
 				ifCheck.Invoke(items[index], index, targets[i == items.Count - 1 ? 0 : i + 1], checkFills[index]);
 				if (i > 0)
 				{
@@ -235,7 +241,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				}
 			}
 
-			List<Instruction> total = new List<Instruction>();
+			List<Instruction> total = ListPool<Instruction>.Get();
 
 			// Append the body instructions.
 			foreach (List<Instruction> fill in bodyFills.Values)
@@ -255,24 +261,43 @@ namespace Hertzole.CecilAttributes.CodeGen
 				index++;
 			}
 
+			foreach (List<Instruction> list in bodyFills.Values)
+			{
+				ListPool<Instruction>.Release(list);
+			}
+
+			foreach (List<Instruction> list in checkFills.Values)
+			{
+				ListPool<Instruction>.Release(list);
+			}
+			
+			ListPool<Instruction>.Release(endFill);
+			ListPool<Instruction>.Release(total);
+			DictionaryPool<int, List<Instruction>>.Release(bodyFills);
+			DictionaryPool<int, List<Instruction>>.Release(checkFills);
+			
+#if UNITY_2021_3_OR_NEWER
+			System.Buffers.ArrayPool<Instruction>.Shared.Return(targets, true);
+#endif
+
 			return total.ToArray();
 		}
 
 		public static IEnumerable<Instruction> IfElse(Action<Instruction, List<Instruction>> ifCheck, Action<Instruction, List<Instruction>> body, Action<List<Instruction>> endElse)
 		{
-			List<Instruction> endFill = new List<Instruction>();
-			
+			List<Instruction> endFill = ListPool<Instruction>.Get();
+
 			endElse.Invoke(endFill);
 			Instruction target = endFill[0];
 			
-			List<Instruction> bodyFill = new List<Instruction>();
+			List<Instruction> bodyFill = ListPool<Instruction>.Get();
 			body.Invoke(target, bodyFill);
 
-			List<Instruction> checkFill = new List<Instruction>();
+			List<Instruction> checkFill = ListPool<Instruction>.Get();
 
 			ifCheck.Invoke(target, checkFill);
 
-			List<Instruction> total = new List<Instruction>();
+			List<Instruction> total = ListPool<Instruction>.Get();
 			
 			// Append the body instructions.
 			total.AddRange(bodyFill);
@@ -283,12 +308,19 @@ namespace Hertzole.CecilAttributes.CodeGen
 			// Insert the if check before the body.
 			total.InsertRange(total.IndexOf(bodyFill[0]), checkFill);
 
-			return total.ToArray();
+			Instruction[] result = total.ToArray();
+			
+			ListPool<Instruction>.Release(endFill);
+			ListPool<Instruction>.Release(bodyFill);
+			ListPool<Instruction>.Release(checkFill);
+			ListPool<Instruction>.Release(total);
+
+			return result;
 		}
 
 		public static IEnumerable<Instruction> GetStandardValue(TypeReference type)
 		{
-			List<Instruction> instructions = new List<Instruction>();
+			List<Instruction> instructions = ListPool<Instruction>.Get();
 
 			if (type.Is<bool>() || type.Is<int>() || type.Is<uint>() || type.Is<short>() || type.Is<ushort>() || type.Is<byte>() || type.Is<sbyte>())
 			{
@@ -310,7 +342,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 			else if (type.IsValueType)
 			{
 				// Handle value types differently.
-				return instructions;
+				Instruction[] result = instructions.ToArray();
+
+				ListPool<Instruction>.Release(instructions);
+
+				return result;
 			}
 			else
 			{
@@ -319,7 +355,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (instructions.Count > 0)
 			{
-				return instructions;
+				Instruction[] result = instructions.ToArray();
+
+				ListPool<Instruction>.Release(instructions);
+				
+				return result;
 			}
 
 			throw new NullReferenceException($"Can't find a default value for type {type}.");

@@ -219,6 +219,39 @@ namespace Hertzole.CecilAttributes.CodeGen
             return type.AddMethodOverride(name, attributes, type.Module.Void(), overrides);
         }
 
+        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1)
+        {
+            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+            m.Overrides.Add(override1);
+
+            type.Methods.Add(m);
+
+            return m;
+        }
+        
+        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1, MethodReference override2)
+        {
+            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+            m.Overrides.Add(override1);
+            m.Overrides.Add(override2);
+
+            type.Methods.Add(m);
+
+            return m;
+        }
+        
+        public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, MethodReference override1, MethodReference override2, MethodReference override3)
+        {
+            MethodDefinition m = new MethodDefinition(name, attributes, returnType);
+            m.Overrides.Add(override1);
+            m.Overrides.Add(override2);
+            m.Overrides.Add(override3);
+
+            type.Methods.Add(m);
+
+            return m;
+        }
+        
         public static MethodDefinition AddMethodOverride(this TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, params MethodReference[] overrides)
         {
             MethodDefinition m = new MethodDefinition(name, attributes, returnType);
