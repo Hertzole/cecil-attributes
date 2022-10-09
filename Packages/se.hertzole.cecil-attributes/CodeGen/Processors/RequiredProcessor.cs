@@ -8,7 +8,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 	public sealed class RequiredProcessor : BaseProcessor
 	{
 		private readonly HashSet<TypeDefinition> processedTypes = new HashSet<TypeDefinition>();
-		public override string Name { get { return nameof(RequiredProcessor); } }
+		public override string Name { get { return "Required"; } }
 		public override bool NeedsMonoBehaviour { get { return true; } }
 		public override bool AllowEditor { get { return false; } }
 		public override bool IncludeInBuild { get { return Settings.includeRequiredInBuild; } }
