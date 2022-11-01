@@ -158,6 +158,8 @@ private MyComponent myParentComponent; // Will call GetComponent(s)InParent
 private MyComponent myChildrenComponent; // Will call GetComponent(s)InChildren
 ```
 
+![Editor icons](https://user-images.githubusercontent.com/5569364/199358582-d3ea55b6-3078-4d19-b9e4-f6d34ca54217.png)
+
 ### Required
 **Applies to serialized object reference fields**
 
