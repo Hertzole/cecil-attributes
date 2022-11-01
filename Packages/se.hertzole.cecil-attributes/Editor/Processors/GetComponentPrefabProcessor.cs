@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Hertzole.CecilAttributes.Interfaces;
@@ -183,3 +184,4 @@ namespace Hertzole.CecilAttributes.Editor
 		}
 	}
 }
+#endif

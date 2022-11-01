@@ -50,9 +50,11 @@ namespace Hertzole.CecilAttributes.Editor
                     CompilationPipeline.RequestScriptCompilation();
                 }
 
+#if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
                 GUILayout.Space(16f);
                 
                 GetComponentSection();
+#endif
              
                 GUILayout.Space(16f);
                 
@@ -195,6 +197,7 @@ namespace Hertzole.CecilAttributes.Editor
             }
         }
 
+#if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
         private static void GetComponentSection()
         {
             DrawHeaderLabel("Get Component");
@@ -225,6 +228,7 @@ namespace Hertzole.CecilAttributes.Editor
                 GetComponentSceneProcessor.Process();
             }
         }
+#endif
 
         private static void RequiredSection()
         {
