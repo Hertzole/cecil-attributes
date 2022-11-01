@@ -574,9 +574,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 				case GetComponentTarget.Self:
 					return Module.GetMethod<Component>(nameof(Component.GetComponent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
 				case GetComponentTarget.Parent:
+#if UNITY_2021_2_OR_NEWER // Include inactive is not supported in previous versions.
 					return Module.GetMethod<Component>(nameof(Component.GetComponentInParent), onlyBools).MakeGenericMethod(fieldType);
+#else
+					return Module.GetMethod<Component>(nameof(Component.GetComponentInParent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+#endif
 				case GetComponentTarget.Children:
+#if UNITY_2021_2_OR_NEWER // Include inactive is not supported in previous versions.
 					return Module.GetMethod<Component>(nameof(Component.GetComponentInChildren), onlyBools).MakeGenericMethod(fieldType);
+#else
+					return Module.GetMethod<Component>(nameof(Component.GetComponentInChildren), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+#endif
 				default:
 					throw new ArgumentOutOfRangeException(nameof(target), target, null);
 			}
