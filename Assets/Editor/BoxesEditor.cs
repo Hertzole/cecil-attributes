@@ -15,6 +15,8 @@ public class BoxesEditor : Editor
     private SerializedProperty ren;
     [FindProperty]
     private SerializedProperty boxes;
+    [FindProperty]
+    private SerializedProperty col;
 
     public override VisualElement CreateInspectorGUI()
     {
@@ -22,6 +24,7 @@ public class BoxesEditor : Editor
 
         root.Add(new PropertyField(anims));
         root.Add(new PropertyField(ren));
+        root.Add(new PropertyField(col));
         root.Add(new PropertyField(boxes));
         
         return root;

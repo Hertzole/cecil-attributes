@@ -100,30 +100,31 @@ namespace Hertzole.CecilAttributes.CodeGen
 				throw new NullReferenceException("No serialization root");
 			}
 
-			using PoolScope<List<FieldInfo>> listScope = ListPool<FieldInfo>.Get(out List<FieldInfo> fieldsList);
-
-			// Find all fields with the attribute.
-			foreach (FieldDefinition field in attributeRoot.Fields)
+			using (PoolScope<List<FieldInfo>> listScope = ListPool<FieldInfo>.Get(out List<FieldInfo> fieldsList))
 			{
-				if (field.TryGetAttribute<GetComponentAttribute>(out CustomAttribute attribute))
+				// Find all fields with the attribute.
+				foreach (FieldDefinition field in attributeRoot.Fields)
 				{
-					GetComponentTarget target = attribute.GetField(nameof(GetComponentAttribute.target), GetComponentTarget.Self);
-					bool includeInactive = attribute.GetField(nameof(GetComponentAttribute.includeInactive), true);
-					fieldsList.Add(new FieldInfo(field, target, includeInactive));
+					if (field.TryGetAttribute<GetComponentAttribute>(out CustomAttribute attribute))
+					{
+						GetComponentTarget target = attribute.GetField(nameof(GetComponentAttribute.target), GetComponentTarget.Self);
+						bool includeInactive = attribute.GetField(nameof(GetComponentAttribute.includeInactive), true);
+						fieldsList.Add(new FieldInfo(field, target, includeInactive));
+					}
 				}
-			}
 
-			GetOrAddSerializationInterface(serializationRoot, out MethodDefinition beforeSerialize);
+				GetOrAddSerializationInterface(serializationRoot, out MethodDefinition beforeSerialize);
 
-			if (beforeSerialize == null)
-			{
-				throw new NullReferenceException("No before serialize method");
-			}
+				if (beforeSerialize == null)
+				{
+					throw new NullReferenceException("No before serialize method");
+				}
 			
-			// Add the fetch method.
-			MethodDefinition fetchComponents = GetOrAddFetchComponentsMethod(attributeRoot, serializationRoot, beforeSerialize);
+				// Add the fetch method.
+				MethodDefinition fetchComponents = GetOrAddFetchComponentsMethod(attributeRoot, serializationRoot, beforeSerialize);
 
-			ProcessFields(fetchComponents, fieldsList);
+				ProcessFields(fetchComponents, fieldsList);
+			}
 		}
 		
 		private static void GetOrAddSerializationInterface(TypeDefinition type, out MethodDefinition beforeSerialize)
@@ -193,88 +194,92 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		private void ProcessFields(MethodDefinition method, List<FieldInfo> fields)
 		{
-			using (var il = new MethodEntryScope(method))
+			using (MethodEntryScope il = new MethodEntryScope(method))
 			{
 				Instruction previous = il.First;
-				using var scope = ListPool<Instruction>.Get(out List<Instruction> jumpToInstructions);
-
-				for (int i = 0; i < fields.Count; i++)
+				using (PoolScope<List<Instruction>> scope = ListPool<Instruction>.Get(out List<Instruction> jumpToInstructions))
 				{
-					jumpToInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-				}
-				
-				for (int i = 0; i < fields.Count; i++)
-				{
-					FieldInfo field = fields[i];
-					
-					if(!field.field.FieldType.IsArray() && !field.field.FieldType.IsList())
+					for (int i = 0; i < fields.Count; i++)
 					{
-						// if (field == null)
-						il.Emit(jumpToInstructions[i]);
-						il.EmitLoadField(field.field);
-						il.EmitNull();
-						il.EmitCall(MethodsCache.UnityObjectEqualityOperation);
-						il.Emit(OpCodes.Brfalse, i == fields.Count - 1 ? il.First : jumpToInstructions[i + 1]);
-
-						// field = GetComponent<fieldType>();
-						il.EmitLdarg();
-						il.EmitLdarg();
-						
-						if (field.target != GetComponentTarget.Self)
-						{
-							il.EmitBool(field.includeInactive);
-						}
-						
-						il.EmitCall(GetComponentMethod(field.field.FieldType, field.target, false, false));
-						il.Emit(OpCodes.Stfld, field.field);
+						jumpToInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
 					}
-					else if (!field.field.FieldType.IsList() && field.field.FieldType.IsArray())
-					{
-						// field = GetComponents<fieldType>();
-						il.Emit(jumpToInstructions[i]);
-						il.EmitLdarg();
 
-						if (field.target != GetComponentTarget.Self)
-						{
-							il.EmitBool(field.includeInactive);
-						}
-						
-						il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, false));
-						il.Emit(OpCodes.Stfld, field.field);
-					}
-					else if (field.field.FieldType.IsList())
+					for (int i = 0; i < fields.Count; i++)
 					{
-						Instruction jumpTo = ILHelper.Ldarg(null);
-						
-						// if (list == null)
-						il.Emit(jumpToInstructions[i]);
-						il.EmitLoadField(field.field);
-						il.Emit(OpCodes.Brtrue, jumpTo);
-						
-						// list = new List<fieldType>();
-						il.EmitLdarg();
-						il.Emit(OpCodes.Newobj, 
-							Module.GetConstructor(typeof(List<>), System.Type.EmptyTypes)
-							      .MakeHostInstanceGeneric(Module.GetTypeReference(typeof(List<>)).MakeGenericInstanceType(field.field.FieldType.GetCollectionType())));
-						il.Emit(OpCodes.Stfld, field.field);
-						
-						// list.Clear();
-						il.Emit(jumpTo);
-						il.EmitLoadField(field.field);
-						il.EmitCall(Module.GetMethod(typeof(List<>), "Clear").MakeHostInstanceGeneric((GenericInstanceType) field.field.FieldType), true);
-						
-						// GetComponent<fieldType>(list);
-						il.EmitLdarg();
-						
-						if (field.target != GetComponentTarget.Self)
-						{
-							il.EmitBool(field.includeInactive);
-						}
-						
-						il.EmitLdarg();
-						il.EmitLoadField(field.field);
+						FieldInfo field = fields[i];
 
-						il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, true));
+						if (!field.field.FieldType.IsArray() && !field.field.FieldType.IsList())
+						{
+							// if (field == null)
+							il.Emit(jumpToInstructions[i]);
+							il.EmitLoadField(field.field);
+							il.EmitNull();
+							il.EmitCall(MethodsCache.UnityObjectEqualityOperation);
+							il.Emit(OpCodes.Brfalse, i == fields.Count - 1 ? il.First : jumpToInstructions[i + 1]);
+
+							// field = GetComponent<fieldType>();
+							il.EmitLdarg();
+							il.EmitLdarg();
+
+#if UNITY_2021_2_OR_NEWER // Include inactive does not exist in 2021.1 or older.
+							if (field.target != GetComponentTarget.Self)
+							{
+								il.EmitBool(field.includeInactive);
+							}
+#endif
+
+							il.EmitCall(GetComponentMethod(field.field.FieldType, field.target, false, false));
+							il.Emit(OpCodes.Stfld, field.field);
+						}
+						else if (!field.field.FieldType.IsList() && field.field.FieldType.IsArray())
+						{
+							// field = GetComponents<fieldType>();
+							il.Emit(jumpToInstructions[i]);
+							il.EmitLdarg();
+
+							if (field.target != GetComponentTarget.Self)
+							{
+								il.EmitBool(field.includeInactive);
+							}
+
+							il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, false));
+							il.Emit(OpCodes.Stfld, field.field);
+						}
+						else if (field.field.FieldType.IsList())
+						{
+							Instruction jumpTo = ILHelper.Ldarg(null);
+
+							// if (list == null)
+							il.Emit(jumpToInstructions[i]);
+							il.EmitLoadField(field.field);
+							il.Emit(OpCodes.Brtrue, jumpTo);
+
+							// list = new List<fieldType>();
+							il.EmitLdarg();
+							il.Emit(OpCodes.Newobj,
+								Module.GetConstructor(typeof(List<>), System.Type.EmptyTypes)
+								      .MakeHostInstanceGeneric(Module.GetTypeReference(typeof(List<>)).MakeGenericInstanceType(field.field.FieldType.GetCollectionType())));
+
+							il.Emit(OpCodes.Stfld, field.field);
+
+							// list.Clear();
+							il.Emit(jumpTo);
+							il.EmitLoadField(field.field);
+							il.EmitCall(Module.GetMethod(typeof(List<>), "Clear").MakeHostInstanceGeneric((GenericInstanceType) field.field.FieldType), true);
+
+							// GetComponent<fieldType>(list);
+							il.EmitLdarg();
+
+							if (field.target != GetComponentTarget.Self)
+							{
+								il.EmitBool(field.includeInactive);
+							}
+
+							il.EmitLdarg();
+							il.EmitLoadField(field.field);
+
+							il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, true));
+						}
 					}
 				}
 			}

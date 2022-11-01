@@ -39,7 +39,10 @@ namespace Hertzole.CecilAttributes.Editor
 
 		private static void GetIcon()
 		{
-			icon ??= EditorGUIUtility.IconContent("Refresh@2x", "|This component is automatically fetched in the editor.");
+			if (icon == null)
+			{
+				icon = EditorGUIUtility.IconContent("Refresh@2x", "|This component is automatically fetched in the editor.");
+			}
 		}
 	}
 }

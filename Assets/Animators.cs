@@ -71,7 +71,7 @@ public class Animators : MonoBehaviour
         
         if (ren == null)
         {
-            ren = GetComponentInParent<Renderer>(true);
+            ren = GetComponentInParent<Renderer>();
         }
     }
 }

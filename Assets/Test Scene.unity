@@ -218,7 +218,6 @@ GameObject:
   - component: {fileID: 844353754}
   - component: {fileID: 844353753}
   - component: {fileID: 844353752}
-  - component: {fileID: 844353755}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -241,6 +240,7 @@ MonoBehaviour:
   ren: {fileID: 0}
   anims:
   - {fileID: 844353753}
+  col: {fileID: 0}
 --- !u!95 &844353753
 Animator:
   serializedVersion: 4
@@ -278,22 +278,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &844353755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 844353751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 750376c690b3d8945be536a604b72d25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ren: {fileID: 0}
-  anims:
-  - {fileID: 844353753}
-  boxes: []
 --- !u!1 &915245176
 GameObject:
   m_ObjectHideFlags: 0
