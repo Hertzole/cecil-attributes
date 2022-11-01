@@ -59,6 +59,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 			root.Add(iconElement);
 			
+#if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
 			field.RegisterValueChangeCallback(evt =>
 			{
 				if (evt.changedProperty.serializedObject.targetObject is IGetComponent comp)
@@ -66,6 +67,7 @@ namespace Hertzole.CecilAttributes.Editor
 					comp.FetchComponents();
 				}
 			});
+#endif
 			
 			return root;
 		}

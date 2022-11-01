@@ -29,10 +29,12 @@ namespace Hertzole.CecilAttributes.Editor
 			GUI.enabled = oEnabled;
 			EditorGUI.LabelField(new Rect(r.x + r.width + 2, r.y, EditorGUIUtility.singleLineHeight, EditorGUIUtility.singleLineHeight), icon);
 
+#if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
 			if (property.objectReferenceValue == null && property.serializedObject.targetObject is IGetComponent comp)
 			{
 				comp.FetchComponents();
 			}
+#endif
 		}
 
 		private static void GetIcon()
