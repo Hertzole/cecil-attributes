@@ -2,22 +2,62 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Hertzole.CecilAttributes;
+using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class RequiredTest1 : MonoBehaviour
 {
+    [SerializeField] 
+    private string test = default;
     [SerializeField] 
     [Required]
     private Animator anim = default;
     [SerializeField] 
     [Required]
     private SkinnedMeshRenderer ren = default;
-    
+
     private void Awake()
     {
         Debug.Log("Awake");
     }
 }
+
+// #if UNITY_EDITOR
+// [CustomEditor(typeof(RequiredTest1))]
+// public class RequiredTest1Editor : Editor
+// {
+//     private SerializedProperty test;
+//     private SerializedProperty anim;
+//     private SerializedProperty ren;
+//     
+//     private void OnEnable()
+//     {
+//         test = serializedObject.FindProperty("test");
+//         anim = serializedObject.FindProperty("anim");
+//         ren = serializedObject.FindProperty("ren");
+//     }
+//
+//     public override VisualElement CreateInspectorGUI()
+//     {
+//         VisualElement root = new VisualElement();
+//
+//         root.Add(new IMGUIContainer(() =>
+//         {
+//             EditorGUILayout.PropertyField(test);
+//             EditorGUILayout.PropertyField(anim);
+//             EditorGUILayout.PropertyField(ren);
+//         }));
+//
+//         root.Add(new PropertyField(test));
+//         root.Add(new PropertyField(anim));
+//         root.Add(new PropertyField(ren));
+//         
+//         return root;
+//     }
+// }
+// #endif
 
 public class RequiredTest2 : RequiredTest1
 {
@@ -57,7 +97,7 @@ public class RequiredTemplate : MonoBehaviour
         
         if (anim == null)
         {
-            Debug.LogError("Animator is null", this);
+            Debug.LogError(string.Format("Animator is not assigned on {0}. It is required. Please assign it in the inspector.", gameObject.name), this);
             error = true;
         }
 

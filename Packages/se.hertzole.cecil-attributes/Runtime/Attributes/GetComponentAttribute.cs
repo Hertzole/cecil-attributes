@@ -10,6 +10,8 @@ namespace Hertzole.CecilAttributes
     {
         public GetComponentTarget target = GetComponentTarget.Self;
         public bool includeInactive = false;
-        public bool showInInspector = false;
+        [Obsolete("Use 'enableInEditor' instead.")]
+        public bool showInInspector { get { return enableInEditor; } set { enableInEditor = value; } }
+        public bool enableInEditor = false;
     }
 }

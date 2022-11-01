@@ -5,24 +5,29 @@ using UnityEngine;
 namespace Hertzole.CecilAttributes.Editor
 {
 	[CustomPropertyDrawer(typeof(GetComponentAttribute), true)]
-	public class GetComponentAttributeDrawer : PropertyDrawer
+	public sealed partial class GetComponentAttributeDrawer : PropertyDrawer
 	{
+		private static GUIContent icon;
+
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			bool show = true;
-				
+			GetIcon();
+
+			Rect r = position;
+			r.width -= 20;
+
+			bool enable = false;
+
 			if (attribute is GetComponentAttribute att)
 			{
-				show = att.showInInspector;
+				enable = att.enableInEditor;
 			}
 
-			if (show)
-			{
-				bool oEnabled = GUI.enabled;
-				GUI.enabled = false;
-				EditorGUI.PropertyField(position, property, label);
-				GUI.enabled = oEnabled;
-			}
+			bool oEnabled = GUI.enabled;
+			GUI.enabled = enable;
+			EditorGUI.PropertyField(r, property, label);
+			GUI.enabled = oEnabled;
+			EditorGUI.LabelField(new Rect(r.x + r.width + 2, r.y, EditorGUIUtility.singleLineHeight, EditorGUIUtility.singleLineHeight), icon);
 
 			if (property.objectReferenceValue == null && property.serializedObject.targetObject is IGetComponent comp)
 			{
@@ -30,21 +35,9 @@ namespace Hertzole.CecilAttributes.Editor
 			}
 		}
 
-		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+		private static void GetIcon()
 		{
-			bool show = true;
-
-			if (attribute is GetComponentAttribute att)
-			{
-				show = att.showInInspector;
-			}
-
-			if (show)
-			{
-				return base.GetPropertyHeight(property, label);
-			}
-
-			return -EditorGUIUtility.standardVerticalSpacing;
+			icon ??= EditorGUIUtility.IconContent("Refresh@2x", "|This component is automatically fetched in the editor.");
 		}
 	}
 }

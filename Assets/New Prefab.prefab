@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30efc9dbe531ce0449d99e22dc81bf2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ren: {fileID: 0}
   anims:
   - {fileID: 2790430030199690918}
 --- !u!95 &2790430030199690918
