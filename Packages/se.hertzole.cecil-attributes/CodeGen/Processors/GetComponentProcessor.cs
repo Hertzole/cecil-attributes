@@ -472,16 +472,22 @@ namespace Hertzole.CecilAttributes.CodeGen
 				{
 					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType, targetFields[i].target, false, false)));
 				}
-				
-				// This is dumb. Why can't the bool be on the same place on both lists and arrays??
-				if ((targetFields[i].field.FieldType.IsArray() && targetFields[i].target != GetComponentTarget.Self) || (!targetFields[i].field.FieldType.IsCollection() && targetFields[i].target == GetComponentTarget.Children))
+
+#if UNITY_2021_2_OR_NEWER
+				if (targetFields[i].target != GetComponentTarget.Self && !targetFields[i].field.FieldType.IsCollection())
 				{
 					il.InsertAt(0, ILHelper.Bool(targetFields[i].includeInactive));
 				}
+#endif
 				
+				if(targetFields[i].target != GetComponentTarget.Self && targetFields[i].field.FieldType.IsArray())
+				{
+					il.InsertAt(0, ILHelper.Bool(targetFields[i].includeInactive));
+				}
+
 				il.InsertAt(0, ILHelper.Ldarg(il));
 
-				if (targetFields[i].field.FieldType.IsList() && targetFields[i].target != GetComponentTarget.Self)
+				if (targetFields[i].target != GetComponentTarget.Self && targetFields[i].field.FieldType.IsList())
 				{
 					il.InsertAt(0, ILHelper.Bool(targetFields[i].includeInactive));
 				}
