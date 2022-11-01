@@ -9,8 +9,11 @@ public class Animators : MonoBehaviour
     [SerializeField] 
     [GetComponent]
     private Renderer ren = default;
-    [GetComponent(enableInEditor = false)]
+    [GetComponent(target = GetComponentTarget.Children, enableInEditor = false)]
     public Animator[] anims;
+    [SerializeField] 
+    [GetComponent]
+    private BoxCollider col = default;
     
     protected virtual bool Template(bool dirty)
     {
@@ -52,6 +55,23 @@ public class Animators : MonoBehaviour
                 value += i;
             }
             return value;
+        }
+    }
+
+    protected virtual void FetchComponentsTemplate()
+    {
+        
+        
+        if (ren == null)
+        {
+            ren = GetComponent<Renderer>();
+        }
+        
+        anims = GetComponentsInChildren<Animator>(true);
+        
+        if (ren == null)
+        {
+            ren = GetComponentInParent<Renderer>(true);
         }
     }
 }

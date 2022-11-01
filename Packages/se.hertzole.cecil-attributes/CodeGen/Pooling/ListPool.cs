@@ -15,6 +15,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 		{
 			return pool.GetInternal();
 		}
+		
+		public static PoolScope<List<T>> Get(out List<T> value)
+		{
+			return pool.GetInternal(out  value);
+		}
 
 		public static void Release(List<T> item)
 		{

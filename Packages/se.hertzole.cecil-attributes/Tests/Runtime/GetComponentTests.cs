@@ -220,6 +220,7 @@ namespace Hertzole.CecilAttributes.Tests
 			yield break;
 		}
 
+		#if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
 		[UnityTest]
 		public IEnumerator GetComponent()
 		{
@@ -674,5 +675,461 @@ namespace Hertzole.CecilAttributes.Tests
 			Assert.AreEqual(1, comp.reference1.Count);
 			Assert.AreEqual(1, comp.reference2.Count);
 		}
+#else
+		[UnityTest]
+		public IEnumerator GetComponent()
+		{
+			GameObject obj = new GameObject("", typeof(ComponentReference));
+			objects.Add(obj);
+
+			ComponentReference comp = obj.GetComponent<ComponentReference>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.reference);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentInParent()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReference));
+			GameObject child = new GameObject("", typeof(ComponentReferenceParent));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentReferenceParent comp = child.GetComponent<ComponentReferenceParent>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.reference);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentInChild()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReferenceChild));
+			GameObject child = new GameObject("", typeof(ComponentReference));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentReferenceChild comp = parent.GetComponent<ComponentReferenceChild>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.reference);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentInheritance()
+		{
+			GameObject obj = new GameObject("", typeof(ComponentReference2));
+			objects.Add(obj);
+
+			ComponentReference2 comp = obj.GetComponent<ComponentReference2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.reference1);
+			Assert.IsNotNull(comp.reference2);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentInheritanceParent()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReference));
+			GameObject child = new GameObject("", typeof(ComponentReferenceParent2));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentReferenceParent2 comp = child.GetComponent<ComponentReferenceParent2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.reference1);
+			Assert.IsNotNull(comp.reference2);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentInheritanceChild()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReferenceChild2));
+			GameObject child = new GameObject("", typeof(ComponentReference));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentReferenceChild2 comp = parent.GetComponent<ComponentReferenceChild2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.reference1);
+			Assert.IsNotNull(comp.reference2);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentWeirdOrder()
+		{
+			GameObject obj = new GameObject("", typeof(DReference));
+			objects.Add(obj);
+
+			DReference comp = obj.GetComponent<DReference>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.referenceA);
+			Assert.IsNull(comp.referenceB);
+			Assert.IsNull(comp.referenceD);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.IsNotNull(comp.referenceA);
+			Assert.IsNotNull(comp.referenceB);
+			Assert.IsNotNull(comp.referenceD);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponents()
+		{
+			GameObject obj = new GameObject("", typeof(ComponentsReference));
+			objects.Add(obj);
+
+			ComponentsReference comp = obj.GetComponent<ComponentsReference>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference.Length);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentsInParent()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReference));
+			GameObject child = new GameObject("", typeof(ComponentsReferenceParent));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentsReferenceParent comp = child.GetComponent<ComponentsReferenceParent>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference.Length);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentsInChild()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentsReferenceChild));
+			GameObject child = new GameObject("", typeof(ComponentReference));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentsReferenceChild comp = parent.GetComponent<ComponentsReferenceChild>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference.Length);
+		}
+		
+		[UnityTest]
+		public IEnumerator GetComponentsInheritance()
+		{
+			GameObject obj = new GameObject("", typeof(ComponentsReference2));
+			objects.Add(obj);
+
+			ComponentsReference2 comp = obj.GetComponent<ComponentsReference2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference1.Length);
+			Assert.AreEqual(1, comp.reference2.Length);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentsInheritanceParent()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReference));
+			GameObject child = new GameObject("", typeof(ComponentsReferenceParent2));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentsReferenceParent2 comp = child.GetComponent<ComponentsReferenceParent2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference1.Length);
+			Assert.AreEqual(1, comp.reference2.Length);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentsInheritanceChild()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentsReferenceChild2));
+			GameObject child = new GameObject("", typeof(ComponentReference));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentsReferenceChild2 comp = parent.GetComponent<ComponentsReferenceChild2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference1.Length);
+			Assert.AreEqual(1, comp.reference2.Length);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentList()
+		{
+			GameObject obj = new GameObject("", typeof(ComponentListReference));
+			objects.Add(obj);
+
+			ComponentListReference comp = obj.GetComponent<ComponentListReference>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference.Count);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentListInParent()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReference));
+			GameObject child = new GameObject("", typeof(ComponentListReferenceParent));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentListReferenceParent comp = child.GetComponent<ComponentListReferenceParent>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference.Count);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentListInChild()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentListReferenceChild));
+			GameObject child = new GameObject("", typeof(ComponentReference));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentListReferenceChild comp = parent.GetComponent<ComponentListReferenceChild>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference.Count);
+		}
+		
+		[UnityTest]
+		public IEnumerator GetComponentListInheritance()
+		{
+			GameObject obj = new GameObject("", typeof(ComponentListReference2));
+			objects.Add(obj);
+
+			ComponentListReference2 comp = obj.GetComponent<ComponentListReference2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference1.Count);
+			Assert.AreEqual(1, comp.reference2.Count);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentListInheritanceParent()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentReference));
+			GameObject child = new GameObject("", typeof(ComponentListReferenceParent2));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentListReferenceParent2 comp = child.GetComponent<ComponentListReferenceParent2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference1.Count);
+			Assert.AreEqual(1, comp.reference2.Count);
+		}
+
+		[UnityTest]
+		public IEnumerator GetComponentListInheritanceChild()
+		{
+			GameObject parent = new GameObject("", typeof(ComponentListReferenceChild2));
+			GameObject child = new GameObject("", typeof(ComponentReference));
+			objects.Add(parent);
+			objects.Add(child);
+
+			child.transform.SetParent(parent.transform);
+
+			yield return null;
+
+			ComponentListReferenceChild2 comp = parent.GetComponent<ComponentListReferenceChild2>();
+
+			Assert.IsNotNull(comp);
+			Assert.IsTrue(comp is ISerializationCallbackReceiver);
+			Assert.IsNull(comp.reference1);
+			Assert.IsNull(comp.reference2);
+
+			((ISerializationCallbackReceiver) comp).OnBeforeSerialize();
+
+			yield return null;
+
+			Assert.AreEqual(1, comp.reference1.Count);
+			Assert.AreEqual(1, comp.reference2.Count);
+		}
+		#endif
 	}
 }

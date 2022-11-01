@@ -9,6 +9,11 @@
 			return pool.GetInternal();
 		}
 
+		public static PoolScope<T> Get(out T value)
+		{
+			return pool.GetInternal(out value);
+		}
+
 		public static void Release(T item)
 		{
 			pool.ReleaseInternal(item);

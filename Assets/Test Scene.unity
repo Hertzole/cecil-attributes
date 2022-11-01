@@ -238,6 +238,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30efc9dbe531ce0449d99e22dc81bf2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ren: {fileID: 0}
   anims:
   - {fileID: 844353753}
 --- !u!95 &844353753
@@ -289,23 +290,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 750376c690b3d8945be536a604b72d25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ren: {fileID: 0}
   anims:
   - {fileID: 844353753}
-  boxes:
-  - {fileID: 1603582144}
-  - {fileID: 1603582143}
-  - {fileID: 1603582142}
-  - {fileID: 1603582145}
-  - {fileID: 1603582146}
-  - {fileID: 1603582147}
-  - {fileID: 1603582148}
-  - {fileID: 915245184}
-  - {fileID: 915245183}
-  - {fileID: 915245182}
-  - {fileID: 915245181}
-  - {fileID: 915245180}
-  - {fileID: 915245179}
-  - {fileID: 915245177}
+  boxes: []
 --- !u!1 &915245176
 GameObject:
   m_ObjectHideFlags: 0

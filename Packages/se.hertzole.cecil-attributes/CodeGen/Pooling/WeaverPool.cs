@@ -3,26 +3,26 @@ using System.Collections.Concurrent;
 
 namespace Hertzole.CecilAttributes.CodeGen
 {
-	internal class WeaverPool<TObj>
+	internal class WeaverPool<T>
 	{
-		private readonly ConcurrentStack<TObj> stack;
+		private readonly ConcurrentStack<T> stack;
 
-		private readonly Func<TObj> createFunc;
+		private readonly Func<T> createFunc;
 
-		private readonly Action<TObj> onGet;
-		private readonly Action<TObj> onRelease;
+		private readonly Action<T> onGet;
+		private readonly Action<T> onRelease;
 
-		public WeaverPool(Func<TObj> createFunc, Action<TObj> onGet, Action<TObj> onRelease)
+		public WeaverPool(Func<T> createFunc, Action<T> onGet, Action<T> onRelease)
 		{
 			this.createFunc = createFunc;
 			this.onGet = onGet;
 			this.onRelease = onRelease;
-			stack = new ConcurrentStack<TObj>();
+			stack = new ConcurrentStack<T>();
 		}
 
-		public TObj GetInternal()
+		public T GetInternal()
 		{
-			if (stack.Count == 0 || !stack.TryPop(out TObj obj))
+			if (stack.Count == 0 || !stack.TryPop(out T obj))
 			{
 				obj = createFunc();
 			}
@@ -30,8 +30,19 @@ namespace Hertzole.CecilAttributes.CodeGen
 			onGet?.Invoke(obj);
 			return obj;
 		}
+		
+		public PoolScope<T> GetInternal(out T obj)
+		{
+			if (stack.Count == 0 || !stack.TryPop(out obj))
+			{
+				obj = createFunc();
+			}
 
-		public void ReleaseInternal(TObj obj)
+			onGet?.Invoke(obj);
+			return new PoolScope<T>(obj, this);
+		}
+
+		public void ReleaseInternal(T obj)
 		{
 			onRelease?.Invoke(obj);
 			stack.Push(obj);

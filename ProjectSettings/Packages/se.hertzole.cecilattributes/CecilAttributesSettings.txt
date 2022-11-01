@@ -11,6 +11,6 @@ TimedMethodFormat: '%class% %method% took %milliseconds% milliseconds (%ticks% t
 TimedPropertyGetFormat: '%class% %property% Get took %milliseconds% milliseconds (%ticks% ticks)'
 TimedPropertySetFormat: '%class% %property% Set took %milliseconds% milliseconds (%ticks% ticks)'
 MarkInProfilerFormat: '%class% :: %method%'
-RunPrefabProcessorOnReload: true
-RunSceneProcessorOnReload: true
+RunPrefabProcessorOnReload: false
+RunSceneProcessorOnReload: false
 IncludeRequiredInBuild: false

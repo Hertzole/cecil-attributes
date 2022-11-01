@@ -1,4 +1,8 @@
-﻿using System;
+﻿#if CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
+#define EXPERIMENTAL
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Hertzole.CecilAttributes.Interfaces;
@@ -12,14 +16,30 @@ namespace Hertzole.CecilAttributes.CodeGen
 {
 	public class GetComponentProcessor : BaseProcessor
 	{
+		private readonly struct FieldInfo
+		{
+			public readonly FieldDefinition field;
+			public readonly GetComponentTarget target;
+			public readonly bool includeInactive;
+
+			public FieldInfo(FieldDefinition field, GetComponentTarget target, bool includeInactive)
+			{
+				this.field = field;
+				this.target = target;
+				this.includeInactive = includeInactive;
+			}
+		}
+		
 		private const string FETCH_COMPONENTS = "__CECIL__ATTRIBUTES__GENERATED__FetchComponents";
 		public override string Name { get { return nameof(GetComponentProcessor); } }
 		public override bool NeedsMonoBehaviour { get { return true; } }
 		public override bool AllowEditor { get { return false; } }
 		public override bool IncludeInBuild { get { return false; } }
 
+#if !EXPERIMENTAL
 		private readonly List<(FieldDefinition field, GetComponentTarget target, bool includeInactive)> targetFields = new List<(FieldDefinition, GetComponentTarget, bool)>();
 		private readonly List<TypeDefinition> parents = new List<TypeDefinition>();
+#endif
 
 		public override bool IsValidType()
 		{
@@ -42,6 +62,260 @@ namespace Hertzole.CecilAttributes.CodeGen
 			return false;
 		}
 
+#if EXPERIMENTAL
+		public override void ProcessType()
+		{
+			if (!Type.TryFindRoot(FindRootWithAttributePredicate, out TypeDefinition attributeRoot, out int attributeDepth))
+			{
+				attributeRoot = Type;
+			}
+
+			if (attributeRoot == null)
+			{
+				throw new NullReferenceException("No attribute root");
+			}
+
+			if (ShouldProcess(attributeRoot))
+			{
+				ProcessType(attributeRoot, attributeDepth);
+				MarkAsProcessed(attributeRoot);
+			}
+
+			if (ShouldProcess(Type))
+			{
+				ProcessType(Type, 0);
+				MarkAsProcessed(Type);
+			}
+		}
+
+		private void ProcessType(TypeDefinition attributeRoot, int attributeDepth)
+		{
+			if (!Type.TryFindRoot(FindRootWithSerializationCallbackPredicate, out TypeDefinition serializationRoot, out int serializationDepth))
+			{
+				serializationRoot = Type;
+			}
+			
+			if (serializationRoot == null)
+			{
+				throw new NullReferenceException("No serialization root");
+			}
+
+			using PoolScope<List<FieldInfo>> listScope = ListPool<FieldInfo>.Get(out List<FieldInfo> fieldsList);
+
+			// Find all fields with the attribute.
+			foreach (FieldDefinition field in attributeRoot.Fields)
+			{
+				if (field.TryGetAttribute<GetComponentAttribute>(out CustomAttribute attribute))
+				{
+					GetComponentTarget target = attribute.GetField(nameof(GetComponentAttribute.target), GetComponentTarget.Self);
+					bool includeInactive = attribute.GetField(nameof(GetComponentAttribute.includeInactive), true);
+					fieldsList.Add(new FieldInfo(field, target, includeInactive));
+				}
+			}
+
+			GetOrAddSerializationInterface(serializationRoot, out MethodDefinition beforeSerialize);
+
+			if (beforeSerialize == null)
+			{
+				throw new NullReferenceException("No before serialize method");
+			}
+			
+			// Add the fetch method.
+			MethodDefinition fetchComponents = GetOrAddFetchComponentsMethod(attributeRoot, serializationRoot, beforeSerialize);
+
+			ProcessFields(fetchComponents, fieldsList);
+		}
+		
+		private static void GetOrAddSerializationInterface(TypeDefinition type, out MethodDefinition beforeSerialize)
+		{
+			beforeSerialize = null;
+			
+			if (!type.ImplementsInterface<ISerializationCallbackReceiver>())
+			{
+				type.Interfaces.Add(new InterfaceImplementation(type.Module.ImportReference(typeof(ISerializationCallbackReceiver))));
+				
+				beforeSerialize = type.AddMethodOverride("ISerializationCallbackReceiver.OnBeforeSerialize", 
+					MethodAttributes.Private | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
+					type.Module.ImportReference(typeof(ISerializationCallbackReceiver).GetMethod(nameof(ISerializationCallbackReceiver.OnBeforeSerialize))));
+				
+				beforeSerialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+				
+				MethodDefinition afterDeserialize = type.AddMethodOverride("ISerializationCallbackReceiver.OnAfterDeserialize", 
+					MethodAttributes.Private | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
+					type.Module.ImportReference(typeof(ISerializationCallbackReceiver).GetMethod(nameof(ISerializationCallbackReceiver.OnAfterDeserialize))));
+				
+				afterDeserialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+			}
+			else
+			{
+				if(!type.TryGetMethod("OnBeforeSerialize", out beforeSerialize))
+				{
+					beforeSerialize = type.GetMethod("ISerializationCallbackReceiver.OnBeforeSerialize");
+				}
+			}
+		}
+
+		private MethodDefinition GetOrAddFetchComponentsMethod(TypeDefinition type, TypeDefinition serializationRoot, MethodDefinition beforeSerialize)
+		{
+			MethodDefinition fetchComponents;
+			
+			if (type.TryGetMethodInBaseType(FETCH_COMPONENTS, out MethodDefinition parentFetchComponents))
+			{
+				fetchComponents = new MethodDefinition(FETCH_COMPONENTS, MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual, Module.TypeSystem.Void);
+
+				fetchComponents.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
+				using (MethodEntryScope il = new MethodEntryScope(fetchComponents))
+				{
+					il.EmitLdarg();
+					il.EmitCall(parentFetchComponents);
+				}
+
+				type.Methods.Add(fetchComponents);
+				
+				return fetchComponents;
+			}
+			
+			fetchComponents = new MethodDefinition(FETCH_COMPONENTS, MethodAttributes.Family | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig, Module.TypeSystem.Void);
+
+			serializationRoot.Methods.Add(fetchComponents);
+
+			fetchComponents.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+			
+			using (MethodEntryScope il = new MethodEntryScope(beforeSerialize))
+			{
+				il.EmitLdarg();
+				il.EmitCall(fetchComponents, true);
+			}
+
+			return fetchComponents;
+		}
+
+		private void ProcessFields(MethodDefinition method, List<FieldInfo> fields)
+		{
+			using (var il = new MethodEntryScope(method))
+			{
+				Instruction previous = il.First;
+				using var scope = ListPool<Instruction>.Get(out List<Instruction> jumpToInstructions);
+
+				for (int i = 0; i < fields.Count; i++)
+				{
+					jumpToInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+				}
+				
+				for (int i = 0; i < fields.Count; i++)
+				{
+					FieldInfo field = fields[i];
+					
+					if(!field.field.FieldType.IsArray() && !field.field.FieldType.IsList())
+					{
+						// if (field == null)
+						il.Emit(jumpToInstructions[i]);
+						il.EmitLoadField(field.field);
+						il.EmitNull();
+						il.EmitCall(MethodsCache.UnityObjectEqualityOperation);
+						il.Emit(OpCodes.Brfalse, i == fields.Count - 1 ? il.First : jumpToInstructions[i + 1]);
+
+						// field = GetComponent<fieldType>();
+						il.EmitLdarg();
+						il.EmitLdarg();
+						
+						if (field.target != GetComponentTarget.Self)
+						{
+							il.EmitBool(field.includeInactive);
+						}
+						
+						il.EmitCall(GetComponentMethod(field.field.FieldType, field.target, false, false));
+						il.Emit(OpCodes.Stfld, field.field);
+					}
+					else if (!field.field.FieldType.IsList() && field.field.FieldType.IsArray())
+					{
+						// field = GetComponents<fieldType>();
+						il.Emit(jumpToInstructions[i]);
+						il.EmitLdarg();
+
+						if (field.target != GetComponentTarget.Self)
+						{
+							il.EmitBool(field.includeInactive);
+						}
+						
+						il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, false));
+						il.Emit(OpCodes.Stfld, field.field);
+					}
+					else if (field.field.FieldType.IsList())
+					{
+						Instruction jumpTo = ILHelper.Ldarg(null);
+						
+						// if (list == null)
+						il.Emit(jumpToInstructions[i]);
+						il.EmitLoadField(field.field);
+						il.Emit(OpCodes.Brtrue, jumpTo);
+						
+						// list = new List<fieldType>();
+						il.EmitLdarg();
+						il.Emit(OpCodes.Newobj, 
+							Module.GetConstructor(typeof(List<>), System.Type.EmptyTypes)
+							      .MakeHostInstanceGeneric(Module.GetTypeReference(typeof(List<>)).MakeGenericInstanceType(field.field.FieldType.GetCollectionType())));
+						il.Emit(OpCodes.Stfld, field.field);
+						
+						// list.Clear();
+						il.Emit(jumpTo);
+						il.EmitLoadField(field.field);
+						il.EmitCall(Module.GetMethod(typeof(List<>), "Clear").MakeHostInstanceGeneric((GenericInstanceType) field.field.FieldType), true);
+						
+						// GetComponent<fieldType>(list);
+						il.EmitLdarg();
+						
+						if (field.target != GetComponentTarget.Self)
+						{
+							il.EmitBool(field.includeInactive);
+						}
+						
+						il.EmitLdarg();
+						il.EmitLoadField(field.field);
+
+						il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, true));
+					}
+				}
+			}
+		}
+
+		private static bool FindRootWithAttributePredicate(TypeDefinition type)
+		{
+			if (!type.HasFields)
+			{
+				return false;
+			}
+
+			foreach (FieldDefinition field in type.Fields)
+			{
+				if (field.HasAttribute<GetComponentAttribute>())
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+		
+		private static bool FindRootWithSerializationCallbackPredicate(TypeDefinition type)
+		{
+			if (!type.HasInterfaces)
+			{
+				return false;
+			}
+			
+			foreach (InterfaceImplementation interfaceType in type.Interfaces)
+			{
+				if (interfaceType.InterfaceType.FullName == typeof(ISerializationCallbackReceiver).FullName)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+#else
 		public override void ProcessType()
 		{
 			ProcessType(Type, true);
@@ -245,6 +519,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			method.EndEdit();
 		}
+#endif
 
 		private static readonly Type[] onlyBools = new Type[1]
 		{
@@ -280,19 +555,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 							throw new ArgumentOutOfRangeException(nameof(target), target, null);
 					}
 				}
-				else
+
+				switch (target)
 				{
-					switch (target)
-					{
-						case GetComponentTarget.Self:
-							return Module.GetGenericMethod<Component>(nameof(Component.GetComponents), onlyList).MakeGenericMethod(fieldType);
-						case GetComponentTarget.Parent:
-							return Module.GetGenericMethod<Component>(nameof(Component.GetComponentsInParent), boolsAndList).MakeGenericMethod(fieldType);
-						case GetComponentTarget.Children:
-							return Module.GetGenericMethod<Component>(nameof(Component.GetComponentsInChildren), boolsAndList).MakeGenericMethod(fieldType);
-						default:
-							throw new ArgumentOutOfRangeException(nameof(target), target, null);
-					}
+					case GetComponentTarget.Self:
+						return Module.GetGenericMethod<Component>(nameof(Component.GetComponents), onlyList).MakeGenericMethod(fieldType);
+					case GetComponentTarget.Parent:
+						return Module.GetGenericMethod<Component>(nameof(Component.GetComponentsInParent), boolsAndList).MakeGenericMethod(fieldType);
+					case GetComponentTarget.Children:
+						return Module.GetGenericMethod<Component>(nameof(Component.GetComponentsInChildren), boolsAndList).MakeGenericMethod(fieldType);
+					default:
+						throw new ArgumentOutOfRangeException(nameof(target), target, null);
 				}
 			}
 
@@ -301,7 +574,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				case GetComponentTarget.Self:
 					return Module.GetMethod<Component>(nameof(Component.GetComponent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
 				case GetComponentTarget.Parent:
-					return Module.GetMethod<Component>(nameof(Component.GetComponentInParent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+					return Module.GetMethod<Component>(nameof(Component.GetComponentInParent), onlyBools).MakeGenericMethod(fieldType);
 				case GetComponentTarget.Children:
 					return Module.GetMethod<Component>(nameof(Component.GetComponentInChildren), onlyBools).MakeGenericMethod(fieldType);
 				default:

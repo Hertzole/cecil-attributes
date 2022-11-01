@@ -16,6 +16,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 			return pool.GetInternal();
 		}
 
+		public static PoolScope<Dictionary<TKey, TValue>> Get(out Dictionary<TKey, TValue> value)
+		{
+			return pool.GetInternal(out value);
+		}
+
 		public static void Release(Dictionary<TKey, TValue> item)
 		{
 			pool.ReleaseInternal(item);

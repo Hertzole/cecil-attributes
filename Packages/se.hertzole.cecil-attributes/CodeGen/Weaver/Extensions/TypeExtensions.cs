@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 using UnityEngine;
@@ -274,6 +275,32 @@ namespace Hertzole.CecilAttributes.CodeGen
 			type.Methods.Add(m);
 
 			return m;
+		}
+
+		public static bool TryFindRoot(this TypeDefinition type, Predicate<TypeDefinition> predicate, [CanBeNull] out TypeDefinition root, out int depth)
+		{
+			TypeDefinition parent = type;
+			depth = 0;
+			int tempDepth = 0;
+			root = null;
+			while (parent != null)
+			{
+				if(predicate(parent))
+				{
+					root = parent;
+					depth = tempDepth;
+				}
+				
+				if(parent.BaseType == null)
+				{
+					break;
+				}
+				
+				parent = parent.BaseType.Resolve();
+				tempDepth++;
+			}
+			
+			return root != null;
 		}
 	}
 }

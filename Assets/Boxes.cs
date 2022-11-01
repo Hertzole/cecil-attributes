@@ -10,6 +10,20 @@ public class Boxes : Animators
 
     protected override bool Template(bool dirty)
     {
+       
+        
         return base.Template(dirty);
+    }
+
+    protected override void FetchComponentsTemplate()
+    {
+        if (boxes == null)
+        {
+            boxes = new List<BoxCollider>();
+        }
+        boxes.Clear();
+        GetComponentsInChildren(true, boxes);
+        
+        base.FetchComponentsTemplate();
     }
 }

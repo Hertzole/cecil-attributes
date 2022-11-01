@@ -1,4 +1,5 @@
-﻿using Hertzole.CecilAttributes.CodeGen.Caches;
+﻿using System.Collections.Generic;
+using Hertzole.CecilAttributes.CodeGen.Caches;
 using Hertzole.CecilAttributes.Editor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -23,6 +24,18 @@ namespace Hertzole.CecilAttributes.CodeGen
 
         public virtual bool IncludeInBuild { get { return true; } }
 
+        private readonly HashSet<TypeDefinition> processedTypes = new HashSet<TypeDefinition>();
+
+        public bool ShouldProcess(TypeDefinition type)
+        {
+            if (processedTypes.Count == 0)
+            {
+                return true;
+            }
+
+            return !processedTypes.Contains(type);
+        }
+        
         public abstract bool IsValidType();
 
         public abstract void ProcessType();
@@ -40,6 +53,11 @@ namespace Hertzole.CecilAttributes.CodeGen
         protected void Error(SequencePoint sequencePoint, string message)
         {
             Weaver.Error(sequencePoint, message);
+        }
+
+        protected void MarkAsProcessed(TypeDefinition typeDefinition)
+        {
+            processedTypes.Add(typeDefinition);
         }
     }
 }

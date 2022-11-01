@@ -18,6 +18,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private MethodReference stringFormat2;
 		private MethodReference stringFormat3;
 		private MethodReference stringFormatParams;
+		private MethodReference getComponent;
 
 		private static readonly Type[] debugLogParams = { typeof(object) };
 		private static readonly Type[] debugLogErrorParams = { typeof(object) };
@@ -142,6 +143,19 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 				}
 
 				return stringFormatParams;
+			}
+		}
+		
+		public MethodReference GetComponent
+		{
+			get
+			{
+				if (getComponent == null)
+				{
+					getComponent = module.GetMethod(typeof(Component), "GetComponent");
+				}
+
+				return getComponent;
 			}
 		}
 

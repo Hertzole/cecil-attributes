@@ -124,6 +124,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 							continue;
 						}
 
+						if (!processors[i].ShouldProcess(type))
+						{
+							continue;
+						}
+
 						processors[j].Type = type;
 
 						if (!processors[j].IsValidType())
