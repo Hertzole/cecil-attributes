@@ -17,6 +17,6 @@
     "email": "contact@hertzole.se",
     "url": "https://www.hertzole.se"
   },
-  "type": "module",
+  "type": "library",
   "hideInEditor": false
 }
