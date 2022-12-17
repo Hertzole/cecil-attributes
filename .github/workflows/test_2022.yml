@@ -1,0 +1,27 @@
+name: Test Unity 2022
+on:
+  push:
+    branch:
+    - development
+    paths:
+    - 'Assets/**'
+    - 'Packages/**'
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  build:
+    name: Run Unity 2022.2 tests
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        lfs: true
+
+    - name: Run tests
+      uses: game-ci/unity-test-runner@v2
+      with:
+        unityVersion: "2022.2.1f1"
