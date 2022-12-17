@@ -16,7 +16,12 @@ namespace Hertzole.CecilAttributes.Editor
 			bool hasObject = property.objectReferenceValue != null;
 			Rect r = position;
 			r.width -= EditorGUIUtility.singleLineHeight;
+
+			bool oEnabled = GUI.enabled;
+
+			GUI.enabled = true;
 			EditorGUI.LabelField(new Rect(r.x + r.width, r.y, EditorGUIUtility.singleLineHeight, EditorGUIUtility.singleLineHeight), hasObject ? checkIcon : errorIcon);
+			GUI.enabled = oEnabled;
 			EditorGUI.PropertyField(r, property, label);
 		}
 
