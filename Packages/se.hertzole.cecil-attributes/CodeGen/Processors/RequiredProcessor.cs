@@ -64,25 +64,25 @@ namespace Hertzole.CecilAttributes.CodeGen
 				ProcessType(parentMethod.DeclaringType);
 			}
 
-			MethodDefinition checkRequiredMethod = GetOrAddMethod(type, generated_method_name, hasParent ? CHECK_METHOD_OVERRIDE_ATTRIBUTES : CHECK_METHOD_PRIVATE_ATTRIBUTES, Module.TypeSystem.Boolean);
-			MethodDefinition awake = GetOrAddMethod(type, "Awake", MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
+			MethodDefinition checkRequiredMethod = GetOrAddMethod(type, generated_method_name, out _, hasParent ? CHECK_METHOD_OVERRIDE_ATTRIBUTES : CHECK_METHOD_PRIVATE_ATTRIBUTES, Module.TypeSystem.Boolean);
+			MethodDefinition awake = GetOrAddMethod(type, "Awake", out bool hadAwake, MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
 
 			List<FieldDefinition> fields = ListPool<FieldDefinition>.Get();
 			List<Instruction> targetInstructions = ListPool<Instruction>.Get();
 
 			bool hasError = false;
-			
+
 			for (int i = 0; i < type.Fields.Count; i++)
 			{
 				if (type.Fields[i].HasAttribute<RequiredAttribute>())
 				{
-					if (type.Fields[i].FieldType.CanBeResolved() && !type.Fields[i].FieldType.Resolve().IsSubclassOf<UnityEngine.Object>())
+					if (type.Fields[i].FieldType.CanBeResolved() && !type.Fields[i].FieldType.Resolve().IsSubclassOf<Object>())
 					{
 						Weaver.Error($"Field '{type.Fields[i].Name}' in '{type.FullName}' is marked with [Required] but is not a UnityEngine.Object.");
 						hasError = true;
 						continue;
 					}
-					
+
 					if (fields.Count > 0)
 					{
 						targetInstructions.Add(Instruction.Create(OpCodes.Ldarg_0));
@@ -158,7 +158,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 			ListPool<FieldDefinition>.Release(fields);
 			ListPool<Instruction>.Release(targetInstructions);
 
-			if (hasParent && type.TryGetMethodInBaseType("Awake", out MethodDefinition parentAwake))
+			MethodDefinition parentAwake = null;
+			if (hasParent && type.TryGetMethodInBaseType("Awake", out parentAwake))
 			{
 				parentAwake.MakeOverridable();
 
@@ -171,6 +172,18 @@ namespace Hertzole.CecilAttributes.CodeGen
 				}
 			}
 
+			// If this class didn't have awake but the parent did, call the parent's awake.
+			// Do it in a separate block here so il.First is the first instruction of the awake method in the check later.
+			if (!hadAwake && parentAwake != null)
+			{
+				using (MethodEntryScope il = new MethodEntryScope(awake))
+				{
+					il.EmitLdarg();
+					il.EmitCall(parentAwake);
+				}
+			}
+
+			// Add the call to the check method.
 			using (MethodEntryScope il = new MethodEntryScope(awake))
 			{
 				il.EmitLdarg();
@@ -193,11 +206,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 			return null;
 		}
 
-		private static MethodDefinition GetOrAddMethod(TypeDefinition type, string name, MethodAttributes attributes, TypeReference returnType, params TypeReference[] parameters)
+		private static MethodDefinition GetOrAddMethod(TypeDefinition type, string name, out bool hadMethod, MethodAttributes attributes, TypeReference returnType, params TypeReference[] parameters)
 		{
 			MethodDefinition method = FindMethod(type, name);
 			if (method != null)
 			{
+				hadMethod = true;
 				return method;
 			}
 
@@ -212,6 +226,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 			il.Emit(OpCodes.Ret);
 
 			type.Methods.Add(method);
+			hadMethod = false;
 			return method;
 		}
 	}
