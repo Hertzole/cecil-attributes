@@ -1,3 +1,17 @@
+## [0.6.0-preview] - Unreleased
+### Added
+- Required attribute to automatically add checks in Awake methods to make sure objects have been assigned.
+- New property drawer for GetComponent attribute (both for IMGUI and UI Toolkit!).
+- Experimental, but faster, way of fetching componnents using GetComponent.
+
+### Changed
+- Tests are no longer included in the package.
+- General optimizations to make the processing faster.
+- MarkInProfiler now includes the object as a target object.
+
+### Fixed
+- Fixed compile issues with GetComponent on Unity versions below 2021.3
+
 ## [0.5.0-preview] - 2022-07-29
 ### Added
 - GetComponent attribute to automatically fill in serialized component reference fields.
@@ -8,7 +22,7 @@
 
 ### Fixes
 - A lot of fixes for log called, especially with generics.
-- Fixed reset static not setting the correct value on child classes
+- Fixed reset static not setting the correct value on child classes.
 
 ## [0.4.1-preview] - 2021-02-11
 ### Changed
