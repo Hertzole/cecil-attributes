@@ -43,14 +43,10 @@ namespace Hertzole.CecilAttributes.Editor
 
 			root.Add(field);
 
-			VisualElement iconElement = new VisualElement
+			ImageElement iconElement = new ImageElement((Texture2D) icon.image)
 			{
 				style =
 				{
-					width = EditorGUIUtility.singleLineHeight - 2,
-					height = EditorGUIUtility.singleLineHeight - 2,
-					backgroundImage = new StyleBackground((Texture2D) icon.image),
-					unityBackgroundScaleMode = ScaleMode.ScaleAndCrop,
 					marginLeft = 5,
 					marginTop = 2
 				},

@@ -8,7 +8,7 @@ namespace Hertzole.CecilAttributes.Editor
 {
 	partial class RequiredAttributeDrawer
 	{
-		private VisualElement iconElement;
+		private ImageElement iconElement;
 
 		public override VisualElement CreatePropertyGUI(SerializedProperty property)
 		{
@@ -37,18 +37,13 @@ namespace Hertzole.CecilAttributes.Editor
 			{
 				bool hasObj = property.objectReferenceValue != null;
 
-				iconElement = new VisualElement
+				iconElement = new ImageElement((Texture2D) (hasObj ? checkIcon.image : errorIcon.image))
 				{
 					style =
 					{
-						width = EditorGUIUtility.singleLineHeight - 2,
-						height = EditorGUIUtility.singleLineHeight - 2,
-						backgroundImage = new StyleBackground((Texture2D) (hasObj ? checkIcon.image : errorIcon.image)),
-						unityBackgroundScaleMode = ScaleMode.ScaleAndCrop,
 						marginLeft = 3,
 						marginTop = 2
-					},
-					tooltip = hasObj ? checkIcon.tooltip : errorIcon.tooltip
+					}
 				};
 
 				root.Add(iconElement);
@@ -63,7 +58,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 				bool hasObj = ctx.changedProperty.objectReferenceValue != null;
 
-				iconElement.style.backgroundImage = new StyleBackground((Texture2D) (hasObj ? checkIcon.image : errorIcon.image));
+				iconElement.Image = (Texture2D) (hasObj ? checkIcon.image : errorIcon.image);
 				iconElement.tooltip = hasObj ? checkIcon.tooltip : errorIcon.tooltip;
 			});
 
