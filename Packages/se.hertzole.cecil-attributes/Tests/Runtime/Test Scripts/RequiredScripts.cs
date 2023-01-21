@@ -41,6 +41,14 @@ namespace Hertzole.CecilAttributes.Tests
 		public BoxCollider Box { get { return box; } set { box = value; } }
 	}
 
+	public class RequiredBaseWithAwakeWithoutField : RequiredBase
+	{
+		private void Awake()
+		{
+			Debug.Log("Base Awake");
+		}
+	}
+
 	public class RequiredChild_WithAwake_ParentWithoutAwake : RequiredBaseWithoutAwake
 	{
 		[SerializeField]
@@ -71,6 +79,15 @@ namespace Hertzole.CecilAttributes.Tests
 	}
 
 	public class RequiredChild_WithoutAwake_ParentWithAwake : RequiredBaseWithAwake
+	{
+		[SerializeField]
+		[Required]
+		private Renderer ren = default;
+
+		public Renderer Ren { get { return ren; } set { ren = value; } }
+	}
+
+	public class RequiredChild_WithoutAwake_ParentWithAwakeWithoutField : RequiredBaseWithAwakeWithoutField
 	{
 		[SerializeField]
 		[Required]

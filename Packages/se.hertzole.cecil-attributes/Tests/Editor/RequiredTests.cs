@@ -49,6 +49,12 @@ namespace Hertzole.CecilAttributes.Tests
 		}
 
 		[UnityTest]
+		public IEnumerator Child_WithoutAwake_ParentWithAwakeWithoutField_LogsError()
+		{
+			yield return new RequiredTestLogsError<RequiredChild_WithoutAwake_ParentWithAwakeWithoutField>();
+		}
+
+		[UnityTest]
 		public IEnumerator Base_WithAwake_CallsAwake()
 		{
 			yield return new RequiredTestCallsAwake<RequiredBaseWithAwake>(go =>
@@ -109,6 +115,16 @@ namespace Hertzole.CecilAttributes.Tests
 			{
 				BoxCollider box = go.gameObject.AddComponent<BoxCollider>();
 				go.Box = box;
+				Renderer ren = go.gameObject.AddComponent<MeshRenderer>();
+				go.Ren = ren;
+			}, "Base Awake");
+		}
+
+		[UnityTest]
+		public IEnumerator Child_WithoutAwake_ParentWithAwakeWithoutField_CallsAwake()
+		{
+			yield return new RequiredTestCallsAwake<RequiredChild_WithoutAwake_ParentWithAwakeWithoutField>(go =>
+			{
 				Renderer ren = go.gameObject.AddComponent<MeshRenderer>();
 				go.Ren = ren;
 			}, "Base Awake");

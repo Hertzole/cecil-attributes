@@ -15,6 +15,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 		private const MethodAttributes CHECK_METHOD_PRIVATE_ATTRIBUTES = MethodAttributes.Private | MethodAttributes.HideBySig;
 		private const MethodAttributes CHECK_METHOD_OVERRIDE_ATTRIBUTES = MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual;
+		private const string GENERATED_METHOD_NAME = "CECILATTRIBUTES__GENERATED__CheckRequired";
 
 		public override bool IsValidType()
 		{
@@ -53,9 +54,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			processedTypes.Add(type);
 
-			const string generated_method_name = "CECILATTRIBUTES__GENERATED__CheckRequired";
-
-			bool hasParent = type.TryGetMethodInBaseType(generated_method_name, out MethodDefinition parentMethod);
+			bool hasParent = type.TryGetMethodInBaseType(GENERATED_METHOD_NAME, out MethodDefinition parentMethod);
 
 			if (hasParent)
 			{
@@ -64,7 +63,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				ProcessType(parentMethod.DeclaringType);
 			}
 
-			MethodDefinition checkRequiredMethod = GetOrAddMethod(type, generated_method_name, out _, hasParent ? CHECK_METHOD_OVERRIDE_ATTRIBUTES : CHECK_METHOD_PRIVATE_ATTRIBUTES, Module.TypeSystem.Boolean);
+			MethodDefinition checkRequiredMethod = GetOrAddMethod(type, GENERATED_METHOD_NAME, out _, hasParent ? CHECK_METHOD_OVERRIDE_ATTRIBUTES : CHECK_METHOD_PRIVATE_ATTRIBUTES, Module.TypeSystem.Boolean);
 			MethodDefinition awake = GetOrAddMethod(type, "Awake", out bool hadAwake, MethodAttributes.Private | MethodAttributes.HideBySig, Module.TypeSystem.Void);
 
 			List<FieldDefinition> fields = ListPool<FieldDefinition>.Get();
@@ -158,8 +157,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 			ListPool<FieldDefinition>.Release(fields);
 			ListPool<Instruction>.Release(targetInstructions);
 
-			MethodDefinition parentAwake = null;
-			if (hasParent && type.TryGetMethodInBaseType("Awake", out parentAwake))
+			if (type.TryGetMethodInBaseType("Awake", out MethodDefinition parentAwake))
 			{
 				parentAwake.MakeOverridable();
 
@@ -169,6 +167,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 				{
 					awake.Attributes &= ~MethodAttributes.Private;
 					awake.Attributes |= MethodAttributes.Family;
+				}
+				
+				if (parentAwake.IsPublic)
+				{
+					awake.Attributes |= MethodAttributes.Public;
 				}
 			}
 
