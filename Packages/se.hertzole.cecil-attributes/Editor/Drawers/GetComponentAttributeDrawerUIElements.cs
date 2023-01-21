@@ -12,7 +12,7 @@ namespace Hertzole.CecilAttributes.Editor
 		public override VisualElement CreatePropertyGUI(SerializedProperty property)
 		{
 			GetIcon();
-			
+
 			bool enable = false;
 
 			if (attribute is GetComponentAttribute att)
@@ -22,6 +22,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 			VisualElement root = new VisualElement
 			{
+				name = $"get-component-attribute-drawer-{property.name}",
 				style =
 				{
 					flexDirection = FlexDirection.Row
@@ -33,7 +34,7 @@ namespace Hertzole.CecilAttributes.Editor
 				style =
 				{
 					flexGrow = 1,
-					flexShrink = 0
+					flexShrink = 1
 				}
 			};
 
@@ -54,7 +55,9 @@ namespace Hertzole.CecilAttributes.Editor
 			};
 
 			root.Add(iconElement);
-			
+
+			field.RegisterCallback<GeometryChangedEvent, VisualElement>((evt, args) => { args.RemoveDecorators(); }, field);
+
 #if !CECIL_ATTRIBUTES_EXPERIMENTAL_GETCOMPONENT
 			field.RegisterValueChangeCallback(evt =>
 			{
@@ -64,7 +67,7 @@ namespace Hertzole.CecilAttributes.Editor
 				}
 			});
 #endif
-			
+
 			return root;
 		}
 	}

@@ -16,6 +16,7 @@ namespace Hertzole.CecilAttributes.Editor
 
 			VisualElement root = new VisualElement
 			{
+				name = $"required-attribute-drawer-{property.name}",
 				style =
 				{
 					flexDirection = FlexDirection.Row
@@ -27,27 +28,26 @@ namespace Hertzole.CecilAttributes.Editor
 				style =
 				{
 					flexGrow = 1,
-					flexShrink = 0
+					flexShrink = 1
 				}
 			};
 
+			field.Bind(property.serializedObject);
+
 			root.Add(field);
-
-			if (iconElement == null)
+			
+			bool hasObj = property.objectReferenceValue != null;
+			iconElement = new ImageElement((Texture2D) (hasObj ? checkIcon.image : errorIcon.image))
 			{
-				bool hasObj = property.objectReferenceValue != null;
-
-				iconElement = new ImageElement((Texture2D) (hasObj ? checkIcon.image : errorIcon.image))
+				name = "icon",
+				style =
 				{
-					style =
-					{
-						marginLeft = 3,
-						marginTop = 2
-					}
-				};
+					marginLeft = 3,
+					marginTop = 2
+				}
+			};
 
-				root.Add(iconElement);
-			}
+			root.Add(iconElement);
 
 			field.RegisterValueChangeCallback(ctx =>
 			{
@@ -55,14 +55,19 @@ namespace Hertzole.CecilAttributes.Editor
 				{
 					return;
 				}
-
-				bool hasObj = ctx.changedProperty.objectReferenceValue != null;
-
-				iconElement.Image = (Texture2D) (hasObj ? checkIcon.image : errorIcon.image);
-				iconElement.tooltip = hasObj ? checkIcon.tooltip : errorIcon.tooltip;
+			
+				bool hasNewValue = ctx.changedProperty.objectReferenceValue != null;
+			
+				iconElement.Image = (Texture2D) (hasNewValue ? checkIcon.image : errorIcon.image);
+				iconElement.tooltip = hasNewValue ? checkIcon.tooltip : errorIcon.tooltip;
 			});
+			
+			field.RegisterCallback<GeometryChangedEvent, VisualElement>((evt, args) =>
+			{
+				args.RemoveDecorators();
+			}, field);
 
-			iconElement.style.opacity = 0;
+			iconElement.style.opacity = 1;
 
 			root.RegisterCallback<AttachToPanelEvent, VisualElement>(OnRootAttached, root);
 
@@ -82,7 +87,7 @@ namespace Hertzole.CecilAttributes.Editor
 				iconElement.style.opacity = 1;
 				return;
 			}
-
+			
 			// If the parent is disabled, set the opacity of the icon to 2 to make it fully visible again.
 			// But we need to wait for it to execute because of some UI toolkit stuff.
 			iconElement.schedule.Execute(() => { iconElement.style.opacity = 2; });

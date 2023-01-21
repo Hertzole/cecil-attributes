@@ -28,6 +28,7 @@ namespace Hertzole.CecilAttributes.Editor
 		{
 			style.width = EditorGUIUtility.singleLineHeight - 2;
 			style.height = EditorGUIUtility.singleLineHeight - 2;
+			style.minWidth = EditorGUIUtility.singleLineHeight - 2;
 #if UNITY_2022_2_OR_NEWER
 			style.backgroundRepeat = new StyleBackgroundRepeat(new BackgroundRepeat(Repeat.NoRepeat, Repeat.NoRepeat));
 			style.backgroundPositionX = new StyleBackgroundPosition(new BackgroundPosition(BackgroundPositionKeyword.Center));
