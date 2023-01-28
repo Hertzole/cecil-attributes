@@ -182,7 +182,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				using (MethodEntryScope il = new MethodEntryScope(awake))
 				{
 					il.EmitLdarg();
-					il.EmitCall(parentAwake);
+					il.EmitCall(Module.ImportReference(parentAwake));
 				}
 			}
 
