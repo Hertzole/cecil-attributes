@@ -47,10 +47,44 @@ namespace Hertzole.CecilAttributes.CodeGen
             throw new ArgumentException($"There's no method called {method} in {type.FullName} or its base types.");
 
         }
+        
+        private static MethodReference GetMethodReferenceInBaseTypeInternal(this TypeDefinition type, Predicate<MethodReference> predicate)
+        {
+            TypeReference baseType = type.BaseType;
+            while (baseType != null)
+            {
+                if (!baseType.CanBeResolved())
+                {
+                    return null;
+                }
+
+                TypeDefinition resolved = baseType.Resolve();
+                for (int i = 0; i < resolved.Methods.Count; i++)
+                {
+                    if (predicate(resolved.Methods[i]))
+                    {
+                        MethodReference reference = type.Module.ImportReference(resolved.Methods[i]);
+                        reference.DeclaringType = baseType;
+                        return reference;
+                    }
+                }
+
+                baseType = resolved.BaseType;
+            }
+
+            return null;
+
+        }
 
         public static bool TryGetMethodInBaseType(this TypeDefinition type, string methodName, out MethodDefinition method)
         {
             method = GetMethodInBaseTypeInternal(type, m => m.Name == methodName);
+            return method != null;
+        }
+        
+        public static bool TryGetMethodReferenceInBaseType(this TypeDefinition type, string methodName, out MethodReference method)
+        {
+            method = GetMethodReferenceInBaseTypeInternal(type, m => m.Name == methodName);
             return method != null;
         }
 

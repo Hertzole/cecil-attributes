@@ -157,9 +157,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 			ListPool<FieldDefinition>.Release(fields);
 			ListPool<Instruction>.Release(targetInstructions);
 
-			if (type.TryGetMethodInBaseType("Awake", out MethodDefinition parentAwake))
+			if (type.TryGetMethodReferenceInBaseType("Awake", out MethodReference parentAwake))
 			{
-				parentAwake.MakeOverridable();
+				MethodDefinition parentAwakeResolved = parentAwake.Resolve();
+
+				parentAwakeResolved.MakeOverridable();
 
 				awake.Attributes |= MethodAttributes.Virtual;
 
@@ -168,8 +170,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 					awake.Attributes &= ~MethodAttributes.Private;
 					awake.Attributes |= MethodAttributes.Family;
 				}
-				
-				if (parentAwake.IsPublic)
+
+				if (parentAwakeResolved.IsPublic)
 				{
 					awake.Attributes |= MethodAttributes.Public;
 				}
@@ -181,8 +183,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 			{
 				using (MethodEntryScope il = new MethodEntryScope(awake))
 				{
-					il.EmitLdarg();
-					il.EmitCall(Module.ImportReference(parentAwake));
+					// il.EmitString(parentAwake.DeclaringType.FullName);
+					if (parentAwake.DeclaringType is GenericInstanceType genericType)
+					{
+						il.EmitLdarg();
+						il.EmitCall(parentAwake.MakeHostInstanceGeneric(genericType));
+					}
+					else
+					{
+						il.EmitLdarg();
+						il.EmitCall(Module.ImportReference(parentAwake));
+					}
 				}
 			}
 
