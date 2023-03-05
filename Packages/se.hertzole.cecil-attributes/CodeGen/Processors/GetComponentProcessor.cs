@@ -100,7 +100,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				throw new NullReferenceException("No serialization root");
 			}
 
-			using (PoolScope<List<FieldInfo>> listScope = ListPool<FieldInfo>.Get(out List<FieldInfo> fieldsList))
+			using (ListPool<FieldInfo>.Get(out List<FieldInfo> fieldsList))
 			{
 				// Find all fields with the attribute.
 				foreach (FieldDefinition field in attributeRoot.Fields)
@@ -196,8 +196,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 		{
 			using (MethodEntryScope il = new MethodEntryScope(method))
 			{
-				Instruction previous = il.First;
-				using (PoolScope<List<Instruction>> scope = ListPool<Instruction>.Get(out List<Instruction> jumpToInstructions))
+				using (ListPool<Instruction>.Get(out List<Instruction> jumpToInstructions))
 				{
 					for (int i = 0; i < fields.Count; i++)
 					{
@@ -214,7 +213,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 							il.Emit(jumpToInstructions[i]);
 							il.EmitLoadField(field.field);
 							il.EmitNull();
-							il.EmitCall(MethodsCache.UnityObjectEqualityOperation);
+							il.EmitCall(method.DeclaringType.Module.ImportReference(MethodsCache.UnityObjectEqualityOperation));
 							il.Emit(OpCodes.Brfalse, i == fields.Count - 1 ? il.First : jumpToInstructions[i + 1]);
 
 							// field = GetComponent<fieldType>();
@@ -228,7 +227,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 							}
 #endif
 
-							il.EmitCall(GetComponentMethod(field.field.FieldType, field.target, false, false));
+							il.EmitCall(GetComponentMethod(field.field.FieldType, field.target, false, false, field.field.DeclaringType.Module));
 							il.Emit(OpCodes.Stfld, field.field);
 						}
 						else if (!field.field.FieldType.IsList() && field.field.FieldType.IsArray())
@@ -242,7 +241,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 								il.EmitBool(field.includeInactive);
 							}
 
-							il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, false));
+							il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, false, field.field.DeclaringType.Module));
 							il.Emit(OpCodes.Stfld, field.field);
 						}
 						else if (field.field.FieldType.IsList())
@@ -278,7 +277,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 							il.EmitLdarg();
 							il.EmitLoadField(field.field);
 
-							il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, true));
+							il.EmitCall(GetComponentMethod(field.field.FieldType.GetCollectionType(), field.target, true, true, field.field.DeclaringType.Module));
 						}
 					}
 				}
@@ -548,7 +547,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 			typeof(List<>)
 		};
 		
-		private MethodReference GetComponentMethod(TypeReference fieldType, GetComponentTarget target, bool collection, bool list)
+		private MethodReference GetComponentMethod(TypeReference fieldType, GetComponentTarget target, bool collection, bool list, ModuleDefinition module)
 		{
 			if (collection)
 			{
@@ -557,11 +556,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 					switch (target)
 					{
 						case GetComponentTarget.Self:
-							return Module.GetMethod<Component>(nameof(Component.GetComponents), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+							return module.GetMethod<Component>(nameof(Component.GetComponents), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
 						case GetComponentTarget.Parent:
-							return Module.GetMethod<Component>(nameof(Component.GetComponentsInParent), onlyBools).MakeGenericMethod(fieldType);
+							return module.GetMethod<Component>(nameof(Component.GetComponentsInParent), onlyBools).MakeGenericMethod(fieldType);
 						case GetComponentTarget.Children:
-							return Module.GetMethod<Component>(nameof(Component.GetComponentsInChildren), onlyBools).MakeGenericMethod(fieldType);
+							return module.GetMethod<Component>(nameof(Component.GetComponentsInChildren), onlyBools).MakeGenericMethod(fieldType);
 						default:
 							throw new ArgumentOutOfRangeException(nameof(target), target, null);
 					}
@@ -570,11 +569,11 @@ namespace Hertzole.CecilAttributes.CodeGen
 				switch (target)
 				{
 					case GetComponentTarget.Self:
-						return Module.GetGenericMethod<Component>(nameof(Component.GetComponents), onlyList).MakeGenericMethod(fieldType);
+						return module.GetGenericMethod<Component>(nameof(Component.GetComponents), onlyList).MakeGenericMethod(fieldType);
 					case GetComponentTarget.Parent:
-						return Module.GetGenericMethod<Component>(nameof(Component.GetComponentsInParent), boolsAndList).MakeGenericMethod(fieldType);
+						return module.GetGenericMethod<Component>(nameof(Component.GetComponentsInParent), boolsAndList).MakeGenericMethod(fieldType);
 					case GetComponentTarget.Children:
-						return Module.GetGenericMethod<Component>(nameof(Component.GetComponentsInChildren), boolsAndList).MakeGenericMethod(fieldType);
+						return module.GetGenericMethod<Component>(nameof(Component.GetComponentsInChildren), boolsAndList).MakeGenericMethod(fieldType);
 					default:
 						throw new ArgumentOutOfRangeException(nameof(target), target, null);
 				}
@@ -583,18 +582,18 @@ namespace Hertzole.CecilAttributes.CodeGen
 			switch (target)
 			{
 				case GetComponentTarget.Self:
-					return Module.GetMethod<Component>(nameof(Component.GetComponent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+					return module.GetMethod<Component>(nameof(Component.GetComponent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
 				case GetComponentTarget.Parent:
 #if UNITY_2021_2_OR_NEWER // Include inactive is not supported in previous versions.
-					return Module.GetMethod<Component>(nameof(Component.GetComponentInParent), onlyBools).MakeGenericMethod(fieldType);
+					return module.GetMethod<Component>(nameof(Component.GetComponentInParent), onlyBools).MakeGenericMethod(fieldType);
 #else
-					return Module.GetMethod<Component>(nameof(Component.GetComponentInParent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+					return module.GetMethod<Component>(nameof(Component.GetComponentInParent), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
 #endif
 				case GetComponentTarget.Children:
 #if UNITY_2021_2_OR_NEWER // Include inactive is not supported in previous versions.
-					return Module.GetMethod<Component>(nameof(Component.GetComponentInChildren), onlyBools).MakeGenericMethod(fieldType);
+					return module.GetMethod<Component>(nameof(Component.GetComponentInChildren), onlyBools).MakeGenericMethod(fieldType);
 #else
-					return Module.GetMethod<Component>(nameof(Component.GetComponentInChildren), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
+					return module.GetMethod<Component>(nameof(Component.GetComponentInChildren), System.Type.EmptyTypes).MakeGenericMethod(fieldType);
 #endif
 				default:
 					throw new ArgumentOutOfRangeException(nameof(target), target, null);

@@ -93,7 +93,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 			MethodReference getTarget = Module.ImportReference(Type.GetMethodInBaseType("get_target"));
 			MethodReference findProperty = Module.ImportReference(typeof(SerializedObject).GetMethod("FindProperty", singleStringArray));
 			MethodReference findPropertyRelative = Module.ImportReference(typeof(SerializedProperty).GetMethod("FindPropertyRelative", singleStringArray));
-			MethodReference logError = MethodsCache.DebugLogError;
+			MethodReference logError = MethodsCache.GetDebugLogError(false, enableMethod.DeclaringType.Module);
 
 			using (MethodEntryScope il = new MethodEntryScope(enableMethod))
 			{
@@ -141,7 +141,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 						il.EmitString($"There's no serialized property called '{paths[j]}' on {{0}}");
 						il.EmitLdarg();
 						il.EmitCall(getTarget);
-						il.EmitCall(MethodsCache.GetStringFormat(1));
+						il.EmitCall(MethodsCache.GetStringFormat(1, enableMethod.DeclaringType.Module));
 						il.EmitCall(logError);
 						il.EmitReturn();
 					}

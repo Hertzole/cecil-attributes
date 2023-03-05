@@ -123,8 +123,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 				il.EmitCall(module.GetMethod<Stopwatch>("get_ElapsedTicks", System.Type.EmptyTypes), true);
 				il.Emit(OpCodes.Box, module.GetTypeReference<long>());
 
-				il.EmitCall(MethodsCache.GetStringFormat(2));
-				il.EmitCall(MethodsCache.DebugLog);
+				il.EmitCall(MethodsCache.GetStringFormat(2, method.DeclaringType.Module));
+				il.EmitCall(method.DeclaringType.Module.ImportReference(MethodsCache.GetDebugLog(false, method.DeclaringType.Module)));
 			}
 		}
 	}

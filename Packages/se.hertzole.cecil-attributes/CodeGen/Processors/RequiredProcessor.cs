@@ -114,7 +114,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 				{
 					// bool error = base.CheckRequired()
 					il.EmitLdarg();
-					il.EmitCall(Module.ImportReference(parentMethod));
+					il.EmitCall(checkRequiredMethod.Module.ImportReference(parentMethod));
 					il.EmitStloc(error);
 				}
 
@@ -135,17 +135,17 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 					il.EmitLoadField(field);
 					il.EmitNull();
-					il.EmitCall(MethodsCache.UnityObjectEqualityOperation);
+					il.EmitCall(checkRequiredMethod.DeclaringType.Module.ImportReference(MethodsCache.UnityObjectEqualityOperation));
 					il.Emit(OpCodes.Brfalse, jumpTarget);
 
 					// Debug.LogError(string.Format("'field' is not assigned on {0}. It is required. Please assign it in the inspector.", gameObject.name), this)
 					il.EmitString($"'{field.Name}' is not assigned on {{0}}. It is required. Please assign it in the inspector.");
 					il.EmitLdarg();
-					il.EmitCall(Module.GetMethod<Component>("get_gameObject"));
-					il.EmitCall(Module.GetMethod<Object>("get_name"), true);
-					il.EmitCall(MethodsCache.GetStringFormat(1));
+					il.EmitCall(checkRequiredMethod.DeclaringType.Module.GetMethod<Component>("get_gameObject"));
+					il.EmitCall(checkRequiredMethod.DeclaringType.Module.GetMethod<Object>("get_name"), true);
+					il.EmitCall(MethodsCache.GetStringFormat(1, checkRequiredMethod.DeclaringType.Module));
 					il.EmitLdarg();
-					il.EmitCall(MethodsCache.DebugLogErrorContext);
+					il.EmitCall(MethodsCache.GetDebugLogError(true, checkRequiredMethod.DeclaringType.Module));
 					// error = true
 					il.EmitBool(true);
 					il.EmitStloc(error);
@@ -187,12 +187,12 @@ namespace Hertzole.CecilAttributes.CodeGen
 					if (parentAwake.DeclaringType is GenericInstanceType genericType)
 					{
 						il.EmitLdarg();
-						il.EmitCall(parentAwake.MakeHostInstanceGeneric(genericType));
+						il.EmitCall(parentAwake.DeclaringType.Module.ImportReference(parentAwake.MakeHostInstanceGeneric(genericType)));
 					}
 					else
 					{
 						il.EmitLdarg();
-						il.EmitCall(Module.ImportReference(parentAwake));
+						il.EmitCall(parentAwake.DeclaringType.Module.ImportReference(parentAwake));
 					}
 				}
 			}
@@ -201,7 +201,7 @@ namespace Hertzole.CecilAttributes.CodeGen
 			using (MethodEntryScope il = new MethodEntryScope(awake))
 			{
 				il.EmitLdarg();
-				il.EmitCall(checkRequiredMethod);
+				il.EmitCall(awake.Module.ImportReference(checkRequiredMethod));
 				il.Emit(OpCodes.Brfalse, il.First);
 				il.EmitReturn();
 			}

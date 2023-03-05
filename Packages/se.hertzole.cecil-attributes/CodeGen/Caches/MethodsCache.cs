@@ -10,6 +10,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private readonly ModuleDefinition module;
 
 		private MethodReference debugLog;
+		private MethodReference debugLogContext;
 		private MethodReference debugLogError;
 		private MethodReference debugLogErrorContext;
 		private MethodReference unityObjectEqualityOperation;
@@ -21,6 +22,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private MethodReference getComponent;
 
 		private static readonly Type[] debugLogParams = { typeof(object) };
+		private static readonly Type[] debugLogContextParams = { typeof(object), typeof(Object) };
 		private static readonly Type[] debugLogErrorParams = { typeof(object) };
 		private static readonly Type[] debugLogErrorContextParams = { typeof(object), typeof(Object) };
 		private static readonly Type[] unityObjectEqualityOperationParams = { typeof(Object), typeof(Object) };
@@ -30,7 +32,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 		private static readonly Type[] stringFormat3Params = { typeof(string), typeof(object), typeof(object), typeof(object) };
 		private static readonly Type[] stringFormatParamsParams = { typeof(string), typeof(object[]) };
 
-		public MethodReference DebugLog
+		private MethodReference DebugLog
 		{
 			get
 			{
@@ -43,7 +45,20 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			}
 		}
 		
-		public MethodReference DebugLogError
+		private MethodReference DebugLogContext
+		{
+			get
+			{
+				if (debugLogContext == null)
+				{
+					debugLogContext = module.GetMethod(typeof(Debug), "Log", debugLogContextParams);
+				}
+
+				return debugLogContext;
+			}
+		}
+		
+		private MethodReference DebugLogError
 		{
 			get
 			{
@@ -56,7 +71,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			}
 		}
 
-		public MethodReference DebugLogErrorContext
+		private MethodReference DebugLogErrorContext
 		{
 			get
 			{
@@ -94,7 +109,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			}
 		}
 
-		public MethodReference StringFormat1
+		private MethodReference StringFormat1
 		{
 			get
 			{
@@ -107,7 +122,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			}
 		}
 
-		public MethodReference StringFormat2
+		private MethodReference StringFormat2
 		{
 			get
 			{
@@ -120,7 +135,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			}
 		}
 
-		public MethodReference StringFormat3
+		private MethodReference StringFormat3
 		{
 			get
 			{
@@ -133,7 +148,7 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			}
 		}
 
-		public MethodReference StringFormatParams
+		private MethodReference StringFormatParams
 		{
 			get
 			{
@@ -164,18 +179,28 @@ namespace Hertzole.CecilAttributes.CodeGen.Caches
 			this.module = module;
 		}
 
-		public MethodReference GetStringFormat(int paramCount)
+		public MethodReference GetDebugLog(bool context, ModuleDefinition targetModule = null)
+		{
+			return context ? (targetModule != null ? targetModule.ImportReference(DebugLogContext) : DebugLogContext) : (targetModule != null ? targetModule.ImportReference(DebugLog) : DebugLog);
+		}
+		
+		public MethodReference GetDebugLogError(bool context, ModuleDefinition targetModule = null)
+		{
+			return context ? (targetModule != null ? targetModule.ImportReference(DebugLogErrorContext) : DebugLogErrorContext) : (targetModule != null ? targetModule.ImportReference(DebugLogError) : DebugLogError);
+		}
+
+		public MethodReference GetStringFormat(int paramCount, ModuleDefinition targetModule = null)
 		{
 			switch (paramCount)
 			{
 				case 1:
-					return StringFormat1;
+					return targetModule != null ? targetModule.ImportReference(StringFormat1) : StringFormat1;
 				case 2:
-					return StringFormat2;
+					return targetModule != null ? targetModule.ImportReference(StringFormat2) : StringFormat2;
 				case 3:
-					return StringFormat3;
+					return targetModule != null ? targetModule.ImportReference(StringFormat3) : StringFormat3;
 				default:
-					return StringFormatParams;
+					return targetModule != null ? targetModule.ImportReference(StringFormatParams) : StringFormatParams;
 			}
 		}
 	}

@@ -187,10 +187,10 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 				if (validParameters > 0)
 				{
-					il.EmitCall(MethodsCache.GetStringFormat(validParameters));
+					il.EmitCall(MethodsCache.GetStringFormat(validParameters, method.DeclaringType.Module));
 				}
 
-				il.EmitCall(MethodsCache.DebugLog);
+				il.EmitCall(MethodsCache.GetDebugLog(false, method.DeclaringType.Module));
 			}
 		}
 
@@ -227,8 +227,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 						il.Emit(OpCodes.Box, module.ImportReference(loadField.FieldType));
 					}
 
-					il.EmitCall(MethodsCache.GetStringFormat(1));
-					il.EmitCall(MethodsCache.DebugLog);
+					il.EmitCall(MethodsCache.GetStringFormat(1, property.DeclaringType.Module));
+					il.EmitCall(MethodsCache.GetDebugLog(false, property.GetMethod.DeclaringType.Module));
 				}
 			}
 
@@ -259,8 +259,8 @@ namespace Hertzole.CecilAttributes.CodeGen
 						il.Emit(OpCodes.Box, module.ImportReference(loadField.FieldType));
 					}
 
-					il.EmitCall(MethodsCache.GetStringFormat(2));
-					il.EmitCall(MethodsCache.DebugLog);
+					il.EmitCall(MethodsCache.GetStringFormat(2, property.DeclaringType.Module));
+					il.EmitCall(MethodsCache.GetDebugLog(false, property.SetMethod.DeclaringType.Module));
 				}
 			}
 		}
