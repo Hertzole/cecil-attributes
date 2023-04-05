@@ -27,9 +27,9 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (Type.HasFields)
 			{
-				for (int i = 0; i < Type.Fields.Count; i++)
+				foreach (FieldDefinition field in Type.Fields)
 				{
-					if (Type.Fields[i].HasAttribute<ResetStaticAttribute>())
+					if (field.HasAttribute<ResetStaticAttribute>())
 					{
 						return true;
 					}
@@ -38,9 +38,9 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (Type.HasProperties)
 			{
-				for (int i = 0; i < Type.Properties.Count; i++)
+				foreach (PropertyDefinition property in Type.Properties)
 				{
-					if (Type.Properties[i].HasAttribute<ResetStaticAttribute>())
+					if (property.HasAttribute<ResetStaticAttribute>())
 					{
 						return true;
 					}
@@ -49,9 +49,9 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 			if (Type.HasEvents)
 			{
-				for (int i = 0; i < Type.Events.Count; i++)
+				foreach (EventDefinition ev in Type.Events)
 				{
-					if (Type.Events[i].HasAttribute<ResetStaticAttribute>())
+					if (ev.HasAttribute<ResetStaticAttribute>())
 					{
 						return true;
 					}
