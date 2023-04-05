@@ -460,16 +460,16 @@ namespace Hertzole.CecilAttributes.CodeGen
 
 				if (targetFields[i].field.FieldType.IsArray())
 				{
-					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType.GetCollectionType(), targetFields[i].target, true, false)));
+					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType.GetCollectionType(), targetFields[i].target, true, false, targetFields[i].field.Module)));
 				}
 				else if (targetFields[i].field.FieldType.IsList())
 				{
-					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType.GetCollectionType(), targetFields[i].target, true, true)));
+					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType.GetCollectionType(), targetFields[i].target, true, true, targetFields[i].field.Module)));
 					il.InsertAt(0, Instruction.Create(OpCodes.Ldfld, targetFields[i].field));
 				}
 				else
 				{
-					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType, targetFields[i].target, false, false)));
+					il.InsertAt(0, Instruction.Create(OpCodes.Call, GetComponentMethod(targetFields[i].field.FieldType, targetFields[i].target, false, false, targetFields[i].field.Module)));
 				}
 
 #if UNITY_2021_2_OR_NEWER
